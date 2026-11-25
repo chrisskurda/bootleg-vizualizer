@@ -22,6 +22,8 @@ export class AudioFeed {
     this.src = node; node.connect(this.analyser); node.connect(this.an2); if (toSpeakers) node.connect(this.ctx.destination);
     if (this.ctx.state === 'suspended') this.ctx.resume();
   }
+  // analyse any AudioNode of a graph you own (a player's master bus). toSpeakers: also connect it to the output (false when your graph already does).
+  fromNode(node, toSpeakers = false) { this._init(); this._swap(node, toSpeakers); }
   fromElement(el) { this._init(); if (!el._mes) el._mes = this.ctx.createMediaElementSource(el); this._swap(el._mes, true); }
   async fromMic() {
     this._init();

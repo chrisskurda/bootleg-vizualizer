@@ -39,5 +39,21 @@
     };
     return A;
   }
-  root.VisStems = { prepare, at, attach, estimate, NB };
+  // A render's clips.json -> { stemName: [{start, end, kind, label, kit, file}] } (loops are placed in bars of 4 beats, hits in seconds). Same as bin/stems.mjs.
+  const cleanName = f => String(f || '').split('/').pop().replace(/\.(wav|flac|mp3|aif+|ogg|caf)$/i, '').replace(/_+/g, ' ').replace(/\s+/g, ' ').trim();
+  function clipsFromDoc(doc, bpm) {
+    const barS = 4 * 60 / ((doc && doc.bpm) || bpm || 120), out = {};
+    for (const c of (doc && doc.clips) || []) {
+      const start = c.kind === 'hit' ? c.start_s : c.start_bar * barS, end = c.kind === 'hit' ? c.start_s + (c.length_s || 0.5) : (c.start_bar + c.bars) * barS;
+      (out[c.stem] ||= []).push({ start: +start.toFixed(3), end: +end.toFixed(3), kind: c.kind, label: cleanName(c.file), kit: c.kit ?? null, file: c.file ?? null });
+    }
+    for (const k in out) out[k].sort((a, b) => a.start - b.start);
+    return out;
+  }
+  // fill label / kit / clip on live stems (core/audio.js taps) from that timeline, at song time t
+  function applyClips(list, clips, t) {
+    for (const s of list) { const c = clipAt(clips && clips[s.name], t); s.clip = c; s.label = c ? c.label : s.label || ''; s.kit = c ? c.kit : null; }
+    return list;
+  }
+  root.VisStems = { prepare, at, attach, estimate, clipsFromDoc, applyClips, NB };
 })(typeof window !== 'undefined' ? window : globalThis);

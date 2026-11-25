@@ -36,6 +36,12 @@ const solo = VS.at(P, 1, { kick: { solo: true } }), mute = VS.at(P, 1, { hats: {
 t('solo: only the soloed stem is audible', solo.find(s => s.name === 'kick').audible && !solo.find(s => s.name === 'hats').audible);
 t('mute + fader gain are reflected', mute.find(s => s.name === 'hats').muted && !mute.find(s => s.name === 'hats').audible && Math.abs(mute.find(s => s.name === 'hats').gain - Math.pow(10, -0.6)) < 1e-9);
 
+console.log('--- clips.json in the browser (VisStems.clipsFromDoc / applyClips)');
+const doc = JSON.parse(fs.readFileSync(path.join(fixture, 'clips.json'), 'utf8')), cm = VS.clipsFromDoc(doc);
+t('clipsFromDoc matches the Node analysis (same spans and labels)', JSON.stringify(cm.hats.map(c => [c.start, c.end, c.label, c.kit])) === JSON.stringify(S.hats.clips.map(c => [c.start, c.end, c.label, c.kit])), JSON.stringify(cm.hats.map(c => c.label)));
+const live0 = [{ name: 'hats', label: '', clip: null }, { name: 'sub', label: 'x', clip: null }]; VS.applyClips(live0, cm, 7);
+t('applyClips fills label/kit/clip on live stems at a time', live0[0].label === 'Hats Open Shuffle 120' && live0[0].kit === 'Test Kit Two' && live0[0].clip.progress > 0 && live0[1].clip === null);
+
 console.log('--- live per-stem taps (core/audio.js addStem) in Chrome');
 const MIME = { '.html': 'text/html', '.js': 'text/javascript' };
 const srv = http.createServer((q, r) => { const f = path.join(root, decodeURIComponent(q.url.split('?')[0])); if (!f.startsWith(root) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) { r.writeHead(404); return r.end(); } r.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(r); }).listen(0, '127.0.0.1');
@@ -53,7 +59,8 @@ const live = await page.evaluate(async () => {
   let maxBeat = { tone: 0, pulse: 0 }, lastA = null, n = 0, tEnd = performance.now() + 2500;
   await new Promise(res => { const tick = () => { const A = feed.update(1 / 60); lastA = A; n++; if (A.stems && performance.now() > tEnd - 1800) for (const s of A.stems) maxBeat[s.name] = Math.max(maxBeat[s.name], s.beat); /* after warm-up: the tone's own start is a real onset */ if (performance.now() < tEnd) requestAnimationFrame(tick); else res(); }; tick(); });
   const A = lastA, p = A.stem('pulse'), tn = A.stem('tone'); feed.stemState.pulse = { muted: true }; const B = feed.update(1 / 60);
-  return { count: A.stems.length, hasAccessor: typeof A.stem === 'function', toneLevel: tn.level, pulseRole: p.role, pulseGain: p.gainDb, maxBeat, spec: tn.spectrum.length, label: tn.label,
+  const gn = ctx.createGain(), osc2 = ctx.createOscillator(); osc2.frequency.value = 660; osc2.connect(gn); osc2.start(); const f2 = new AudioFeed(); f2._init(); const c2 = f2.ctx, o3 = c2.createOscillator(), g3 = c2.createGain(); o3.frequency.value = 1000; g3.gain.value = 0.5; o3.connect(g3); o3.start(); f2.fromNode(g3); await new Promise(r => setTimeout(r, 400)); let hi = 0; for (let i = 0; i < 30; i++) { const A2 = f2.update(1 / 60); hi = Math.max(hi, A2.spectrum ? Math.max(...A2.spectrum) : 0); await new Promise(r => setTimeout(r, 16)); }
+  return { fromNodeOk: hi > 0.2, count: A.stems.length, hasAccessor: typeof A.stem === 'function', toneLevel: tn.level, pulseRole: p.role, pulseGain: p.gainDb, maxBeat, spec: tn.spectrum.length, label: tn.label,
     specPeakBand: Array.from(tn.spectrum).indexOf(Math.max(...tn.spectrum)), mutedAudible: B.stem('pulse').audible, toneAudible: B.stem('tone').audible, frames: n };
 });
 t('two live taps produce A.stems and A.stem()', live.count === 2 && live.hasAccessor, `frames ${live.frames}`);
@@ -62,5 +69,6 @@ t('gated stem: onset pulses fire', live.maxBeat.pulse > 0.9, `max beat ${live.ma
 t('role, label and gain pass through', live.pulseRole === 'kick' && live.pulseGain === -3 && live.label === 'Sine 440');
 t('16-band spectrum per stem, peak where the tone is (440 Hz ≈ band 6-8)', live.spec === 16 && live.specPeakBand >= 5 && live.specPeakBand <= 9, `peak band ${live.specPeakBand}`);
 t('player faders: muting one stem makes it inaudible, others stay audible', live.mutedAudible === false && live.toneAudible === true);
+t('feed.fromNode analyses a node of the host\'s own graph', live.fromNodeOk === true);
 if (errs.length) { console.log('page errors:', [...new Set(errs)].slice(0, 3)); bad++; }
 await browser.close(); srv.close(); console.log(bad ? `\n${bad} FAILED` : '\nall stem tests pass'); process.exit(bad ? 1 : 0);

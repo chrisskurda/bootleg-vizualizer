@@ -112,7 +112,7 @@ A stem-aware pack must look right on estimates (design for them; show a note lik
 |---|---|
 | offline render | `--stems auto` (default: a `stems/` folder next to the audio file) \| `off` \| `DIR`. `bin/stems.mjs DIR` does the analysis (cached) |
 | reference live host | library files with a `stems/` folder: the server analyses and caches it (`GET /api/stems?url=`); the page indexes it by playback time |
-| a stem player (live) | `feed.addStem(name, node, {role, label, gainDb})` taps each stem's own audio node; `feed.stemState[name] = {muted, solo, gainDb}` reflects its faders (`core/audio.js`) |
+| a stem player (live) | `feed.fromNode(masterBus)` analyses the player's own output; `feed.addStem(name, node, {role, label, gainDb})` taps each stem's own audio node; `feed.stemState[name] = {muted, solo, gainDb}` reflects its faders (`core/audio.js`). For the sample text: `VisStems.clipsFromDoc(clipsJson)` builds the timeline from a render's `clips.json`, and `VisStems.applyClips(A.stems, clips, A.t)` fills `label` / `kit` / `clip` on the live stems each frame |
 
 Timing: loops in `clips.json` are placed in bars (4 beats at the render's BPM), hits in seconds; `A.stem(x).clip` is resolved from song time `A.t`.
 
