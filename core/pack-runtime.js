@@ -70,8 +70,9 @@
       const t = ((T % loop) + loop) % loop; let acc = 0;
       for (let i = 0; i < n; i++) { if (t < acc + durs[i] || i === n - 1) return { idx: pick(i), local: t - acc, len: durs[i], held: false }; acc += durs[i]; }
     },
-    // a multi-select param (names) -> scene indices for K.scenes `only`. Also accepts one name (the older `scene` param). Nothing / everything selected -> undefined (all scenes).
-    sceneIndices(sel, names) { const list = Array.isArray(sel) ? sel : sel ? [sel] : []; const idx = list.map(x => names.indexOf(x)).filter(i => i >= 0).sort((a, b) => a - b); return idx.length && idx.length < names.length ? idx : undefined; },
+    // a multi-select param (names) -> scene indices for K.scenes `only`. `legacy` = the older single-choice `scene` param: when it names a real scene it wins (old presets / command lines keep working).
+    // Nothing / everything selected -> undefined (all scenes).
+    sceneIndices(sel, names, legacy) { const one = legacy && names.includes(legacy) ? [legacy] : null, list = one || (Array.isArray(sel) ? sel : sel ? [sel] : []); const idx = list.map(x => names.indexOf(x)).filter(i => i >= 0).sort((a, b) => a - b); return idx.length && idx.length < names.length ? idx : undefined; },
     peak(A, i, hold = 0.6, fall = 0.7, step = 0.04) { let m = 0; for (let t = 0; t <= hold; t += step) m = Math.max(m, A.past(t)[i] - fall * t); return Math.max(0, m); },
   };
   // cover art: kit.cover(A) -> HTMLImageElement once loaded (else null). Loaded lazily; the offline harness awaits it before frame 0.

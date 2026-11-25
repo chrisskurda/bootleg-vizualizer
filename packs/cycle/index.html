@@ -55,7 +55,7 @@ const SC = [
 ];
 definePack({
   draw(ctx, T, A, P, K) {
-    let { idx, local, len, held } = K.scenes(T, A, { count: 5, mode: P.cycle, beats: P.sceneBeats, loop: 60, durs: [12, 12, 12, 12, 12], only: K.sceneIndices(P.scenes ?? P.scene, NAMES) });
+    let { idx, local, len, held } = K.scenes(T, A, { count: 5, mode: P.cycle, beats: P.sceneBeats, loop: 60, durs: [12, 12, 12, 12, 12], only: K.sceneIndices(P.scenes, NAMES, P.scene) });
     if (held) { local = T % 12; len = 12; }   // one scene chosen: hold it (no wipes)
     ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H);
     SC[idx](ctx, local, A, P, K);

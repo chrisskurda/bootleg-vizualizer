@@ -114,7 +114,7 @@ const DUR = [8.5714, 8.5714, 8.5714, 8.5714, 10.7143, 8.5714, 8.5714, 8.5714, 8.
 
 // which scene is on screen, how far into it, and how long it lasts
 function plan(T, A, P, K) {
-  const pl = K.scenes(T, A, { count: SCENES.length, mode: P.cycle, beats: P.sceneBeats, bpm: BPM0, durs: DUR, loop: LOOP, only: K.sceneIndices(P.scenes ?? P.scene, SCENES.map(d => d.name)) });
+  const pl = K.scenes(T, A, { count: SCENES.length, mode: P.cycle, beats: P.sceneBeats, bpm: BPM0, durs: DUR, loop: LOOP, only: K.sceneIndices(P.scenes, SCENES.map(d => d.name), P.scene) });
   return pl.held ? { idx: pl.idx, local: 1.3 + (A.t % 6), len: 1e9, held: true } : pl;   // one scene chosen: hold it (entrance already played, no cuts)
 }
 function wipe(c, th, dt, k, win, color) {

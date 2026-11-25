@@ -15,6 +15,6 @@ const one = K.scenes(12.5, A0, { count: 10, loop: 90, only: [6] }); t('one scene
 const seen = new Set(); for (let b = 0; b < 40; b++) seen.add(K.scenes(0, { t: b * 8, meta: { bpm: 120 }, section: null }, { count: 10, mode: 'beats', beats: 16, only }).idx); t('beats mode stays inside the subset', [...seen].every(i => only.includes(i)) && seen.size === 3);
 const seen2 = new Set(); for (let i = 0; i < 12; i++) seen2.add(K.scenes(0, { t: i * 10 + 1, meta: {}, section: { index: i, start: i * 10, end: i * 10 + 10 } }, { count: 10, mode: 'sections', beats: 16, bpm: 120, only }).idx); t('sections mode stays inside the subset', [...seen2].every(i => only.includes(i)));
 // sceneIndices
-const N = ['A', 'B', 'C', 'D']; t('sceneIndices: array -> sorted indices', K.sceneIndices(['C', 'A'], N).join() === '0,2');
+const N = ['A', 'B', 'C', 'D']; t('sceneIndices: an explicit legacy `scene` beats the multi default (old presets keep working)', K.sceneIndices(N, N, 'C').join() === '2' && K.sceneIndices(N, N, '(cycle)') === undefined && K.sceneIndices(['A', 'B'], N, undefined).join() === '0,1'); t('sceneIndices: array -> sorted indices', K.sceneIndices(['C', 'A'], N).join() === '0,2');
 t('sceneIndices: legacy single name', K.sceneIndices('B', N).join() === '1'); t('sceneIndices: legacy "cycle"/empty/all -> undefined', K.sceneIndices('(cycle)', N) === undefined && K.sceneIndices([], N) === undefined && K.sceneIndices(N, N) === undefined && K.sceneIndices(undefined, N) === undefined);
 process.exit(ok ? 0 : 1);
