@@ -13,7 +13,7 @@ It is designed to be **vendored** ([VENDORING.md](VENDORING.md)) into whatever s
 |---|---|
 | [bootleg](https://github.com/chrisskurda/bootleg) | the audio player (web + Tauri desktop); hosts packs live |
 | [bootleg-vizualizer-videocreator](https://git.skurda.org/chris/bootleg-vizualizer-videocreator.git) | renders packs to video (YouTube, trailers) |
-| audition, RiffBox (MusicGen) | stem player page; music maker with a visualizer lane |
+| stem players, music makers | a stem player page; a music maker with a visualizer lane |
 
 ## Start
     npm i                                      # once (needs Chrome and ffmpeg)

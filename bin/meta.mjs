@@ -2,7 +2,7 @@
 //
 // Priority per field:  explicit overrides  >  embedded tags (ID3 / Vorbis / MP4, via ffprobe)  >  sidecar JSON  >  filename
 // Structure that tags can't carry (sections, setlist tracks) comes from sidecars:
-//   <name>.meta.json or manifest.json (musicgen style: name,bpm,key_label,seconds,sections[{name,start_s,end_s}])
+//   <name>.meta.json or manifest.json (bootleg stem format: name,bpm,key_label,seconds,sections[{name,start_s,end_s}])
 //   tracklist.txt   ("00:03:02  name  (style, 146 BPM, D# minor)")
 //
 //   { title, artist, albumArtist, album, year, genre, track, trackTotal, disc, composer, label, copyright, isrc,
@@ -47,7 +47,7 @@ export function readMeta(file, overrides = {}) {
     bpm: num(tag('bpm', 'tbpm', 'tempo')), key: tag('initialkey', 'initial_key', 'key', 'tkey'),
   };
 
-  // ---- sidecar JSON (musicgen manifest / <name>.meta.json)
+  // ---- sidecar JSON (stem-set manifest / <name>.meta.json)
   let side = {}, sections = [];
   for (const sc of [path.join(dir, base + '.meta.json'), path.join(dir, 'manifest.json')]) {
     if (!fs.existsSync(sc)) continue;

@@ -1,4 +1,4 @@
-// Builds a small synthetic MusicGen-style render folder (manifest.json, clips.json, stems/*.flac, mix.flac) for stem tests.
+// Builds a small synthetic bootleg stem set (manifest.json, clips.json, stems/*.flac, mix.flac) for stem tests.
 //   node tests/make-fixture.mjs [outdir]    (default: cache/fixture-render)
 import { spawnSync } from 'node:child_process'; import fs from 'node:fs'; import path from 'node:path'; import { fileURLToPath } from 'node:url';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'), out = path.resolve(process.argv[2] || path.join(root, 'cache/fixture-render')), D = 12, BPM = 120;

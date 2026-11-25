@@ -85,7 +85,7 @@ The host provides it — drop an image on the live preview, the **Image…** but
 The pack ships no art (§7); the image is the user's. Cover art from tags is separate: `K.cover(A)`.
 
 ### 2c. Stems — per-stem visuals and text
-When a track comes with stems — a MusicGen render (`stems/<name>.flac`, gains in `manifest.json`, placements in `clips.json`) or a stem player's live audio nodes —
+When a track comes with stems — a **bootleg stem set** (`stems/<name>.flac`, gains in `manifest.json`, placements in `clips.json` — the format is documented in the bootleg player repo, `docs/STEM-FORMAT.md`) or a stem player's live audio nodes —
 packs get one more feature set. `A.stems` is the list; **`A.stem(nameOrRole)` always returns a stem** (never `undefined`):
 
 | field | meaning |

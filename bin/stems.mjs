@@ -1,4 +1,4 @@
-// Per-stem analysis for a MusicGen-style render folder:  <dir>/stems/<name>.flac|wav  (+ manifest.json, clips.json)
+// Per-stem analysis for a bootleg stem set (folder):  <dir>/stems/<name>.flac|wav  (+ manifest.json, clips.json)
 // -> per stem: level, onset pulse, 16-band spectrum (shared scale across stems, so a quiet hat stem stays quieter than the kick),
 //    its role, its mix gain, and a timeline of the loops/hits placed on it (text: what sample is playing when).
 //   node bin/stems.mjs <render-dir> [out.json] [--fps 30]
