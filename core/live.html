@@ -76,7 +76,8 @@ function buildPanel() {
     else if (def.type === 'select') add(`<label><span>${lab}</span><select>${def.options.map(o => `<option ${o === v ? 'selected' : ''}>${o}</option>`).join('')}</select></label>`, el => el.querySelector('select').onchange = e => { obj[key] = e.target.value; onch(); });
     else if (def.type === 'multi') add(`<label class="multi"><span>${lab} <a href="#" class="all">all</a></span><div class="chips">${def.options.map(o => `<button type="button" class="chip" data-o="${o}">${o}</button>`).join('')}</div></label>`, el => {
       const paint = () => el.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', obj[key].includes(c.dataset.o)));
-      el.querySelectorAll('.chip').forEach(c => c.onclick = e => { e.preventDefault(); const o = c.dataset.o, set = new Set(obj[key]); set.has(o) ? set.delete(o) : set.add(o); obj[key] = def.options.filter(x => set.has(x)); paint(); onch(); });
+      el.querySelectorAll('.chip').forEach(c => c.onclick = e => { e.preventDefault(); const o = c.dataset.o, all = obj[key].length === def.options.length; let set = all ? new Set([o]) : new Set(obj[key]);   // everything selected: a click solos that one; then clicks add/remove; none left -> all again
+        if (!all) set.has(o) ? set.delete(o) : set.add(o); if (!set.size) set = new Set(def.options); obj[key] = def.options.filter(x => set.has(x)); paint(); onch(); });
       el.querySelector('.all').onclick = e => { e.preventDefault(); obj[key] = def.options.slice(); paint(); onch(); }; paint(); });
     else if (def.type === 'bool') add(`<label><span>${lab}<input type="checkbox" ${v ? 'checked' : ''}></span></label>`, el => el.querySelector('input').onchange = e => { obj[key] = e.target.checked; onch(); });
   };
