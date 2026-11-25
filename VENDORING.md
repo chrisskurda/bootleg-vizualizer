@@ -1,7 +1,7 @@
 # Vendoring bootleg-vizualizer into another app
 
 bootleg-vizualizer (spec + runtime + packs + FX + tests) is meant to be **vendored**: copied into a consumer at a pinned version, never
-edited in place there. Consumers: [bootleg](https://git.skurda.org/chris/bootleg.git) (the player), [bootleg-vizualizer-videocreator](https://git.skurda.org/chris/bootleg-vizualizer-videocreator.git), the audition page and RiffBox (MusicGen).
+edited in place there. Consumers: [bootleg](https://github.com/chrisskurda/bootleg.git) (the player), [bootleg-vizualizer-videocreator](https://git.skurda.org/chris/bootleg-vizualizer-videocreator.git), the audition page and RiffBox (MusicGen).
 
 ## What a consumer gets
 | path | what | consumer uses it for |
@@ -17,7 +17,7 @@ edited in place there. Consumers: [bootleg](https://git.skurda.org/chris/bootleg
 ## How
 - Pin by **tag** (`VERSION`, semver: spec/contract changes bump major/minor; new packs bump patch).
 - Put it at `vendor/bootleg-vizualizer/` in the consumer (RiffBox: `riffbox/vendor/bootleg-vizualizer/`; MusicGen's audition: `audition/vendor/bootleg-vizualizer/`).
-- Update with `git subtree pull --prefix vendor/bootleg-vizualizer https://git.skurda.org/chris/bootleg-vizualizer.git <tag> --squash` (or a copy script; subtree keeps it plain files, no submodule checkout step).
+- Update with `git subtree pull --prefix vendor/bootleg-vizualizer https://github.com/chrisskurda/bootleg-vizualizer.git <tag> --squash` (or a copy script; subtree keeps it plain files, no submodule checkout step).
 - Never patch `vendor/bootleg-vizualizer/` in the consumer; send the change upstream, then bump the pin.
 - Each consumer runs `node vendor/bootleg-vizualizer/tests/fx.test.mjs` (and `fx-gl.test.mjs` where there is a browser) in its CI to prove the pin conforms.
 - A **native** host (RiffBox, Rust) does not run the JS runtime; it implements the FX passes in Rust and tests against `tests/golden/fx/` (the reference crate in `tests/fx-reference/` is the same code RiffBox already has, with the portable hash — RiffBox's `hash()` should be replaced by it).

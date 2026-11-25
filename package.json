@@ -1,18 +1,19 @@
 {
   "name": "bootleg-vizualizer",
-  "version": "0.9.2",
+  "version": "0.9.3",
   "description": "Music-visualizer pack format, runtime, FX passes and packs: runs live in a browser/Tauri player and renders offline to video.",
   "license": "MIT",
   "type": "module",
   "repository": {
     "type": "git",
-    "url": "https://git.skurda.org/chris/bootleg-vizualizer.git"
+    "url": "https://github.com/chrisskurda/bootleg-vizualizer.git"
   },
   "scripts": {
     "live": "node bin/server.mjs",
-    "test": "node tests/fx.test.mjs && node tests/fx-gl.test.mjs && node tests/stems.test.mjs && node tests/scenes.test.mjs && node tests/kit.test.mjs",
+    "test": "node bin/check-version.mjs && node tests/fx.test.mjs && node tests/fx-gl.test.mjs && node tests/stems.test.mjs && node tests/scenes.test.mjs && node tests/kit.test.mjs",
     "check": "node bin/check.mjs",
-    "goldens": "cd tests/fx-reference && cargo run --release"
+    "goldens": "cd tests/fx-reference && cargo run --release",
+    "check:version": "node bin/check-version.mjs"
   },
   "dependencies": {
     "playwright-core": "^1.50.0"
