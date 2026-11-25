@@ -2,6 +2,7 @@
   "name": "Stem Rack",
   "description": "One lane per stem: its name, mix gain, the sample playing on it right now, a level meter, and a glyph chosen by its role (kick rings, snare bursts, hat sparkles, bass wave, key spectrum). Uses real stems when the track has them; otherwise it estimates the lanes from the mix.",
   "type": "native",
+  "usesStems": true,
   "width": 1920,
   "height": 1080,
   "loopSeconds": 20,

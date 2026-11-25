@@ -24,6 +24,7 @@ packs/<id>/
 | `width`, `height` | design resolution in px (the host scales to fit; render uses it × `--scale`) |
 | `loopSeconds` | length of the pack's own motion loop (seamless; see §4) |
 | `params` | user-tweakable controls, see §3 |
+| `usesStems` | optional, `true` when the pack draws per-stem visuals (`A.stem()` / `A.stems`). A player may then load a track's real stems for it (decoding stems costs memory, so players load them on demand); without the flag the pack gets estimates from the mix, which is always enough to draw |
 
 ## 2. Runtime contract (native packs)
 
