@@ -5,13 +5,11 @@
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs'; import path from 'node:path'; import crypto from 'node:crypto'; import { fileURLToPath } from 'node:url';
 import { makeFFT } from './analyze.mjs';
+await import('../core/stems.js');                  // classic script: publishes globalThis.VisStems (the role table lives there, shared with browsers)
+export const roleOf = name => globalThis.VisStems.roleOf(name);
 
 const SR = 44100, N = 2048, NB = 16;
 // stem name -> role vocabulary (SPEC §2c). Unknown names are 'other'.
-const ROLE = { kick: 'kick', bd: 'kick', snare: 'snare', sd: 'snare', clap: 'snare', hats: 'hats', hat: 'hats', hh: 'hats', perc: 'perc', percussion: 'perc', drums: 'drums', drum: 'drums',
-  sub: 'bass', bass: 'bass', '808': 'bass', keys: 'keys', piano: 'keys', rhodes: 'keys', lead: 'lead', arp: 'lead', pad: 'pad', strings: 'pad', colour: 'pad', color: 'pad', sample: 'sample',
-  vocals: 'vocals', vox: 'vocals', crash: 'fx', fx: 'fx', riser: 'fx' };
-export const roleOf = name => ROLE[String(name).toLowerCase().replace(/[^a-z0-9]/g, '')] || 'other';
 const readJson = f => { try { return JSON.parse(fs.readFileSync(f, 'utf8')); } catch { return null; } };
 const cleanName = f => String(f || '').split('/').pop().replace(/\.(wav|flac|mp3|aif+|ogg|caf)$/i, '').replace(/[_]+/g, ' ').replace(/\s+/g, ' ').trim();
 

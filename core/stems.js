@@ -5,6 +5,10 @@
 // live per-stem taps (core/audio.js addStem; the player), else an ESTIMATE from the mix (role-shaped bands), flagged estimated:true.
 // Roles: kick snare hats perc drums bass keys lead pad sample vocals fx other.
 (function (root) {
+  const ROLE = { kick: 'kick', bd: 'kick', snare: 'snare', sd: 'snare', clap: 'snare', hats: 'hats', hat: 'hats', hh: 'hats', perc: 'perc', percussion: 'perc', drums: 'drums', drum: 'drums',
+    sub: 'bass', bass: 'bass', '808': 'bass', keys: 'keys', piano: 'keys', rhodes: 'keys', lead: 'lead', arp: 'lead', pad: 'pad', strings: 'pad', colour: 'pad', color: 'pad', sample: 'sample',
+    vocals: 'vocals', vox: 'vocals', crash: 'fx', fx: 'fx', riser: 'fx' };
+  const roleOf = name => ROLE[String(name).toLowerCase().replace(/[^a-z0-9]/g, '')] || 'other';   // stem file name -> role (SPEC §2c)
   const NB = 16, dec = b64 => Uint8Array.from(atob(b64), c => c.charCodeAt(0));
   const ZERO = new Float32Array(NB), clamp01 = v => (v < 0 ? 0 : v > 1 ? 1 : v);
   // decode the analysis once (bin/stems.mjs JSON) -> a handle for at()
@@ -55,5 +59,5 @@
     for (const s of list) { const c = clipAt(clips && clips[s.name], t); s.clip = c; s.label = c ? c.label : s.label || ''; s.kit = c ? c.kit : null; }
     return list;
   }
-  root.VisStems = { prepare, at, attach, estimate, clipsFromDoc, applyClips, NB };
+  root.VisStems = { prepare, at, attach, estimate, clipsFromDoc, applyClips, roleOf, NB };
 })(typeof window !== 'undefined' ? window : globalThis);
