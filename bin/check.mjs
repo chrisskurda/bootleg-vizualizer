@@ -76,6 +76,7 @@ function staticChecks(id) {
   rec(id, 'system fonts only', fonts.size ? 'WARN' : 'PASS', fonts.size ? 'named fonts: ' + [...fonts].join(', ') : '');
   const heavy = !ownPalette && colors > 14 && colors > 2 * palCalls;
   rec(id, 'authored colors in code', heavy ? 'WARN' : 'PASS', ownPalette ? 'pack-defined palette table' : `${colors} literal colors vs ${palCalls} palette/param uses${heavy ? ' — prefer palette/params so themes apply' : ''}`);
+  { const abs = fs.readdirSync(dir).filter(f => f.endsWith('.html')).filter(f => /(?:src|href)=["']\/(?!\/)/.test(fs.readFileSync(path.join(dir, f), 'utf8'))); rec(id, 'relative asset paths (portable)', abs.length ? 'FAIL' : 'PASS', abs.length ? abs.join(', ') + ' — use ../../core/… not /core/… (packs must load from any host path)' : ''); }
   rec(id, 'portable canvas subset (§9)', portable.size ? 'WARN' : 'PASS', portable.size ? [...portable].join(', ') + ' — not supported by a native/headless host' : '');
   m.__usesImage = /\bK\.image\s*\(/.test(src);
   return m;
