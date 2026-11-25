@@ -1,0 +1,42 @@
+<!doctype html><meta charset="utf-8"><title>Wire Orbit</title>
+<script src="../../core/pack-runtime.js"></script>
+<script>
+const L = 20, W = 1920, H = 1080;
+
+function line(ctx, K, P, pts, u, a, w, close) { // glow = wide low-alpha stroke + core stroke, no shadowBlur
+  ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])); if (close) ctx.closePath();
+  ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  if (P.glow > 0) { ctx.strokeStyle = K.css(P.palette, u, a * .18 * P.glow); ctx.lineWidth = w * 5; ctx.stroke(); ctx.strokeStyle = K.css(P.palette, u, a * .3 * P.glow); ctx.lineWidth = w * 2.4; ctx.stroke(); }
+  ctx.strokeStyle = 'rgba(255,255,255,' + a * .9 + ')'; ctx.lineWidth = w * .5; ctx.stroke(); ctx.strokeStyle = K.css(P.palette, u, a); ctx.lineWidth = w; ctx.globalCompositeOperation = 'source-over'; ctx.stroke(); ctx.globalCompositeOperation = 'lighter';
+}
+function crt(ctx, P) {
+  ctx.globalCompositeOperation = 'source-over';
+  if (P.scan > 0) { ctx.fillStyle = 'rgba(0,0,0,' + .28 * P.scan + ')'; for (let y = 0; y < H; y += 4) ctx.fillRect(0, y, W, 2); }
+  const v = ctx.createRadialGradient(W / 2, H / 2, H * .45, W / 2, H / 2, H * 1.05); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.75)'); ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
+}
+
+const CUBE = { v: [[-1, -1, -1], [1, -1, -1], [1, 1, -1], [-1, 1, -1], [-1, -1, 1], [1, -1, 1], [1, 1, 1], [-1, 1, 1]], e: [[0, 1], [1, 2], [2, 3], [3, 0], [4, 5], [5, 6], [6, 7], [7, 4], [0, 4], [1, 5], [2, 6], [3, 7]] };
+const OCT = { v: [[1, 0, 0], [-1, 0, 0], [0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1]], e: [[0, 2], [0, 3], [0, 4], [0, 5], [1, 2], [1, 3], [1, 4], [1, 5], [2, 4], [4, 3], [3, 5], [5, 2]] };
+const PYR = { v: [[-1, 1, -1], [1, 1, -1], [1, 1, 1], [-1, 1, 1], [0, -1.2, 0]], e: [[0, 1], [1, 2], [2, 3], [3, 0], [0, 4], [1, 4], [2, 4], [3, 4]] };
+definePack({
+  draw(ctx, T, A, P, K) {
+    const TAU = K.TAU, hz = 560, ph = K.phase(T, L, 4), u = T / L;
+    ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H); ctx.globalCompositeOperation = 'lighter';
+    for (let j = 0; j < 14; j++) { const z = (j + ph) / 14, y = hz + (H - hz) * z * z; line(ctx, K, P, [[0, y], [W, y]], .3, .12 + z * .4, 1.5 + z * 2); }
+    for (let i = -14; i <= 14; i++) line(ctx, K, P, [[960 + i * 40, hz], [960 + i * 380, H]], .3, .35, 1.5);
+    const shapes = [[CUBE, 0, 330, 1, 0], [OCT, 1, 960, 2, 1], [PYR, 2, 1590, 1, 3], [CUBE, 3, 960, 3, 7]];
+    shapes.forEach(([S, k, x, sp, bnd], si) => {
+      const y = si === 3 ? 160 : 330 + Math.sin(TAU * (si + 1) * u) * 24, sz = (si === 3 ? 60 : 130) * (1 + A.spectrum[bnd * 6 + 2] * .5 + (si === 1 ? A.beat * .2 : 0));
+      const a = TAU * sp * u * (si % 2 ? -1 : 1), b = TAU * (sp + 1) * u, ca = Math.cos(a), sa = Math.sin(a), cb = Math.cos(b), sb = Math.sin(b);
+      const P2 = S.v.map(([px, py, pz]) => { let x1 = px * ca + pz * sa, z1 = -px * sa + pz * ca, y1 = py * cb - z1 * sb, z2 = py * sb + z1 * cb, f = 1 / (1 + z2 * .18); return [x + x1 * sz * f, y + y1 * sz * f]; });
+      S.e.forEach(([p, q], ei) => line(ctx, K, P, [P2[p], P2[q]], (si * .25 + ei * .03) % 1, .85, 3));
+    });
+    const bw = 20, n = 64, base = 920;
+    for (let i = 0; i < n; i++) { const v = A.spectrum[i], x = 150 + i * 26; line(ctx, K, P, [[x, base], [x, base - 8 - v * 170]], i / n, .5 + v * .5, 4); }
+    line(ctx, K, P, [[130, base + 12], [1790, base + 12]], .3, .6, 2);
+    K.text(ctx, A.meta.title, 90, 100, { font: '700 40px ui-monospace,monospace', color: K.css(P.palette, .9), upper: true, maxW: 900 });
+    K.text(ctx, K.fmtTime(A.live ? A.t : T), W - 90, 100, { font: '700 40px ui-monospace,monospace', color: K.css(P.palette, .3), align: 'right' });
+    crt(ctx, P);
+  }
+});
+</script>

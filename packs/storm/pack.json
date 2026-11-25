@@ -1,0 +1,42 @@
+{
+  "name": "Storm",
+  "description": "Rain over drifting storm clouds; beats strike branching lightning with a screen flash.",
+  "type": "native",
+  "width": 1920,
+  "height": 1080,
+  "loopSeconds": 20,
+  "params": {
+    "palette": {
+      "type": "select",
+      "label": "Palette",
+      "options": [
+        "aurora",
+        "sunset",
+        "neon",
+        "ember",
+        "ocean",
+        "mono",
+        "candy"
+      ],
+      "default": "ocean"
+    },
+    "bg": {
+      "type": "color",
+      "label": "Background",
+      "default": "#04070f"
+    },
+    "rain": {
+      "type": "number",
+      "label": "Rain",
+      "default": 260,
+      "min": 40,
+      "max": 500,
+      "step": 20
+    },
+    "bolts": {
+      "type": "bool",
+      "label": "Lightning",
+      "default": true
+    }
+  }
+}

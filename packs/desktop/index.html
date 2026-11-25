@@ -1,0 +1,38 @@
+<!doctype html><meta charset="utf-8"><title>Desktop</title>
+<script src="../../core/pack-runtime.js"></script>
+<script>
+const HX = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)), L = 20, W = 1920, H = 1080, fr = x => x - Math.floor(x), hs = (a, b) => fr(Math.sin(a * 12.9898 + b * 78.233) * 43758.5453);
+
+definePack({
+  init(ctx, K) { K.palettes.vapor = ['#2a1b6b', '#b967ff', '#ff71ce', '#01cdfe', '#fffb96'].map(HX); },
+  draw(ctx, T, A, P, K) {
+    const TAU = K.TAU, clock = A.live ? A.t : T;
+    const bg = ctx.createLinearGradient(0, 0, W, H); bg.addColorStop(0, P.bg); bg.addColorStop(1, K.css(P.palette, .6)); ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = 'rgba(255,255,255,.08)'; const cs = 60, o = K.drift(T, L, 1, cs * 2); for (let y = -2; y < 20; y++) for (let x = -2; x < 34; x++) if ((x + y) % 2 === 0) ctx.fillRect(x * cs + o, y * cs + o * 0, cs, cs);
+    const win = (x, y, w, h, title, i) => {
+      y += Math.sin(TAU * 2 * T / L + i * 2) * 6;
+      ctx.fillStyle = '#000'; ctx.fillRect(x + 8, y + 8, w, h); ctx.fillStyle = '#c0c0c0'; ctx.fillRect(x, y, w, h);
+      ctx.fillStyle = '#fff'; ctx.fillRect(x, y, w, 3); ctx.fillRect(x, y, 3, h); ctx.fillStyle = '#808080'; ctx.fillRect(x, y + h - 3, w, 3); ctx.fillRect(x + w - 3, y, 3, h);
+      const tg = ctx.createLinearGradient(x, 0, x + w, 0); tg.addColorStop(0, K.css(P.palette, .05)); tg.addColorStop(1, K.css(P.palette, .75)); ctx.fillStyle = tg; ctx.fillRect(x + 6, y + 6, w - 12, 38);
+      K.text(ctx, title, x + 16, y + 34, { font: '700 26px system-ui', maxW: w - 150 });
+      for (let k = 0; k < 3; k++) { ctx.fillStyle = '#c0c0c0'; ctx.fillRect(x + w - 50 - k * 40, y + 10, 32, 30); ctx.fillStyle = '#000'; ctx.fillRect(x + w - 42 - k * 40, y + (k === 0 ? 14 : 28), 14, 4 - k * 0 + (k === 1 ? 0 : 0)); }
+      return [x + 14, y + 52, w - 28, h - 66];
+    };
+    let [ax, ay, aw, ah] = win(110, 100, 940, 560, 'Spectrum.exe', 0);
+    ctx.fillStyle = '#05050f'; ctx.fillRect(ax, ay, aw, ah);
+    for (let b = 0; b < 32; b++) { const v = Math.min(1, A.spectrum[b * 2] * 1.2), n = Math.round(v * 16); for (let k = 0; k < 16; k++) { if (k < n) ctx.fillStyle = K.css(P.palette, .25 + .6 * (k / 16)); else ctx.fillStyle = 'rgba(255,255,255,.06)'; ctx.fillRect(ax + 12 + b * 28, ay + ah - 30 - k * 29, 22, 24); } }
+    [ax, ay, aw, ah] = win(1120, 200, 680, 400, 'Oscilloscope', 1);
+    ctx.fillStyle = '#05050f'; ctx.fillRect(ax, ay, aw, ah); ctx.strokeStyle = K.css(P.palette, .6); ctx.lineWidth = 4; ctx.beginPath();
+    for (let i = 0; i < 64; i++) { const x = ax + i / 63 * aw, y = ay + ah / 2 + Math.round(A.wave[i * 2] * ah * .4 / 10) * 10; i ? (ctx.lineTo(x, ctx.__py), ctx.lineTo(x, y)) : ctx.moveTo(x, y); ctx.__py = y; } ctx.stroke();
+    [ax, ay, aw, ah] = win(560, 700, 960, 250, 'Now Playing', 2);
+    K.text(ctx, A.meta.title, ax + 20, ay + 70, { font: '700 44px system-ui', color: '#000', maxW: aw - 40 });
+    K.text(ctx, [A.meta.artist, A.section && A.section.name].filter(Boolean).join(' - '), ax + 20, ay + 108, { font: '400 28px system-ui', color: '#303030', maxW: aw - 40 });
+    const pr = K.progress(A, T, L), nb = 40; for (let i = 0; i < nb; i++) { ctx.fillStyle = i < pr * nb ? K.css(P.palette, .1) : '#fff'; ctx.fillRect(ax + 20 + i * ((aw - 160) / nb), ay + 130, (aw - 160) / nb - 3, 28); }
+    K.text(ctx, K.fmtTime(clock), ax + aw - 20, ay + 156, { font: '700 28px ui-monospace,monospace', color: '#000', align: 'right' });
+    ctx.fillStyle = '#c0c0c0'; ctx.fillRect(0, H - 56, W, 56); ctx.fillStyle = '#fff'; ctx.fillRect(0, H - 56, W, 3); ctx.fillStyle = '#808080'; ctx.fillRect(10, H - 48, 130, 40);
+    K.text(ctx, 'Start', 36, H - 18, { font: '700 28px system-ui', color: '#000' }); K.text(ctx, K.fmtTime(clock), W - 24, H - 18, { font: '400 26px ui-monospace,monospace', color: '#000', align: 'right' });
+    const mx = 960 + Math.cos(TAU * T / L) * 700, my = 440 + Math.sin(TAU * 2 * T / L) * 260;
+    ctx.fillStyle = '#fff'; ctx.strokeStyle = '#000'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(mx, my); ctx.lineTo(mx, my + 42); ctx.lineTo(mx + 11, my + 33); ctx.lineTo(mx + 22, my + 54); ctx.lineTo(mx + 31, my + 49); ctx.lineTo(mx + 20, my + 30); ctx.lineTo(mx + 34, my + 28); ctx.closePath(); ctx.fill(); ctx.stroke();
+  }
+});
+</script>

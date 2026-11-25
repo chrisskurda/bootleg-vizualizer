@@ -1,0 +1,46 @@
+{
+ "name": "Spectrum: Aurora",
+ "page": "index.html",
+ "type": "native",
+ "width": 1920,
+ "height": 1080,
+ "loopSeconds": 60,
+ "description": "Layered mirrored ribbons that trail behind each other in time.",
+ "params": {
+  "palette": {
+   "type": "select",
+   "label": "Palette",
+   "options": [
+    "aurora",
+    "sunset",
+    "neon",
+    "ember",
+    "ocean",
+    "mono",
+    "candy"
+   ],
+   "default": "aurora"
+  },
+  "bg": {
+   "type": "color",
+   "label": "Background",
+   "default": "#050818"
+  },
+  "layers": {
+   "type": "number",
+   "label": "Layers",
+   "default": 4,
+   "min": 1,
+   "max": 6,
+   "step": 1
+  },
+  "trail": {
+   "type": "number",
+   "label": "Trail (sec)",
+   "default": 0.09,
+   "min": 0.02,
+   "max": 0.3,
+   "step": 0.01
+  }
+ }
+}

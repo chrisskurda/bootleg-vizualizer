@@ -1,0 +1,54 @@
+{
+ "name": "Spectrum: Mandala",
+ "page": "index.html",
+ "type": "native",
+ "width": 1920,
+ "height": 1080,
+ "loopSeconds": 60,
+ "description": "Kaleidoscope petals driven by three spectrum ranges, with an expanding beat ring.",
+ "params": {
+  "palette": {
+   "type": "select",
+   "label": "Palette",
+   "options": [
+    "aurora",
+    "sunset",
+    "neon",
+    "ember",
+    "ocean",
+    "mono",
+    "candy"
+   ],
+   "default": "candy"
+  },
+  "bg": {
+   "type": "color",
+   "label": "Background",
+   "default": "#07050f"
+  },
+  "sym": {
+   "type": "number",
+   "label": "Symmetry",
+   "default": 12,
+   "min": 4,
+   "max": 24,
+   "step": 1
+  },
+  "spin": {
+   "type": "number",
+   "label": "Rotations per loop",
+   "default": 1,
+   "min": 0,
+   "max": 4,
+   "step": 1
+  },
+  "petal": {
+   "type": "number",
+   "label": "Petal size",
+   "default": 120,
+   "min": 40,
+   "max": 200,
+   "step": 5
+  }
+ }
+}

@@ -1,0 +1,30 @@
+<!doctype html><meta charset="utf-8"><title>Plasma Globe</title>
+<script src="../../core/pack-runtime.js"></script>
+<script>
+const L = 20, W = 1920, H = 1080, fr = x => x - Math.floor(x), hs = (a, b) => fr(Math.sin(a * 12.9898 + b * 78.233) * 43758.5453);
+
+definePack({
+  draw(ctx, T, A, P, K) {
+    const TAU = K.TAU, cx = 960, cy = 520, R = 400, u = T / L, step = Math.floor(T * 14);
+    ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = '#17131f'; ctx.beginPath(); ctx.roundRect(cx - 190, cy + R - 30, 380, 150, 30); ctx.fill(); ctx.fillStyle = '#0d0a14'; ctx.fillRect(cx - 240, cy + R + 90, 480, 40);
+    const touch = u * TAU, tx = cx + Math.cos(touch) * R * .98 * Math.cos(.6), ty = cy + Math.sin(touch * 2) * R * .6;
+    ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.clip();
+    const bgp = ctx.createRadialGradient(cx, cy, 0, cx, cy, R); bgp.addColorStop(0, K.css(P.palette, .4, .35 + A.level * .3)); bgp.addColorStop(.6, K.css(P.palette, .2, .12)); bgp.addColorStop(1, K.css(P.palette, .1, .25)); ctx.fillStyle = bgp; ctx.fillRect(cx - R, cy - R, R * 2, R * 2);
+    ctx.globalCompositeOperation = 'lighter'; ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+    for (let i = 0; i < P.arcs; i++) {
+      const base = i / P.arcs * TAU + u * TAU * (i % 2 ? -1 : 1) * .5, v = A.spectrum[Math.min(63, 2 + i * 3)], toTouch = i % 4 === 0, ex = toTouch ? tx : cx + Math.cos(base) * R * .96, ey = toTouch ? ty : cy + Math.sin(base) * R * .96, seg = 22, pts = [];
+      for (let k = 0; k <= seg; k++) { const f = k / seg, dx = ex - cx, dy = ey - cy, len = Math.hypot(dx, dy), nx = -dy / len, ny = dx / len, j = (hs(i * 31 + k, step) - .5) * 2 * 60 * Math.sin(f * Math.PI) * (.5 + v); pts.push([cx + dx * f + nx * j, cy + dy * f + ny * j]); }
+      ctx.beginPath(); pts.forEach((p, k) => k ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]));
+      const a = .35 + v * .65 + (toTouch ? .3 : 0); ctx.strokeStyle = K.css(P.palette, .3 + i / P.arcs * .5, a * .2); ctx.lineWidth = 16; ctx.stroke(); ctx.strokeStyle = K.css(P.palette, .3 + i / P.arcs * .5, a * .5); ctx.lineWidth = 6; ctx.stroke(); ctx.strokeStyle = 'rgba(255,255,255,' + Math.min(1, a) + ')'; ctx.lineWidth = 2; ctx.stroke();
+      const g = ctx.createRadialGradient(ex, ey, 0, ex, ey, 40); g.addColorStop(0, K.css(P.palette, .6, a * .6)); g.addColorStop(1, K.css(P.palette, .6, 0)); ctx.fillStyle = g; ctx.fillRect(ex - 40, ey - 40, 80, 80);
+    }
+    const cr = 60 + A.bass * 40 + A.beat * 30, cg = ctx.createRadialGradient(cx, cy, 0, cx, cy, cr * 2.5); cg.addColorStop(0, 'rgba(255,255,255,.95)'); cg.addColorStop(.25, K.css(P.palette, .5, .7)); cg.addColorStop(1, K.css(P.palette, .3, 0)); ctx.fillStyle = cg; ctx.fillRect(cx - cr * 2.5, cy - cr * 2.5, cr * 5, cr * 5);
+    ctx.restore(); ctx.globalCompositeOperation = 'source-over';
+    ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.stroke(); ctx.strokeStyle = 'rgba(255,255,255,.18)'; ctx.lineWidth = 14; ctx.beginPath(); ctx.arc(cx, cy, R - 12, 3.6, 4.5); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,.12)'; ctx.beginPath(); ctx.ellipse(cx - R * .38, cy - R * .5, R * .22, R * .1, -.7, 0, TAU); ctx.fill();
+    ctx.globalCompositeOperation = 'lighter'; const th = ctx.createRadialGradient(tx, ty, 0, tx, ty, 70); th.addColorStop(0, K.css(P.palette, .6, .35)); th.addColorStop(1, K.css(P.palette, .6, 0)); ctx.fillStyle = th; ctx.fillRect(tx - 70, ty - 70, 140, 140); ctx.globalCompositeOperation = 'source-over';
+    K.text(ctx, A.meta.title, 90, 100, { font: '600 40px system-ui', maxW: 600, alpha: .85 });
+  }
+});
+</script>

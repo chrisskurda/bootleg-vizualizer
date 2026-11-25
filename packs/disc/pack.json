@@ -1,0 +1,29 @@
+{
+  "name": "Compact Disc",
+  "description": "Iridescent CD with spectrum halo and LCD time readout.",
+  "type": "native",
+  "width": 1920,
+  "height": 1080,
+  "loopSeconds": 20,
+  "params": {
+    "palette": {
+      "type": "select",
+      "label": "Palette",
+      "options": [
+        "aurora",
+        "sunset",
+        "neon",
+        "ember",
+        "ocean",
+        "mono",
+        "candy"
+      ],
+      "default": "neon"
+    },
+    "bg": {
+      "type": "color",
+      "label": "Background",
+      "default": "#05060d"
+    }
+  }
+}

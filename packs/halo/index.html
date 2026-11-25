@@ -1,0 +1,38 @@
+<!doctype html><meta charset="utf-8"><title>Halo</title>
+<script src="../../core/pack-runtime.js"></script>
+<script>
+const R = (() => { const r = [], g = (function () { let a = 7; return () => (a = (a * 16807) % 2147483647) / 2147483647; })(); for (let i = 0; i < 48; i++) r.push({ ph: g() * 6.283, rad: 400 + g() * 130, sp: (g() < .5 ? -1 : 1) * (1 + (g() * 2 | 0)), s: 2 + g() * 4, u: g() }); return r; })();
+definePack({
+  draw(ctx, T, A, P, K) {
+    const W = 1920, H = 1080, cx = W / 2, cy = H / 2, TAU = K.TAU;
+    ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H);
+    const r0 = 230 + A.bass * 36 + A.beat * 26;
+    let g = ctx.createRadialGradient(cx, cy, 0, cx, cy, 760);
+    g.addColorStop(0, K.css(P.palette, .3, .08 + A.level * .35)); g.addColorStop(1, K.css(P.palette, .3, 0));
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round'; ctx.lineWidth = 9;
+    const N = 128, rot = T / 16 * TAU;
+    for (let i = 0; i < N; i++) {
+      const b = i < 64 ? i : 127 - i, a = i / N * TAU + rot - Math.PI / 2, h = 14 + A.spectrum[b] * 330 * P.gain;
+      ctx.strokeStyle = K.css(P.palette, b / 63, .5 + A.spectrum[b] * .5);
+      ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * r0, cy + Math.sin(a) * r0); ctx.lineTo(cx + Math.cos(a) * (r0 + h), cy + Math.sin(a) * (r0 + h)); ctx.stroke();
+    }
+    ctx.lineWidth = 3;
+    for (let k = 0; k < 3; k++) {
+      const e = Math.max(0, A.beat - k * .08); if (e <= 0) continue;
+      ctx.strokeStyle = K.css(P.palette, .2 + k * .3, e * .6); ctx.beginPath(); ctx.arc(cx, cy, r0 - 14 + (1 - e) * 120 * (k + 1) * .4 + k * 8, 0, TAU); ctx.stroke();
+    }
+    ctx.strokeStyle = K.css(P.palette, .5, .5); ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(cx, cy, r0 - 20, 0, TAU); ctx.stroke();
+    for (const d of R) {
+      const a = d.ph + d.sp * T / 16 * TAU, r = d.rad + A.bass * 20;
+      ctx.fillStyle = K.css(P.palette, d.u, .35 + A.high * .6); ctx.beginPath(); ctx.arc(cx + Math.cos(a) * r, cy + Math.sin(a) * r * .94, d.s * (1 + A.beat * .5), 0, TAU); ctx.fill();
+    }
+    ctx.globalCompositeOperation = 'source-over';
+    if (P.title) {
+      K.text(ctx, A.meta.title, cx, cy - 4, { font: '600 54px system-ui', align: 'center', maxW: 340, color: '#fff' });
+      K.text(ctx, A.meta.artist, cx, cy + 34, { font: '400 26px system-ui', align: 'center', maxW: 300, alpha: .7 });
+      if (A.duration) K.text(ctx, K.fmtTime(A.t) + ' / ' + K.fmtTime(A.duration), cx, cy + 76, { font: '400 22px ui-monospace,monospace', align: 'center', alpha: .5 });
+    }
+  }
+});
+</script>

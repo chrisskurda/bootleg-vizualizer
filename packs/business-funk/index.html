@@ -1,0 +1,147 @@
+<!doctype html><meta charset="utf-8"><title>Business Funk</title>
+<script src="/core/pack-runtime.js"></script>
+<script>
+// Business Funk — ten infographic-shaped 64-band spectrum analyzers (native pack; no external engine, fonts or assets).
+// Reads bands via bands(A, dt, gain): live/offline audio when A.live, otherwise the built-in synthetic funk track (idle demo).
+const N = 64, TAU = Math.PI * 2, BPM0 = 112, BEAT0 = 60 / BPM0, LOOP = 90;
+const MONO = 'ui-monospace, Menlo, Consolas, "DejaVu Sans Mono", monospace';
+const DISPLAY = 'system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif'; // drawn at weight 900
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const E = { out: p => 1 - Math.pow(1 - clamp(p), 3), inOut: p => { p = clamp(p); return p < .5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2; } };
+const hash = n => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+const env = (t, d) => Math.exp(-t / d), gauss = (i, c, w) => Math.exp(-((i - c) * (i - c)) / (2 * w * w));
+const BASS = [3, 0, 0, 5, 0, 3, 0, 0, 6, 0, 4, 0, 0, 5, 7, 0];
+
+// ---- idle demo track (original synthetic funk groove, 112 BPM) -------------------------------------------------
+function demo(T, gain) {
+  const t = ((T % LOOP) + LOOP) % LOOP, b = t / BEAT0, six = (b * 4) % 1, step = Math.floor(b * 4) % 16;
+  const kick = env((b % 1) * BEAT0, 0.12), snare = env(((b + 1) % 2) * BEAT0, 0.16), hat = env(six * BEAT0 / 4, 0.045) * (0.45 + 0.55 * hash(step));
+  const bassOn = BASS[step], bassEnv = bassOn ? env(six * BEAT0 / 4, 0.11) : 0;
+  const mel = 30 + 9 * Math.sin(TAU * 7 * t / LOOP) + 6 * Math.sin(TAU * 23 * t / LOOP + 1), lead = 0.55 + 0.45 * Math.sin(TAU * 41 * t / LOOP), sb = Math.floor(b);
+  const out = new Float32Array(N);
+  for (let i = 0; i < N; i++) {
+    const wob = 0.5 + 0.5 * Math.sin(TAU * (20 + Math.floor(hash(i) * 60)) * t / LOOP + hash(i + 99) * TAU);
+    const v = 0.08 + 0.26 * (0.6 - 0.3 * i / 63) * wob + kick * gauss(i, 2, 3.5) * 0.85 + bassEnv * gauss(i, 3 + bassOn, 2.2) * 0.65
+      + snare * (gauss(i, 22, 9) * 0.55 + 0.14 * hash(i + sb * 7)) + hat * gauss(i, 54, 8) * 0.55 + lead * gauss(i, mel, 3) * 0.55;
+    out[i] = clamp(v * gain);
+  }
+  return out;
+}
+// THE REACTIVE SEAM: every chart reads bands only through this.
+const bands = (A, dt, gain) => A.live ? Float32Array.from(dt > 0 ? A.past(dt) : A.spectrum, v => clamp(v * gain)) : demo(A.t - dt, gain);
+
+const PALETTES = {
+  Report: { paper: '#F2E8D5', ink: '#1F1B16', c: ['#E4572E', '#F2A900', '#17877F', '#C2255C', '#3D5A80'] },
+  Boardroom: { paper: '#EDE7E1', ink: '#14213D', c: ['#FCA311', '#E63946', '#2A9D8F', '#9D4EDD', '#457B9D'] },
+  Shag: { paper: '#F6E7C1', ink: '#3B2314', c: ['#D9480F', '#E9B000', '#6A994E', '#A4133C', '#B07D4F'] },
+};
+const tier = i => Math.floor(i / 13), avg = (s, a, b) => { let x = 0; for (let i = a; i < b; i++) x += s[i]; return x / (b - a); };
+const sector = (cx, cy, r1, r2, a0, a1) => { const p = (r, a) => (cx + r * Math.cos(a)).toFixed(1) + ' ' + (cy + r * Math.sin(a)).toFixed(1);
+  return `M${p(r2, a0)}A${r2} ${r2} 0 0 1 ${p(r2, a1)}L${p(r1, a1)}A${r1} ${r1} 0 0 0 ${p(r1, a0)}Z`; };
+
+// small canvas helpers (x, y are SVG-style: text baseline = y)
+const R = (c, x, y, w, h, fill, a = 1) => { c.globalAlpha = a; c.fillStyle = fill; c.fillRect(x, y, w, h); c.globalAlpha = 1; };
+const L = (c, x1, y1, x2, y2, stroke, w, a = 1, cap = 'butt', dash = []) => { c.globalAlpha = a; c.strokeStyle = stroke; c.lineWidth = w; c.lineCap = cap; c.setLineDash(dash); c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke(); c.setLineDash([]); c.globalAlpha = 1; };
+const O = (c, x, y, r, fill, a = 1) => { c.globalAlpha = a; c.fillStyle = fill; c.beginPath(); c.arc(x, y, Math.max(0, r), 0, TAU); c.fill(); c.globalAlpha = 1; };
+const TX = (c, s, x, y, size, fill, { font = 'mono', align = 'left', a = 1 } = {}) => { c.globalAlpha = a; c.fillStyle = fill; c.textAlign = align; c.textBaseline = 'alphabetic';
+  c.font = font === 'mono' ? `400 ${size}px ${MONO}` : `900 ${size}px ${DISPLAY}`; c.fillText(s, x, y); c.globalAlpha = 1; };
+const Grid = (c, fg) => [0, .25, .5, .75, 1].forEach(g => { L(c, 140, 950 - g * 640, 1780, 950 - g * 640, fg, g ? 2 : 4, g ? .16 : .7); TX(c, String(g * 100), 120, 958 - g * 640, 24, fg, { align: 'right', a: .7 }); });
+
+// ---- the ten charts --------------------------------------------------------------------------------------------
+function drawBars(c, { s, at, fg, P }) {
+  const taps = [1, 2, 3, 4, 5].map(j => at(j * 0.07)); Grid(c, fg);
+  for (let i = 0; i < N; i++) { let pk = s[i]; taps.forEach((a, j) => { pk = Math.max(pk, a[i] * (1 - (j + 1) * 0.13)); });
+    const x = 144 + i * 25.6; R(c, x, 950 - s[i] * 640, 18, s[i] * 640, P[tier(i)]); R(c, x, 938 - pk * 640, 18, 6, fg); }
+}
+function drawDonut(c, { s, local, fg, P }) {
+  const cx = 960, cy = 610, rot = local * 0.14 - Math.PI / 2, share = Math.round(100 * avg(s, 0, 16) * 16 / Math.max(0.001, avg(s, 0, N) * N));
+  c.globalAlpha = .2; c.strokeStyle = fg; c.lineWidth = 2; c.setLineDash([4, 12]); c.beginPath(); c.arc(cx, cy, 440, 0, TAU); c.stroke(); c.setLineDash([]); c.globalAlpha = 1;
+  for (let i = 0; i < N; i++) { c.fillStyle = P[tier(i)]; c.fill(new Path2D(sector(cx, cy, 160, 190 + s[i] * 240, rot + (i + 0.12) * TAU / N, rot + (i + 0.88) * TAU / N))); }
+  TX(c, share + '%', cx, cy + 22, 96, fg, { font: 'display', align: 'center' }); TX(c, 'LOW END', cx, cy + 66, 24, fg, { align: 'center', a: .75 });
+}
+function drawPyramid(c, { s, fg, P }) {
+  TX(c, 'EVEN BANDS', 940, 238, 24, fg, { align: 'right', a: .75 }); TX(c, 'ODD BANDS', 980, 238, 24, fg, { a: .75 });
+  for (let r = 0; r < 32; r++) { const l = s[2 * r] * 740, rt = s[2 * r + 1] * 740, y = 258 + r * 22.4; R(c, 954 - l, y, l, 16, P[2]); R(c, 966, y, rt, 16, P[0]); }
+  L(c, 960, 250, 960, 982, fg, 4);
+}
+function drawCandles(c, { s, at, fg, P }) {
+  const prev = at(0.14), taps = [at(0.05), at(0.1), prev, at(0.2)]; Grid(c, fg);
+  for (let i = 0; i < N; i++) { const v = s[i]; let lo = Math.min(v, prev[i]), hi = Math.max(v, prev[i]); taps.forEach(a => { lo = Math.min(lo, a[i]); hi = Math.max(hi, a[i]); });
+    const x = 144 + i * 25.6, top = Math.max(v, prev[i]), bot = Math.min(v, prev[i]);
+    L(c, x + 9, 950 - hi * 620 - 14, x + 9, 950 - lo * 620, fg, 3); R(c, x, 950 - top * 620, 18, Math.max(6, (top - bot) * 620), v >= prev[i] ? P[2] : P[0]); }
+}
+function drawDots(c, { s, fg, P }) {
+  const n = [0, 0, 0], t = v => v > 0.5 ? 0 : v > 0.25 ? 1 : 2; s.forEach(v => { n[t(v)]++; });
+  ['HOT', 'WARM', 'COOL'].forEach((l, k) => { O(c, 190, 352 + k * 240, 46, P[k]); TX(c, String(n[k]).padStart(2, '0'), 280, 388 + k * 240, 120, fg, { font: 'display' }); TX(c, l + ' BANDS', 500, 388 + k * 240, 26, fg, { a: .75 }); });
+  for (let i = 0; i < N; i++) { const cx = 1046 + (i % 8) * 92, cy = 296 + Math.floor(i / 8) * 92; c.globalAlpha = .16; c.strokeStyle = fg; c.lineWidth = 2; c.beginPath(); c.arc(cx, cy, 42, 0, TAU); c.stroke(); c.globalAlpha = 1; O(c, cx, cy, 6 + s[i] * 38, P[t(s[i])]); }
+}
+const DEPTS = ['SUB', 'BASS', 'LOW MID', 'MID', 'HI MID', 'PRESENCE', 'BRILLIANCE', 'AIR'];
+function drawGauges(c, { s, fg, P }) {
+  DEPTS.forEach((name, g) => { const cx = 330 + (g % 4) * 420, cy = 540 + Math.floor(g / 4) * 370, a = Math.PI + avg(s, g * 8, g * 8 + 8) * Math.PI * 1.6;
+    for (let j = 0; j < 8; j++) { const v = s[g * 8 + j]; c.globalAlpha = .22 + .78 * v; c.fillStyle = P[g % 5]; c.fill(new Path2D(sector(cx, cy, 104, 138 + v * 44, Math.PI + (j + 0.08) * Math.PI / 8, Math.PI + (j + 0.92) * Math.PI / 8))); }
+    c.globalAlpha = 1; L(c, cx, cy, cx + 92 * Math.cos(a), cy + 92 * Math.sin(a), fg, 8, 1, 'round'); O(c, cx, cy, 14, fg); TX(c, name, cx, cy + 56, 24, fg, { align: 'center', a: .8 }); });
+}
+function drawBubbles(c, { s, fg, bg, P }) {
+  let sx = 0, sy = 0, sxx = 0, sxy = 0; const pts = Array.from(s, (v, i) => { const x = 180 + i * 25, y = 900 - v * 600; sx += x; sy += y; sxx += x * x; sxy += x * y; return [x, y, 8 + v * 44]; });
+  const m = (N * sxy - sx * sy) / (N * sxx - sx * sx), k = (sy - m * sx) / N;
+  c.strokeStyle = fg; c.lineWidth = 4; c.beginPath(); c.moveTo(140, 250); c.lineTo(140, 950); c.lineTo(1780, 950); c.stroke();
+  TX(c, 'FREQUENCY →', 150, 996, 24, fg, { a: .75 }); c.save(); c.translate(112, 940); c.rotate(-Math.PI / 2); TX(c, 'FUNK →', 0, 0, 24, fg, { a: .75 }); c.restore();
+  pts.forEach((p, i) => { O(c, p[0], p[1], p[2], P[i % 5], .9); c.strokeStyle = bg; c.lineWidth = 2; c.beginPath(); c.arc(p[0], p[1], p[2], 0, TAU); c.stroke(); });
+  L(c, 150, m * 150 + k, 1770, m * 1770 + k, fg, 5, 1, 'butt', [18, 12]);
+}
+function drawArea(c, { at, fg, P }) {
+  const layer = (a, k) => { const p = Array.from(a, (v, i) => [153 + i * 25.6, 950 - v * k * 640]); let d = `M153 950L${p[0][0]} ${p[0][1].toFixed(1)}`;
+    for (let i = 0; i < N - 1; i++) d += `Q${p[i][0]} ${p[i][1].toFixed(1)} ${((p[i][0] + p[i + 1][0]) / 2).toFixed(1)} ${((p[i][1] + p[i + 1][1]) / 2).toFixed(1)}`;
+    return [d + `L${p[N - 1][0]} ${p[N - 1][1].toFixed(1)}L${p[N - 1][0]} 950Z`, p]; };
+  const a = layer(at(0.22), 1), b = layer(at(0.11), 0.72), d = layer(at(0), 0.44); Grid(c, fg);
+  c.fillStyle = P[2]; c.fill(new Path2D(a[0])); c.fillStyle = P[1]; c.fill(new Path2D(b[0])); c.fillStyle = P[0]; c.fill(new Path2D(d[0]));
+  a[1].filter((_, i) => i % 4 === 0).forEach(p => O(c, p[0], p[1], 8, fg));
+}
+function drawFunnel(c, { s, P }) { for (let i = 0; i < N; i++) { const w = (1600 - i * 21.5) * (0.35 + 0.65 * s[i]); R(c, 960 - w / 2, 244 + i * 11.6, w, 9, P[tier(i)]); } }
+function drawSpiral(c, { s, local, P }) {
+  const cx = 960, cy = 620;
+  for (let i = 0; i < N; i++) { const a = i / N * 2.5 * TAU + local * 0.22, r = 60 + i * 4.2, r2 = r + 12 + s[i] * 90, co = Math.cos(a), sn = Math.sin(a);
+    L(c, cx + r * co, cy + r * sn, cx + r2 * co, cy + r2 * sn, P[tier(i)], 7 + i * 0.14, 1, 'round'); }
+}
+const SCENES = [
+  { name: 'Bars', title: 'Quarterly Groove Output', draw: drawBars }, { name: 'Donut', title: 'Share of the Low End', draw: drawDonut, dark: true },
+  { name: 'Pyramid', title: 'Demographics of the Beat', draw: drawPyramid }, { name: 'Candles', title: 'Bass Futures', draw: drawCandles, dark: true },
+  { name: 'Dots', title: 'Headcount by Frequency', draw: drawDots }, { name: 'Gauges', title: 'Departmental Pressure', draw: drawGauges, dark: true },
+  { name: 'Bubbles', title: 'Risk vs. Funk', draw: drawBubbles }, { name: 'Area', title: 'Treble Forecast', draw: drawArea, dark: true },
+  { name: 'Funnel', title: 'The Groove Funnel', draw: drawFunnel }, { name: 'Spiral', title: 'Growth Spiral', draw: drawSpiral, dark: true },
+];
+const DUR = [8.5714, 8.5714, 8.5714, 8.5714, 10.7143, 8.5714, 8.5714, 8.5714, 8.5714, 10.7143], CUES = DUR.reduce((a, d, i) => (a.push(i ? a[i - 1] + DUR[i - 1] : 0), a), []);
+
+// which scene is on screen, how far into it, and how long it lasts
+function plan(T, A, P, K) {
+  const held = SCENES.findIndex(d => d.name === P.scene); if (held >= 0) return { idx: held, local: 1.3 + (A.t % 6), len: 1e9, held: true };
+  return K.scenes(T, A, { count: SCENES.length, mode: P.cycle, beats: P.sceneBeats, bpm: BPM0, durs: DUR });
+}
+function wipe(c, th, dt, k, win, color) {
+  const p = dt / win; if (p <= -1 || p >= 1) return; const a = p < 0 ? 0 : E.inOut(p), b = p < 0 ? E.inOut(1 + p) : 1; c.fillStyle = color;
+  if (k % 2 === 0) c.fillRect(a * 1920, 0, (b - a) * 1920 + 1, 1080); else c.fillRect(0, a * 1080, 1920, (b - a) * 1080 + 1);
+}
+
+definePack({
+  draw(c, T, A, P, K) {
+    const th = PALETTES[P.palette] || PALETTES.Report, gain = P.gain, { idx, local, len, held } = plan(T, A, P, K), def = SCENES[idx];
+    const fg = def.dark ? th.paper : th.ink, bg = def.dark ? th.ink : th.paper;
+    c.fillStyle = bg; c.fillRect(0, 0, 1920, 1080);
+    const at = dt => bands(A, dt, gain).map((v, i) => v * E.out((local - dt - 0.2 - i * 0.006) / 0.45)), s = at(0), level = Math.round(avg(s, 0, N) * 100);
+    c.save(); const zoom = held ? 1 : 1 + 0.045 * clamp(local / len) + 0.012 * A.beat; c.translate(960, 600); c.scale(zoom, zoom); c.translate(-960, -600);
+    def.draw(c, { s, at, local, fg, bg, P: th.c }); c.restore();
+    // header / footer
+    const tIn = E.out((local - 0.15) / 0.5); c.save(); c.globalAlpha = tIn; c.translate(0, (1 - tIn) * 28);
+    const sec = A.section && P.showMeta ? '  ·  ' + A.section.name.toUpperCase() : '';
+    TX(c, 'FIG. ' + String(idx + 1).padStart(2, '0') + sec, 96, 84, 26, fg, { a: .75 }); TX(c, def.title.toUpperCase(), 94, 158, 62, fg, { font: 'display' });
+    TX(c, 'AVG LEVEL', 1824, 84, 26, fg, { align: 'right', a: .75 }); TX(c, String(level).padStart(2, '0') + '%', 1826, 158, 62, th.c[idx % 5], { font: 'display', align: 'right' });
+    const m = A.meta || {}, name = m.title ? (m.artist ? m.artist + ' — ' : '') + m.title : '';
+    if (P.showMeta && name) {
+      K.text(c, name, 96, 1044, { font: `400 24px ${MONO}`, color: fg, alpha: .75, upper: true, maxW: 900 });
+      K.text(c, `${K.fmtTime(A.t)}${A.duration ? ' / ' + K.fmtTime(A.duration) : ''}${m.bpm ? '  ·  ' + Math.round(m.bpm) + ' BPM' : ''}${m.key ? '  ·  ' + m.key.toUpperCase() : ''}`, 1824, 1044, { font: `400 24px ${MONO}`, color: fg, alpha: .75, align: 'right' });
+    } else TX(c, '64 BANDS · 20 Hz – 20 kHz · ' + BPM0 + ' BPM', 1824, 1044, 24, fg, { align: 'right', a: .7 });
+    c.restore();
+    if (!held) for (const [k, dt] of [[idx, local], [idx + 1, local - len]]) { const j = k % SCENES.length; wipe(c, th, dt, k, 0.42, th.c[(j + 1) % 5]); wipe(c, th, dt, k, 0.28, th.c[j % 5]); }
+  }
+});
+</script>

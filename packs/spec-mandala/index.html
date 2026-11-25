@@ -1,0 +1,27 @@
+<!doctype html><meta charset="utf-8"><title>Spectrum: Mandala</title>
+<script src="/core/pack-runtime.js"></script>
+<script>
+definePack({
+
+draw(ctx, T, A, P, K) {
+  const W = 1920, H = 1080, cx = W / 2, cy = H / 2, TAU = K.TAU, S = P.sym | 0, rot = TAU * P.spin * T / 60, M = 28;
+  ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H);
+  const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, 620); g.addColorStop(0, K.css(P.palette, 0.5, 0.08 + 0.3 * A.bass)); g.addColorStop(1, K.css(P.palette, 0.5, 0)); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  ctx.globalCompositeOperation = 'lighter';
+  for (let k = 0; k < 3; k++) {
+    const base = [130, 250, 370][k] * (1 + 0.05 * A.bass), dir = k % 2 ? -1 : 1;
+    for (let j = 0; j < S; j++) {
+      const a0 = dir * rot + j * TAU / S, pts = [];
+      for (let q = 0; q <= M; q++) { const f = q / M, side = Math.abs(f - 0.5) * 2, s = A.spectrum[k * 21 + Math.min(20, Math.floor((1 - side) * 20))], da = (f - 0.5) * TAU / S * 0.95, env = Math.sin(Math.PI * f), r = base + Math.pow(s, 1.2) * P.petal * env;
+        pts.push([cx + Math.cos(a0 + da) * r, cy + Math.sin(a0 + da) * r]); }
+      ctx.beginPath(); ctx.moveTo(cx + Math.cos(a0) * base * 0.82, cy + Math.sin(a0) * base * 0.82); pts.forEach(p => ctx.lineTo(p[0], p[1])); ctx.closePath();
+      ctx.fillStyle = K.css(P.palette, 0.15 + k * 0.32, 0.16); ctx.fill(); ctx.strokeStyle = K.css(P.palette, 0.25 + k * 0.32, 0.75); ctx.lineWidth = 2; ctx.stroke();
+    }
+  }
+  ctx.globalCompositeOperation = 'source-over';
+  ctx.strokeStyle = K.css(P.palette, 1, 0.9 * A.beat); ctx.lineWidth = 3 + 5 * A.beat; ctx.beginPath(); ctx.arc(cx, cy, 120 + (1 - A.beat) * 760, 0, TAU); ctx.stroke();
+  ctx.beginPath(); for (let i = 0; i < S; i++) { const a = rot + i * TAU / S, r = 62 + A.bass * 50; i ? ctx.lineTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r) : ctx.moveTo(cx + Math.cos(a) * r, cy + Math.sin(a) * r); }
+  ctx.closePath(); ctx.fillStyle = K.css(P.palette, 0.9, 0.35); ctx.fill(); ctx.strokeStyle = 'rgba(255,255,255,0.9)'; ctx.lineWidth = 2.5; ctx.stroke();
+}
+});
+</script>

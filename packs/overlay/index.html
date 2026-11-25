@@ -1,0 +1,54 @@
+<!doctype html><meta charset="utf-8"><title>Overlay</title>
+<script src="../../core/pack-runtime.js"></script>
+<script>
+let ST, MO, BI, GL;
+definePack({
+  init(ctx, K) {
+    const r = K.rng(77);
+    ST = Array.from({ length: 160 }, () => ({ x: r() * 1920, y: r(), bl: 2 + (r() * 5 | 0), ph: r() * 6.28, b: 30 + (r() * 34 | 0), s: 4 + r() * 12 }));
+    MO = Array.from({ length: 90 }, () => ({ x: r() * 1920, y: r() * 1080, sw: 1 + (r() * 3 | 0), sa: 20 + r() * 50, c: 1 + (r() * 2 | 0), ph: r() * 6.28, s: 2 + r() * 5, u: r() }));
+    BI = Array.from({ length: 6 }, (_, i) => ({ y: 120 + r() * 300, off: i / 6, fl: 40 + (r() * 20 | 0), s: .6 + r() * .8, ph: r() * 6.28, c: i % 2 + 1 }));
+    GL = Array.from({ length: 90 }, () => ({ x: r() * 1920, y: r(), w: 20 + r() * 80, bl: 2 + (r() * 4 | 0), ph: r() * 6.28 }));
+  },
+  draw(ctx, T, A, P, K) {
+    const W = 1920, H = 1080, TAU = K.TAU, u = T / 20, ph = u * TAU, img = K.image();
+    const zoom = 1.06 + P.drift * (.02 + .015 * Math.sin(ph) + A.bass * .012), px = Math.sin(ph) * 22 * P.drift, py = Math.cos(ph) * 12 * P.drift;
+    ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H);
+    ctx.save(); ctx.translate(W / 2 + px, H / 2 + py); ctx.scale(zoom, zoom); ctx.translate(-W / 2, -H / 2);
+    if (img) { const s = Math.max(W / img.naturalWidth, H / img.naturalHeight), w = img.naturalWidth * s, h = img.naturalHeight * s; ctx.drawImage(img, (W - w) / 2, (H - h) / 2, w, h); }
+    else {
+      let g = ctx.createLinearGradient(0, 0, 0, H * .78); g.addColorStop(0, K.css(P.palette, 0, 1)); g.addColorStop(.6, K.css(P.palette, .45, 1)); g.addColorStop(1, K.css(P.palette, .8, 1)); ctx.fillStyle = g; ctx.fillRect(-100, -100, W + 200, H);
+      ctx.fillStyle = K.css(P.palette, 1, .9); ctx.beginPath(); ctx.arc(1300, 600, 90, 0, TAU); ctx.fill();
+      [[.62, .0, 3, .45], [.7, .0, 2, .75]].forEach(([b, o, k, a], i) => { ctx.fillStyle = 'rgba(10,8,20,' + a + ')'; ctx.beginPath(); ctx.moveTo(-100, H); for (let x = -100; x <= W + 100; x += 20) ctx.lineTo(x, H * (b + .02 * i) + 90 * Math.sin(x / W * k * 2.4 + i * 2) + 40 * Math.sin(x / W * k * 6 + i)); ctx.lineTo(W + 100, H); ctx.fill(); });
+      const wg = ctx.createLinearGradient(0, H * .78, 0, H); wg.addColorStop(0, K.css(P.palette, .7, 1)); wg.addColorStop(1, 'rgba(10,8,20,1)'); ctx.fillStyle = wg; ctx.fillRect(-100, H * .78, W + 200, H);
+    }
+    ctx.restore();
+    ctx.globalCompositeOperation = 'lighter';
+    if (P.mist > 0) for (let i = 0; i < 4; i++) {
+      const x = ((((i % 2 ? -1 : 1) * K.drift(T, 20, 1, W + 800) + i * 600) % (W + 800)) + W + 800) % (W + 800) - 400, y = 560 + i * 90 + Math.sin(ph + i) * 20, rx = 520, ry = 90 + i * 14;
+      ctx.save(); ctx.translate(x, y); ctx.scale(1, ry / rx); const g = ctx.createRadialGradient(0, 0, 0, 0, 0, rx); const a = P.mist * (.07 + A.level * .08);
+      g.addColorStop(0, K.css(P.palette, .9, a)); g.addColorStop(1, K.css(P.palette, .9, 0)); ctx.fillStyle = g; ctx.fillRect(-rx, -rx, rx * 2, rx * 2); ctx.restore();
+    }
+    if (P.twinkle > 0) for (const s of ST) {
+      const y = s.y * H * P.sky, tw = Math.pow(Math.max(0, Math.sin(ph * s.bl + s.ph)), 3) * (.5 + A.spectrum[s.b] * 1.2) * P.twinkle;
+      if (tw < .03) continue; const r = s.s * (.4 + tw);
+      ctx.strokeStyle = 'rgba(255,250,235,' + Math.min(1, tw) + ')'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(s.x - r, y); ctx.lineTo(s.x + r, y); ctx.moveTo(s.x, y - r); ctx.lineTo(s.x, y + r); ctx.stroke();
+      const g = ctx.createRadialGradient(s.x, y, 0, s.x, y, r); g.addColorStop(0, 'rgba(255,250,235,' + tw * .8 + ')'); g.addColorStop(1, 'rgba(255,250,235,0)'); ctx.fillStyle = g; ctx.fillRect(s.x - r, y - r, r * 2, r * 2);
+    }
+    if (P.motes > 0) for (const m of MO) {
+      const y = (((m.y - K.drift(T, 20, m.c, H)) % H) + H) % H, x = m.x + Math.sin(ph * m.sw + m.ph) * m.sa + A.mid * 20 * Math.sin(m.ph), a = P.motes * (.25 + .6 * Math.pow(Math.sin(ph * 3 + m.ph), 2)) * (.6 + A.high), r = m.s * (1 + A.beat * .5) * 3;
+      const g = ctx.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, K.css(P.palette, .6 + m.u * .4, a)); g.addColorStop(1, K.css(P.palette, .6 + m.u * .4, 0)); ctx.fillStyle = g; ctx.fillRect(x - r, y - r, r * 2, r * 2);
+    }
+    if (P.horizon > 0) for (const g of GL) {
+      const y = H * (P.horizon + g.y * (1 - P.horizon)), a = Math.pow(Math.max(0, Math.sin(ph * g.bl + g.ph)), 2) * (.3 + A.mid * .8), x = g.x + Math.sin(ph + g.ph) * 30, w = g.w * (.6 + (y / H));
+      ctx.strokeStyle = K.css(P.palette, .95, Math.min(.9, a)); ctx.lineWidth = 2.5; ctx.beginPath(); ctx.moveTo(x - w / 2, y); ctx.lineTo(x + w / 2, y); ctx.stroke();
+    }
+    ctx.globalCompositeOperation = 'source-over';
+    if (P.birds) for (const b of BI) {
+      const x = ((u * 1 + b.off) % 1) * (W + 300) - 150, y = b.y + Math.sin(ph * 2 + b.ph) * 30 - ((u + b.off) % 1) * 60, f = Math.sin(ph * b.fl + b.ph) * (.7 + A.level * .5), s = 26 * b.s;
+      ctx.strokeStyle = 'rgba(12,8,20,.85)'; ctx.lineWidth = 3 * b.s; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.beginPath(); ctx.moveTo(x - s, y - f * s * .8); ctx.quadraticCurveTo(x - s * .4, y - f * s * .2 - s * .25, x, y); ctx.quadraticCurveTo(x + s * .4, y - f * s * .2 - s * .25, x + s, y - f * s * .8); ctx.stroke();
+    }
+    K.text(ctx, A.meta.title, 90, H - 70, { font: '500 30px system-ui', alpha: .8, maxW: 800 });
+  }
+});
+</script>

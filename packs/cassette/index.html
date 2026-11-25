@@ -1,0 +1,38 @@
+<!doctype html><meta charset="utf-8"><title>Cassette</title>
+<script src="../../core/pack-runtime.js"></script>
+<script>
+
+definePack({
+  draw(ctx, T, A, P, K) {
+    const W = 1920, H = 1080, TAU = K.TAU, cx = 960, cy = 470, prog = K.progress(A, T, 20), clock = A.live ? A.t : T;
+    ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H);
+    const g0 = ctx.createRadialGradient(cx, cy, 100, cx, cy, 900); g0.addColorStop(0, K.css(P.palette, .3, .18)); g0.addColorStop(1, K.css(P.palette, .3, 0)); ctx.fillStyle = g0; ctx.fillRect(0, 0, W, H);
+    K.softShadow(ctx, cx - 560, cy - 350, 1120, 700, 36, { blur: 50, dy: 30, alpha: .6 });
+    ctx.fillStyle = '#26211f'; ctx.beginPath(); ctx.roundRect(cx - 560, cy - 350, 1120, 700, 36); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,.12)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.roundRect(cx - 548, cy - 338, 1096, 676, 28); ctx.stroke();
+    ctx.fillStyle = K.css(P.palette, .75); ctx.beginPath(); ctx.roundRect(cx - 480, cy - 310, 960, 330, 18); ctx.fill();
+    ctx.fillStyle = K.css(P.palette, .1); ctx.fillRect(cx - 480, cy - 310, 960, 70);
+    ctx.fillStyle = 'rgba(255,255,255,.88)'; ctx.fillRect(cx - 450, cy - 215, 900, 190);
+    ctx.strokeStyle = 'rgba(20,20,30,.25)'; ctx.lineWidth = 2; ctx.beginPath(); for (let i = 1; i < 4; i++) { ctx.moveTo(cx - 450, cy - 215 + i * 38); ctx.lineTo(cx + 450, cy - 215 + i * 38); } ctx.stroke();
+    K.text(ctx, A.meta.title, cx - 420, cy - 270, { font: '700 40px system-ui', color: '#fff', maxW: 700 });
+    K.text(ctx, 'SIDE A', cx + 440, cy - 270, { font: '700 32px system-ui', color: '#fff', align: 'right' });
+    K.text(ctx, A.meta.artist, cx - 420, cy - 160, { font: 'italic 400 36px cursive', color: '#1b2150', maxW: 800 });
+    const rl = 62 + (1 - prog) * 74, rr = 62 + prog * 74, ry = cy - 120 + 90, lx = cx - 195, rx = cx + 195;
+    ctx.fillStyle = '#0f0c0b'; ctx.beginPath(); ctx.roundRect(cx - 330, cy - 70, 660, 190, 95); ctx.fill();
+    ctx.fillStyle = '#3a2418'; ctx.beginPath(); ctx.arc(lx, ry, rl, 0, TAU); ctx.arc(rx, ry, rr, 0, TAU); ctx.fill();
+    ctx.strokeStyle = '#5a3a28'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(lx, ry, rl - 8, 0, TAU); ctx.arc(rx, ry, rr - 8, 0, TAU); ctx.stroke();
+    ctx.strokeStyle = '#3a2418'; ctx.lineWidth = 6; ctx.beginPath(); ctx.moveTo(lx - rl * .3, ry + rl * .95); ctx.lineTo(cx - 90, cy + 230); ctx.lineTo(cx + 90, cy + 230); ctx.lineTo(rx + rr * .3, ry + rr * .95); ctx.stroke();
+    const hub = (x, r, sp) => { const a = A.live ? A.t * sp : K.phase(T, 20, 3) * TAU; ctx.fillStyle = '#eee'; ctx.beginPath(); ctx.arc(x, ry, 40, 0, TAU); ctx.fill(); ctx.fillStyle = '#26211f'; ctx.beginPath(); ctx.arc(x, ry, 26, 0, TAU); ctx.fill(); ctx.fillStyle = '#eee';
+      for (let k = 0; k < 6; k++) { const b = a + k / 6 * TAU; ctx.save(); ctx.translate(x, ry); ctx.rotate(b); ctx.fillRect(18, -4, 12, 8); ctx.restore(); } };
+    hub(lx, rl, 200 / rl); hub(rx, rr, 200 / rr);
+    ctx.fillStyle = '#c9c3bc'; ctx.beginPath(); ctx.moveTo(cx - 150, cy + 350); ctx.lineTo(cx - 100, cy + 235); ctx.lineTo(cx + 100, cy + 235); ctx.lineTo(cx + 150, cy + 350); ctx.fill();
+    for (let i = 0; i < 2; i++) { ctx.fillStyle = '#111'; ctx.beginPath(); ctx.arc(cx - 340 + i * 680, cy + 300, 14, 0, TAU); ctx.fill(); }
+    for (let c = 0; c < 2; c++) for (let s = 0; s < 18; s++) {
+      const lv = c ? A.mid : A.bass, on = lv * 20 > s, x = 600 + c * 0 + s * 36 + (c ? 0 : 0), y = 880 + c * 54, u = s / 17;
+      ctx.fillStyle = on ? K.css(P.palette, u < .7 ? .2 + u * .3 : 1) : 'rgba(255,255,255,.08)'; ctx.fillRect(x + 80 + 0, y, 28, 30);
+    }
+    K.text(ctx, 'L', 560, 905, { font: '600 26px system-ui', alpha: .6 }); K.text(ctx, 'R', 560, 959, { font: '600 26px system-ui', alpha: .6 });
+    K.text(ctx, K.fmtTime(clock), 1480, 925, { font: '600 64px ui-monospace,monospace', align: 'right', color: K.css(P.palette, .75) });
+  }
+});
+</script>

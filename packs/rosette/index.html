@@ -1,0 +1,24 @@
+<!doctype html><meta charset="utf-8"><title>Rosette</title>
+<script src="../../core/pack-runtime.js"></script>
+<script>
+const L = 20, W = 1920, H = 1080;
+
+definePack({
+  draw(ctx, T, A, P, K) {
+    const TAU = K.TAU, cx = 960, cy = 540, u = T / L, RINGS = 8;
+    ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H); ctx.globalCompositeOperation = 'lighter'; ctx.lineJoin = 'round';
+    for (let r = RINGS - 1; r >= 0; r--) {
+      const k = 2 + r, den = r % 2 ? 2 : 1, R = (80 + r * 62) * (1 + A.bass * .05), v = A.spectrum[r * 7 + 2], rot = TAU * u * (r % 2 ? -1 : 1) * (1 + r % 3), N = 720, loop = TAU * den;
+      const w = 1.5 + v * 5, bend = 1 + v * .25 + A.beat * .05;
+      for (const pass of [0, 1]) {
+        ctx.beginPath();
+        for (let i = 0; i <= N; i++) { const th = i / N * loop, rr = R * (.35 + .65 * Math.cos(k / den * th) * bend * .0 + .65 * Math.cos(k / den * th) * 0) , rose = R * (.55 + .45 * Math.cos(k / den * th + TAU * u * (r + 1))), x = cx + Math.cos(th + rot) * rose, y = cy + Math.sin(th + rot) * rose; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+        ctx.strokeStyle = K.css(P.palette, (r / RINGS + u * 2) % 1, pass ? .8 : .12 + v * .1); ctx.lineWidth = pass ? w : w * 4.5; ctx.stroke();
+      }
+    }
+    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, 70 + A.beat * 50); g.addColorStop(0, K.css(P.palette, .9, .6)); g.addColorStop(1, K.css(P.palette, .9, 0)); ctx.fillStyle = g; ctx.fillRect(cx - 160, cy - 160, 320, 320);
+    ctx.globalCompositeOperation = 'source-over';
+    K.text(ctx, A.meta.title, 90, 100, { font: '600 40px system-ui', maxW: 800, alpha: .9 });
+  }
+});
+</script>

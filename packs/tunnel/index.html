@@ -1,0 +1,26 @@
+<!doctype html><meta charset="utf-8"><title>Grid Tunnel</title>
+<script src="../../core/pack-runtime.js"></script>
+<script>
+const HX = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)), L = 20, W = 1920, H = 1080, fr = x => x - Math.floor(x), hs = (a, b) => fr(Math.sin(a * 12.9898 + b * 78.233) * 43758.5453);
+
+definePack({
+  draw(ctx, T, A, P, K) {
+    const TAU = K.TAU, cx = 960 + Math.sin(TAU * T / L) * 40, cy = 540 + Math.cos(TAU * T / L) * 24, u = K.phase(T, L, 4), N = 16, rot = Math.sin(TAU * T / L) * .06;
+    ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H);
+    const bg = ctx.createRadialGradient(cx, cy, 0, cx, cy, 900); bg.addColorStop(0, K.css(P.palette, .6, .1 + A.beat * .35)); bg.addColorStop(1, K.css(P.palette, .6, 0)); ctx.fillStyle = bg; ctx.fillRect(0, 0, W, H);
+    ctx.globalCompositeOperation = 'lighter'; ctx.lineJoin = 'round';
+    const rect = z => { const s = Math.pow(z, 2.4) * 2100; return [s * 1.78, s]; };
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(rot);
+    for (const [sx, sy] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) { const a = rect(.08), b = rect(1.1); ctx.strokeStyle = K.css(P.palette, .5, .5); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(sx * a[0] / 2, sy * a[1] / 2); ctx.lineTo(sx * b[0] / 2, sy * b[1] / 2); ctx.stroke(); }
+    for (let k = N; k >= 0; k--) {
+      const z = (k + u) / (N + 1); if (z < .04) continue; const [w, h] = rect(z), v = A.spectrum[Math.min(63, k * 4)];
+      ctx.strokeStyle = K.css(P.palette, 1 - z, Math.min(1, .25 + (1 - z) * .75) * (.5 + v * .8)); ctx.lineWidth = 2 + (1 - z) * 6 * (1 + v);
+      ctx.beginPath(); ctx.roundRect(-w / 2, -h / 2, w, h, 12 * (1 - z)); ctx.stroke();
+    }
+    ctx.restore();
+    ctx.lineWidth = 3; for (let i = 0; i < 12; i++) { const a = i / 12 * TAU + TAU * T / L, v = A.spectrum[i * 5], r0 = 30 + A.bass * 16; ctx.strokeStyle = K.css(P.palette, i / 12, .4 + v * .6); ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * r0, cy + Math.sin(a) * r0); ctx.lineTo(cx + Math.cos(a) * (r0 + 40 + v * 160), cy + Math.sin(a) * (r0 + 40 + v * 160)); ctx.stroke(); }
+    ctx.globalCompositeOperation = 'source-over';
+    K.text(ctx, A.meta.title, 90, 100, { font: '700 36px system-ui', color: K.css(P.palette, .9), upper: true, maxW: 900 });
+  }
+});
+</script>

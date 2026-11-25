@@ -1,0 +1,39 @@
+<!doctype html><meta charset="utf-8"><title>Compact Disc</title>
+<script src="../../core/pack-runtime.js"></script>
+<script>
+
+definePack({
+  draw(ctx, T, A, P, K) {
+    const W = 1920, H = 1080, TAU = K.TAU, cx = 960, cy = 480, on = A.live, rot = (on ? A.t : T * .05) * 3.2;
+    ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H);
+    ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round'; ctx.lineWidth = 8;
+    for (let i = 0; i < 128; i++) { const b = i < 64 ? i : 127 - i, a = i / 128 * TAU - Math.PI / 2, r0 = 430, h = 6 + A.spectrum[b] * 130; ctx.strokeStyle = K.css(P.palette, b / 63, .35 + A.spectrum[b] * .6); ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * r0, cy + Math.sin(a) * r0); ctx.lineTo(cx + Math.cos(a) * (r0 + h), cy + Math.sin(a) * (r0 + h)); ctx.stroke(); }
+    ctx.globalCompositeOperation = 'source-over';
+    K.softShadow(ctx, cx - 400, cy - 400, 800, 800, 400, { blur: 40, alpha: .6 }); ctx.fillStyle = '#c8ccd6'; ctx.beginPath(); ctx.arc(cx, cy, 400, 0, TAU); ctx.fill();
+    const sil = ctx.createRadialGradient(cx, cy, 60, cx, cy, 400); sil.addColorStop(0, '#f4f6fb'); sil.addColorStop(.5, '#aeb3c0'); sil.addColorStop(1, '#dfe2ea'); ctx.fillStyle = sil; ctx.beginPath(); ctx.arc(cx, cy, 400, 0, TAU); ctx.fill();
+    ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, 400, 0, TAU); ctx.arc(cx, cy, 150, 0, TAU, true); ctx.clip();
+    // CD sheen: a conic colour sweep, built from thin wedges (portable: no conic gradient needed). Stops k/8 with colour (k%4)/3, alpha .55 / .12.
+    const a0 = .5 + A.bass * .12, NW = 180, stop = k => ({ c: K.pal(P.palette, (k % 4) / 3), a: k % 2 ? .55 : .12 });
+    for (let j = 0; j < NW; j++) {
+      const f = (j + .5) / NW * 8, k = Math.floor(f), t = f - k, s0 = stop(k), s1 = stop(k + 1);
+      ctx.fillStyle = K.rgba([K.mix(s0.c[0], s1.c[0], t), K.mix(s0.c[1], s1.c[1], t), K.mix(s0.c[2], s1.c[2], t)], K.mix(s0.a, s1.a, t));
+      ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, 420, a0 + j / NW * TAU, a0 + (j + 1.04) / NW * TAU); ctx.closePath(); ctx.fill();
+    }
+    ctx.translate(cx, cy); ctx.rotate(rot); ctx.lineWidth = 2;
+    for (let r = 160; r < 395; r += 6) { ctx.strokeStyle = 'rgba(30,35,60,' + (.08 + .06 * Math.sin(r) ** 2) + ')'; ctx.beginPath(); ctx.arc(0, 0, r, .2, TAU - .2); ctx.stroke(); }
+    ctx.restore();
+    ctx.strokeStyle = 'rgba(40,40,60,.35)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(cx, cy, 398, 0, TAU); ctx.stroke(); ctx.beginPath(); ctx.arc(cx, cy, 150, 0, TAU); ctx.stroke();
+    ctx.fillStyle = 'rgba(230,236,250,.55)'; ctx.beginPath(); ctx.arc(cx, cy, 150, 0, TAU); ctx.arc(cx, cy, 86, 0, TAU, true); ctx.fill();
+    ctx.fillStyle = P.bg; ctx.beginPath(); ctx.arc(cx, cy, 40, 0, TAU); ctx.fill();
+    ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, 400, 0, TAU); ctx.clip(); ctx.globalCompositeOperation = 'lighter';
+    for (const a of [-.8, 2.34]) { const g = ctx.createLinearGradient(cx + Math.cos(a) * 400, cy + Math.sin(a) * 400, cx, cy); g.addColorStop(0, 'rgba(255,255,255,.4)'); g.addColorStop(.8, 'rgba(255,255,255,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.arc(cx, cy, 410, a - .2, a + .2); ctx.fill(); }
+    ctx.restore();
+    ctx.fillStyle = '#0a0c14'; ctx.beginPath(); ctx.roundRect(560, 930, 800, 100, 12); ctx.fill(); ctx.strokeStyle = K.css(P.palette, .3, .5); ctx.lineWidth = 2; ctx.stroke();
+    const sn = A.section ? A.section.index + 1 : 1;
+    K.text(ctx, 'TRK ' + String(sn).padStart(2, '0'), 600, 995, { font: '600 52px ui-monospace,monospace', color: K.css(P.palette, .3) });
+    K.text(ctx, K.fmtTime(A.t) + (A.duration ? ' -' + K.fmtTime(A.duration - A.t) : ''), 1320, 995, { font: '600 52px ui-monospace,monospace', align: 'right', color: K.css(P.palette, .3) });
+    if (A.duration) { ctx.fillStyle = K.css(P.palette, .3, .2); ctx.fillRect(600, 1012, 720, 4); ctx.fillStyle = K.css(P.palette, .3); ctx.fillRect(600, 1012, 720 * A.t / A.duration, 4); }
+    K.text(ctx, A.meta.title, 90, 100, { font: '500 34px system-ui', alpha: .8, maxW: 700 });
+  }
+});
+</script>

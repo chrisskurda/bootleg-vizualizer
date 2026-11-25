@@ -1,0 +1,31 @@
+<!doctype html><meta charset="utf-8"><title>Glass Player</title>
+<script src="../../core/pack-runtime.js"></script>
+<script>
+const HX = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)), L = 20, W = 1920, H = 1080, fr = x => x - Math.floor(x), hs = (a, b) => fr(Math.sin(a * 12.9898 + b * 78.233) * 43758.5453);
+let BK;
+definePack({
+  init(ctx, K) { K.palettes.aero = ['#0b4fa8', '#1aa3e8', '#5fd0f5', '#8be36b', '#ffffff'].map(HX); const r = K.rng(12); BK = Array.from({ length: 30 }, () => ({ x: r() * W, y: r() * H, s: 30 + r() * 120, laps: 1 + (r() * 2 | 0), u: r(), ph: r() * 6.28 })); },
+  draw(ctx, T, A, P, K) {
+    const TAU = K.TAU, cx = 410, cy = 260, cw = 1100, ch = 560; const sky = ctx.createLinearGradient(0, 0, 0, H); sky.addColorStop(0, P.bg); sky.addColorStop(.55, K.css(P.palette, .3)); sky.addColorStop(1, K.css(P.palette, .5)); ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+    for (const b of BK) { const x = (K.drift(T, L, b.laps, W + 400) + b.x) % (W + 400) - 200, y = b.y + Math.sin(TAU * 2 * T / L + b.ph) * 16; ctx.fillStyle = K.css(P.palette, .4 + b.u * .6, .12 + .05 * Math.sin(TAU * 3 * T / L + b.ph)); ctx.beginPath(); ctx.arc(x, y, b.s, 0, TAU); ctx.fill(); }
+    K.softShadow(ctx, cx, cy, cw, ch, 44, { blur: 50, dy: 30, alpha: .35 });
+    const cg = ctx.createLinearGradient(0, cy, 0, cy + ch); cg.addColorStop(0, 'rgba(255,255,255,.5)'); cg.addColorStop(1, 'rgba(255,255,255,.18)'); ctx.fillStyle = cg; ctx.beginPath(); ctx.roundRect(cx, cy, cw, ch, 44); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,.85)'; ctx.lineWidth = 3; ctx.stroke();
+    ctx.save(); ctx.beginPath(); ctx.roundRect(cx, cy, cw, ch, 44); ctx.clip(); const gg = ctx.createLinearGradient(0, cy, 0, cy + ch * .5); gg.addColorStop(0, 'rgba(255,255,255,.55)'); gg.addColorStop(1, 'rgba(255,255,255,.05)'); ctx.fillStyle = gg; ctx.fillRect(cx, cy, cw, ch * .5); ctx.restore();
+    const ax = cx + 60, ay = cy + 80, as = 300, cov = K.cover(A);
+    ctx.save(); ctx.beginPath(); ctx.roundRect(ax, ay, as, as, 30); ctx.clip();
+    if (cov) ctx.drawImage(cov, ax, ay, as, as); else { const g = ctx.createLinearGradient(ax, ay, ax + as, ay + as); g.addColorStop(0, K.css(P.palette, .55)); g.addColorStop(1, K.css(P.palette, .85)); ctx.fillStyle = g; ctx.fillRect(ax, ay, as, as); ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.beginPath(); ctx.arc(ax + as / 2, ay + as / 2, 60 + A.bass * 30, 0, TAU); ctx.fill(); }
+    ctx.fillStyle = 'rgba(255,255,255,.3)'; ctx.fillRect(ax, ay, as, as * .45); ctx.restore();
+    const tx = ax + as + 60, tw = cx + cw - 60 - tx;
+    K.text(ctx, A.meta.title, tx, cy + 120, { font: '700 52px system-ui', color: '#08386e', maxW: tw }); K.text(ctx, A.meta.artist, tx, cy + 168, { font: '400 32px system-ui', color: '#1b5a99', maxW: tw });
+    const n = 22, bw = tw / n;
+    for (let i = 0; i < n; i++) { const v = A.spectrum[Math.min(63, i * 2 + 2)], h = 14 + v * 190, x = tx + i * bw, y = cy + 340 - h, g = ctx.createLinearGradient(0, y, 0, y + h); g.addColorStop(0, K.css(P.palette, .8)); g.addColorStop(1, K.css(P.palette, .3)); ctx.fillStyle = g; ctx.beginPath(); ctx.roundRect(x, y, bw - 8, h, (bw - 8) / 2); ctx.fill(); ctx.fillStyle = 'rgba(255,255,255,.6)'; ctx.beginPath(); ctx.roundRect(x + 3, y + 3, (bw - 14) * .5, Math.max(6, h * .5), 6); ctx.fill(); }
+    const py = cy + ch - 90, pr = K.progress(A, T, L), px = ax, pw = cw - 120;
+    ctx.fillStyle = 'rgba(8,56,110,.25)'; ctx.beginPath(); ctx.roundRect(px, py, pw, 22, 11); ctx.fill();
+    const pg = ctx.createLinearGradient(0, py, 0, py + 22); pg.addColorStop(0, K.css(P.palette, .85)); pg.addColorStop(1, K.css(P.palette, .4)); ctx.fillStyle = pg; ctx.beginPath(); ctx.roundRect(px, py, Math.max(22, pw * pr), 22, 11); ctx.fill(); ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.beginPath(); ctx.roundRect(px + 6, py + 3, Math.max(10, pw * pr - 12), 7, 4); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(px + pw * pr, py + 11, 20, 0, TAU); ctx.fill(); ctx.strokeStyle = K.css(P.palette, .3); ctx.lineWidth = 3; ctx.stroke();
+    const clock = A.live ? A.t : T * pr; K.text(ctx, K.fmtTime(clock), px, py + 56, { font: '600 26px ui-monospace,monospace', color: '#08386e' });
+    K.text(ctx, A.section ? A.section.name : '', px + pw, py + 56, { font: '600 26px system-ui', color: '#08386e', align: 'right' });
+  }
+});
+</script>

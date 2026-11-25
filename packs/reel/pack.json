@@ -1,0 +1,29 @@
+{
+  "name": "Reel to Reel",
+  "description": "Open-reel deck with tape path, swinging VU needles and a running counter.",
+  "type": "native",
+  "width": 1920,
+  "height": 1080,
+  "loopSeconds": 20,
+  "params": {
+    "palette": {
+      "type": "select",
+      "label": "Palette",
+      "options": [
+        "aurora",
+        "sunset",
+        "neon",
+        "ember",
+        "ocean",
+        "mono",
+        "candy"
+      ],
+      "default": "ember"
+    },
+    "bg": {
+      "type": "color",
+      "label": "Background",
+      "default": "#120e0a"
+    }
+  }
+}

@@ -1,0 +1,37 @@
+<!doctype html><meta charset="utf-8"><title>Vector Web</title>
+<script src="../../core/pack-runtime.js"></script>
+<script>
+const L = 20, W = 1920, H = 1080;
+
+function line(ctx, K, P, pts, u, a, w, close) { // glow = wide low-alpha stroke + core stroke, no shadowBlur
+  ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])); if (close) ctx.closePath();
+  ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  if (P.glow > 0) { ctx.strokeStyle = K.css(P.palette, u, a * .18 * P.glow); ctx.lineWidth = w * 5; ctx.stroke(); ctx.strokeStyle = K.css(P.palette, u, a * .3 * P.glow); ctx.lineWidth = w * 2.4; ctx.stroke(); }
+  ctx.strokeStyle = 'rgba(255,255,255,' + a * .9 + ')'; ctx.lineWidth = w * .5; ctx.stroke(); ctx.strokeStyle = K.css(P.palette, u, a); ctx.lineWidth = w; ctx.globalCompositeOperation = 'source-over'; ctx.stroke(); ctx.globalCompositeOperation = 'lighter';
+}
+function crt(ctx, P) {
+  ctx.globalCompositeOperation = 'source-over';
+  if (P.scan > 0) { ctx.fillStyle = 'rgba(0,0,0,' + .28 * P.scan + ')'; for (let y = 0; y < H; y += 4) ctx.fillRect(0, y, W, 2); }
+  const v = ctx.createRadialGradient(W / 2, H / 2, H * .45, W / 2, H / 2, H * 1.05); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.75)'); ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
+}
+
+definePack({
+  draw(ctx, T, A, P, K) {
+    const TAU = K.TAU, cx = 960, cy = 540, N = 16, rot = Math.sin(TAU * T / L) * .12, ph = K.phase(T, L, 5), RINGS = 14;
+    ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H); ctx.globalCompositeOperation = 'lighter';
+    const shape = z => { const s = z * z * 470 + 12, sq = 1 + .18 * (1 - z); return [s * sq, s / sq]; };
+    const pt = (i, z, off = 0) => { const a = (i / N) * TAU + rot + off, [rx, ry] = shape(z), wob = 1 + .0 * Math.sin(a * 4); return [cx + Math.cos(a) * rx * wob, cy + Math.sin(a) * ry * wob]; };
+    for (let k = RINGS; k >= 0; k--) { const z = (k + ph) / (RINGS + 1), pts = []; for (let i = 0; i < N; i++) pts.push(pt(i, z)); line(ctx, K, P, pts, (1 - z) * .9 + .05, Math.min(1, .15 + (1 - z) * .8), 2 + z * 3, true); }
+    for (let i = 0; i < N; i++) {
+      const v = A.spectrum[Math.min(63, i * 3 + 2)], a = pt(i, .02), b = pt(i, 1.0); line(ctx, K, P, [a, b], i / N, .35 + v * .65, 2 + v * 5);
+      const n = pt(i, 1), m = pt(i + 1, 1), c = [(n[0] + m[0]) / 2, (n[1] + m[1]) / 2], zi = .15 + v * .7, q = pt(i, zi), r = pt(i + 1, zi); line(ctx, K, P, [n, q, r, m], i / N, v * .9, 3);
+    }
+    const bi = Math.floor(((A.live ? A.t * 2 : T * 1.5) % N + N) % N), lane = (bi + Math.round(A.bass * 5)) % N, c0 = pt(lane, 1.02), c1 = pt(lane + 1, 1.02), c2 = pt(lane + .5, .86 - A.bass * .1);
+    line(ctx, K, P, [c0, c2, c1, [c0[0] * .5 + c1[0] * .5, c0[1] * .5 + c1[1] * .5]], .15, 1, 6, true);
+    for (let i = 0; i < 20; i++) { const z = .2 + K.phase(T, L, 3 + i % 3) * .8, a = i / 20 * N, p = pt(a, z), s = 6 + z * 10; line(ctx, K, P, [[p[0] - s, p[1]], [p[0], p[1] - s], [p[0] + s, p[1]], [p[0], p[1] + s]], (i % 5) / 5, .8 * z, 2, true); }
+    K.text(ctx, A.meta.title, 90, 100, { font: '700 40px ui-monospace,monospace', color: K.css(P.palette, .9), upper: true, maxW: 900 });
+    K.text(ctx, 'LEVEL ' + String(A.section ? A.section.index + 1 : 1).padStart(2, '0'), W - 90, 100, { font: '700 40px ui-monospace,monospace', color: K.css(P.palette, .3), align: 'right' });
+    crt(ctx, P);
+  }
+});
+</script>

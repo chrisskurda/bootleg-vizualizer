@@ -1,0 +1,82 @@
+{
+  "name": "Overlay",
+  "description": "Animation layered over a still image: twinkling stars, floating motes, drifting mist, flying birds, water glints. Drop any image on the preview.",
+  "type": "native",
+  "width": 1920,
+  "height": 1080,
+  "loopSeconds": 20,
+  "params": {
+    "palette": {
+      "type": "select",
+      "label": "Palette",
+      "options": [
+        "aurora",
+        "sunset",
+        "neon",
+        "ember",
+        "ocean",
+        "mono",
+        "candy"
+      ],
+      "default": "sunset"
+    },
+    "bg": {
+      "type": "color",
+      "label": "Background",
+      "default": "#0c0a14"
+    },
+    "sky": {
+      "type": "number",
+      "label": "Sky height (twinkle zone)",
+      "default": 0.5,
+      "min": 0.1,
+      "max": 1,
+      "step": 0.05
+    },
+    "twinkle": {
+      "type": "number",
+      "label": "Twinkle",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "step": 0.05
+    },
+    "motes": {
+      "type": "number",
+      "label": "Floating motes",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "step": 0.05
+    },
+    "mist": {
+      "type": "number",
+      "label": "Mist",
+      "default": 1,
+      "min": 0,
+      "max": 1,
+      "step": 0.05
+    },
+    "birds": {
+      "type": "bool",
+      "label": "Birds",
+      "default": true
+    },
+    "horizon": {
+      "type": "number",
+      "label": "Water glints from (0 = off)",
+      "default": 0.78,
+      "min": 0,
+      "max": 0.95,
+      "step": 0.01
+    },
+    "drift": {
+      "type": "number",
+      "label": "Camera drift",
+      "default": 1,
+      "min": 0,
+      "max": 2,
+      "step": 0.1
+    }
+  }
+}

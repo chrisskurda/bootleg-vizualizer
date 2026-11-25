@@ -1,0 +1,45 @@
+{
+  "name": "Vector Web",
+  "description": "Arcade-tube web: a 16-lane vector well with spectrum-driven lane flare, rim sparks and a claw that rides the bass.",
+  "type": "native",
+  "width": 1920,
+  "height": 1080,
+  "loopSeconds": 20,
+  "params": {
+    "palette": {
+      "type": "select",
+      "label": "Palette",
+      "options": [
+        "aurora",
+        "sunset",
+        "neon",
+        "ember",
+        "ocean",
+        "mono",
+        "candy"
+      ],
+      "default": "neon"
+    },
+    "bg": {
+      "type": "color",
+      "label": "Background",
+      "default": "#000004"
+    },
+    "scan": {
+      "type": "number",
+      "label": "Scanlines",
+      "default": 0.5,
+      "min": 0,
+      "max": 1,
+      "step": 0.05
+    },
+    "glow": {
+      "type": "number",
+      "label": "Phosphor glow",
+      "default": 1,
+      "min": 0,
+      "max": 2,
+      "step": 0.1
+    }
+  }
+}

@@ -1,0 +1,41 @@
+<!doctype html><meta charset="utf-8"><title>Light Synth</title>
+<script src="../../core/pack-runtime.js"></script>
+<script>
+const L = 20, W = 1920, H = 1080;
+
+function line(ctx, K, P, pts, u, a, w, close) { // glow = wide low-alpha stroke + core stroke, no shadowBlur
+  ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])); if (close) ctx.closePath();
+  ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  if (P.glow > 0) { ctx.strokeStyle = K.css(P.palette, u, a * .18 * P.glow); ctx.lineWidth = w * 5; ctx.stroke(); ctx.strokeStyle = K.css(P.palette, u, a * .3 * P.glow); ctx.lineWidth = w * 2.4; ctx.stroke(); }
+  ctx.strokeStyle = 'rgba(255,255,255,' + a * .9 + ')'; ctx.lineWidth = w * .5; ctx.stroke(); ctx.strokeStyle = K.css(P.palette, u, a); ctx.lineWidth = w; ctx.globalCompositeOperation = 'source-over'; ctx.stroke(); ctx.globalCompositeOperation = 'lighter';
+}
+function crt(ctx, P) {
+  ctx.globalCompositeOperation = 'source-over';
+  if (P.scan > 0) { ctx.fillStyle = 'rgba(0,0,0,' + .28 * P.scan + ')'; for (let y = 0; y < H; y += 4) ctx.fillRect(0, y, W, 2); }
+  const v = ctx.createRadialGradient(W / 2, H / 2, H * .45, W / 2, H / 2, H * 1.05); v.addColorStop(0, 'rgba(0,0,0,0)'); v.addColorStop(1, 'rgba(0,0,0,.75)'); ctx.fillStyle = v; ctx.fillRect(0, 0, W, H);
+}
+
+definePack({
+  draw(ctx, T, A, P, K) {
+    const TAU = K.TAU, cx = 960, cy = 540, SYM = 8, TR = 70, u = T / L;
+    ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H); ctx.globalCompositeOperation = 'lighter';
+    const fx = [3, 5, 4], fy = [2, 3, 5];
+    for (let r = 0; r < 3; r++) {
+      const pts = [], amp = 330 + A.bass * 60 + r * 30;
+      for (let i = 0; i < TR; i++) {
+        const tt = u - i * .0022, spec = A.spectrum[Math.min(63, i % 48 + r * 4)];
+        const R = amp * (.55 + .45 * Math.sin(TAU * (2 * tt + r / 3))) * (1 + spec * .35);
+        const a = TAU * fx[r] * tt + Math.sin(TAU * tt * 2) * 1.2, b = TAU * fy[r] * tt;
+        pts.push([R * Math.cos(a) * Math.cos(b * .5), R * Math.sin(a) * Math.sin(b * .5 + 1)]);
+      }
+      for (let m = 0; m < SYM; m++) for (const fl of [1, -1]) {
+        const th = m / SYM * TAU, c = Math.cos(th), s = Math.sin(th), q = pts.map(p => [cx + c * p[0] * fl - s * p[1], cy + s * p[0] * fl + c * p[1]]);
+        line(ctx, K, P, q, (r / 3 + m / SYM * .5 + u * 2) % 1, .55 + A.level * .4, 3.2);
+      }
+    }
+    const R0 = 22 + A.beat * 40, g = ctx.createRadialGradient(cx, cy, 0, cx, cy, R0 * 3); g.addColorStop(0, K.css(P.palette, .9, .8)); g.addColorStop(1, K.css(P.palette, .9, 0)); ctx.fillStyle = g; ctx.fillRect(cx - R0 * 3, cy - R0 * 3, R0 * 6, R0 * 6);
+    K.text(ctx, A.meta.title, 90, H - 80, { font: '700 36px ui-monospace,monospace', color: K.css(P.palette, .9), upper: true, maxW: 900 });
+    crt(ctx, P);
+  }
+});
+</script>

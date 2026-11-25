@@ -1,0 +1,26 @@
+<!doctype html><meta charset="utf-8"><title>Bubbles</title>
+<script src="../../core/pack-runtime.js"></script>
+<script>
+const HX = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)), L = 20, W = 1920, H = 1080, fr = x => x - Math.floor(x), hs = (a, b) => fr(Math.sin(a * 12.9898 + b * 78.233) * 43758.5453);
+let B;
+definePack({
+  init(ctx, K) { K.palettes.aero = ['#0b4fa8', '#1aa3e8', '#5fd0f5', '#8be36b', '#ffffff'].map(HX); const r = K.rng(4); B = Array.from({ length: 44 }, () => ({ x: r() * W, s: 22 + r() * r() * 110, laps: 1 + (r() * 3 | 0), off: r(), sw: 1 + (r() * 3 | 0), ph: r() * 6.28, b: r() * 40 | 0 })); },
+  draw(ctx, T, A, P, K) {
+    const TAU = K.TAU; const sky = ctx.createLinearGradient(0, 0, 0, H); sky.addColorStop(0, P.bg); sky.addColorStop(.55, K.css(P.palette, .3)); sky.addColorStop(1, K.css(P.palette, .5)); ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+    ctx.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < 7; i++) { const a = 1.9 + i * .22 + Math.sin(TAU * T / L) * .04; ctx.fillStyle = 'rgba(255,255,255,' + (.05 + A.level * .05) + ')'; ctx.beginPath(); ctx.moveTo(1500, 120); ctx.lineTo(1500 + Math.cos(a - .05) * 1700, 120 + Math.sin(a - .05) * 1700); ctx.lineTo(1500 + Math.cos(a + .05) * 1700, 120 + Math.sin(a + .05) * 1700); ctx.fill(); }
+    const sg = ctx.createRadialGradient(1500, 120, 0, 1500, 120, 420); sg.addColorStop(0, 'rgba(255,255,255,.95)'); sg.addColorStop(.15, 'rgba(255,255,255,.4)'); sg.addColorStop(1, 'rgba(255,255,255,0)'); ctx.fillStyle = sg; ctx.fillRect(1000, 0, 1000, 600);
+    ctx.globalCompositeOperation = 'source-over';
+    for (let k = 0; k < 2; k++) { const g = ctx.createLinearGradient(0, 700 + k * 100, 0, H); g.addColorStop(0, k ? '#4dbb3c' : '#8be36b'); g.addColorStop(1, k ? '#1f7a33' : '#3aa83e'); ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(0, H); for (let x = 0; x <= W; x += 20) ctx.lineTo(x, 760 + k * 110 + Math.sin(x / W * TAU * (1 + k) + k * 2) * 60); ctx.lineTo(W, H); ctx.fill(); }
+    const span = H + 400;
+    for (const b of B) {
+      const y = H + 200 - ((K.drift(T, L, b.laps, span) + b.off * span) % span), x = b.x + Math.sin(TAU * b.sw * T / L + b.ph) * 40, r = b.s * (1 + A.spectrum[b.b] * .3 + A.beat * .05);
+      const g = ctx.createRadialGradient(x, y, r * .55, x, y, r); g.addColorStop(0, 'rgba(255,255,255,.02)'); g.addColorStop(1, K.css(P.palette, .55 + b.s / 300, .5)); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, r, 0, TAU); ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,.7)'; ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = 'rgba(255,255,255,.85)'; ctx.beginPath(); ctx.ellipse(x - r * .3, y - r * .45, r * .32, r * .16, -.6, 0, TAU); ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = Math.max(2, r * .07); ctx.beginPath(); ctx.arc(x, y, r * .8, .5, 1.5); ctx.stroke();
+    }
+    K.text(ctx, A.meta.title, 90, H - 110, { font: '700 54px system-ui', maxW: 1000 }); K.text(ctx, A.meta.artist, 90, H - 62, { font: '400 30px system-ui', maxW: 800, alpha: .9 });
+  }
+});
+</script>

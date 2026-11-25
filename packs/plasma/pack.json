@@ -1,0 +1,37 @@
+{
+  "name": "Plasma Globe",
+  "description": "Glass plasma ball: filaments arc from a glowing core to the glass, reaching toward a wandering touch point; spectrum drives filament count and brightness.",
+  "type": "native",
+  "width": 1920,
+  "height": 1080,
+  "loopSeconds": 20,
+  "params": {
+    "palette": {
+      "type": "select",
+      "label": "Palette",
+      "options": [
+        "aurora",
+        "sunset",
+        "neon",
+        "ember",
+        "ocean",
+        "mono",
+        "candy"
+      ],
+      "default": "neon"
+    },
+    "bg": {
+      "type": "color",
+      "label": "Background",
+      "default": "#05030c"
+    },
+    "arcs": {
+      "type": "number",
+      "label": "Filaments",
+      "default": 9,
+      "min": 3,
+      "max": 16,
+      "step": 1
+    }
+  }
+}

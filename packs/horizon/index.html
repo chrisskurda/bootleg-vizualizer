@@ -1,0 +1,34 @@
+<!doctype html><meta charset="utf-8"><title>Neon Horizon</title>
+<script src="../../core/pack-runtime.js"></script>
+<script>
+const HX = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)), L = 20, W = 1920, H = 1080, fr = x => x - Math.floor(x), hs = (a, b) => fr(Math.sin(a * 12.9898 + b * 78.233) * 43758.5453);
+let ST;
+definePack({
+  init(ctx, K) { const r = K.rng(3); ST = Array.from({ length: 110 }, () => ({ x: r() * W, y: r() * 380, n: 2 + (r() * 4 | 0), ph: r() * 6.28, s: 1 + r() * 2 })); },
+  draw(ctx, T, A, P, K) {
+    const TAU = K.TAU, hz = 600, cx = 960, sy = 400, ph = K.phase(T, L, 4);
+    const sky = ctx.createLinearGradient(0, 0, 0, hz); sky.addColorStop(0, P.bg); sky.addColorStop(.6, K.css(P.palette, .1)); sky.addColorStop(1, K.css(P.palette, .55));
+    ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+    for (const s of ST) { ctx.fillStyle = 'rgba(255,240,255,' + (.2 + .6 * (.5 + .5 * Math.sin(TAU * s.n * T / L + s.ph))) + ')'; ctx.fillRect(s.x, s.y, s.s, s.s); }
+    const R = 215 + A.bass * 22 + A.beat * 12, g0 = ctx.createRadialGradient(cx, sy, R * .8, cx, sy, R * 2.2); g0.addColorStop(0, K.css(P.palette, .9, .45)); g0.addColorStop(1, K.css(P.palette, .9, 0)); ctx.fillStyle = g0; ctx.fillRect(0, 0, W, hz);
+    ctx.save(); ctx.beginPath(); ctx.arc(cx, sy, R, 0, TAU); ctx.clip();
+    const sg = ctx.createLinearGradient(0, sy - R, 0, sy + R); sg.addColorStop(0, K.css(P.palette, 1)); sg.addColorStop(1, K.css(P.palette, .4)); ctx.fillStyle = sg; ctx.fillRect(cx - R, sy - R, R * 2, R * 2);
+    ctx.fillStyle = sky; const sp = 30, ph2 = K.phase(T, L, 2);
+    for (let i = -1; i < 9; i++) { const y = sy - 20 + (i + ph2) * sp, t = Math.max(0, (y - sy + 20) / 230); ctx.fillRect(cx - R, y, R * 2, 2 + t * 16); }
+    ctx.restore();
+    for (let k = 0; k < 2; k++) {
+      ctx.beginPath(); ctx.moveTo(0, hz + 2); const pts = [];
+      for (let x = 0; x <= W; x += 30) { const d = Math.abs(x - cx) / cx, b = Math.min(63, Math.floor(d * 56) + k * 4), ridge = hs(x / 30, k) * 50; const hgt = (k ? 90 : 150) * Math.min(1, d * 1.6 + .08) + ridge * Math.min(1, d * 2) + A.spectrum[b] * (k ? 90 : 150) * Math.min(1, d * 2); pts.push([x, hz - hgt * (k ? .7 : 1)]); }
+      for (const p of pts) ctx.lineTo(p[0], p[1]); ctx.lineTo(W, hz + 2); ctx.closePath(); ctx.fillStyle = k ? K.css(P.palette, .08, .9) : P.bg; ctx.fill();
+      ctx.strokeStyle = K.css(P.palette, k ? .5 : .75, .9); ctx.lineWidth = 3; ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])); ctx.stroke();
+    }
+    const fl = ctx.createLinearGradient(0, hz, 0, H); fl.addColorStop(0, K.css(P.palette, .3, .5)); fl.addColorStop(.25, P.bg); fl.addColorStop(1, P.bg); ctx.fillStyle = fl; ctx.fillRect(0, hz, W, H - hz);
+    ctx.globalCompositeOperation = 'lighter';
+    for (let i = -30; i <= 30; i++) { ctx.strokeStyle = K.css(P.palette, .6 + i / 100, .55); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(cx + i * 45, hz); ctx.lineTo(cx + i * 420, H); ctx.stroke(); }
+    for (let j = -1; j < 16; j++) { const z = (j + ph) / 15; if (z <= 0) continue; const y = hz + (H - hz) * Math.pow(z, 2.3); ctx.strokeStyle = K.css(P.palette, .7, .15 + z * .7 + A.beat * .15); ctx.lineWidth = 1 + z * 4; ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+    const hg = ctx.createLinearGradient(0, hz - 30, 0, hz + 30); hg.addColorStop(0, K.css(P.palette, .9, 0)); hg.addColorStop(.5, K.css(P.palette, .9, .5 + A.level * .4)); hg.addColorStop(1, K.css(P.palette, .9, 0)); ctx.fillStyle = hg; ctx.fillRect(0, hz - 30, W, 60);
+    ctx.globalCompositeOperation = 'source-over';
+    K.text(ctx, A.meta.title, 90, 100, { font: '700 40px system-ui', color: K.css(P.palette, .95), upper: true, maxW: 900 });
+  }
+});
+</script>

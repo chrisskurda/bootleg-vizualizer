@@ -1,0 +1,48 @@
+{
+ "name": "Spectrum: Bars",
+ "page": "index.html",
+ "type": "native",
+ "width": 1920,
+ "height": 1080,
+ "loopSeconds": 60,
+ "description": "Classic 64-band bars with peak caps and a reflection.",
+ "params": {
+  "palette": {
+   "type": "select",
+   "label": "Palette",
+   "options": [
+    "aurora",
+    "sunset",
+    "neon",
+    "ember",
+    "ocean",
+    "mono",
+    "candy"
+   ],
+   "default": "neon"
+  },
+  "bg": {
+   "type": "color",
+   "label": "Background",
+   "default": "#070a18"
+  },
+  "mirror": {
+   "type": "bool",
+   "label": "Reflection",
+   "default": true
+  },
+  "round": {
+   "type": "number",
+   "label": "Roundness",
+   "default": 1,
+   "min": 0,
+   "max": 1,
+   "step": 0.05
+  },
+  "peaks": {
+   "type": "bool",
+   "label": "Peak caps",
+   "default": true
+  }
+ }
+}

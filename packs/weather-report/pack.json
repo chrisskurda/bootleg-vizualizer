@@ -1,0 +1,76 @@
+{
+  "name": "Weather Report",
+  "description": "Ten forecast-graphic spectrum analyzers: outlook bars, doppler radar, wind field, isobars, rain, heat map, sunrise, fronts, thermometers, hurricane. Scene changes can follow the song's sections or beats; shows title/artist/time/BPM/key.",
+  "type": "native",
+  "page": "index.html",
+  "width": 1920,
+  "height": 1080,
+  "loopSeconds": 90,
+  "params": {
+    "palette": {
+      "type": "select",
+      "label": "Palette",
+      "options": [
+        "Broadcast",
+        "Radar",
+        "Almanac"
+      ],
+      "default": "Broadcast"
+    },
+    "scene": {
+      "type": "select",
+      "label": "Scene",
+      "options": [
+        "Cycle",
+        "Outlook",
+        "Radar",
+        "Wind",
+        "Isobars",
+        "Rain",
+        "HeatMap",
+        "Sunrise",
+        "Fronts",
+        "Thermometers",
+        "Hurricane"
+      ],
+      "default": "Cycle"
+    },
+    "cycle": {
+      "type": "select",
+      "label": "Scene changes",
+      "options": [
+        "auto",
+        "fixed",
+        "beats",
+        "sections"
+      ],
+      "default": "auto"
+    },
+    "sceneBeats": {
+      "type": "number",
+      "label": "Beats per scene",
+      "default": 16,
+      "min": 4,
+      "max": 64,
+      "step": 4
+    },
+    "gain": {
+      "type": "number",
+      "label": "Gain",
+      "default": 1,
+      "min": 0.5,
+      "max": 1.6,
+      "step": 0.05
+    },
+    "labels": {
+      "type": "bool",
+      "label": "Titles and readouts",
+      "default": true
+    },
+    "demo": {
+      "type": "bool",
+      "label": "Demo groove when idle",
+      "default": true
+    }
+  }
+}

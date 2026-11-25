@@ -1,0 +1,19 @@
+<!doctype html><meta charset="utf-8"><title>Spectrum: LED Matrix</title>
+<script src="/core/pack-runtime.js"></script>
+<script>
+definePack({
+
+draw(ctx, T, A, P, K) {
+  const W = 1920, H = 1080, C = P.cols | 0, Rr = P.rows | 0, x0 = 140, y0 = 150, cw = (W - 2 * x0) / C, ch = (H - 2 * y0 - 40) / Rr, pw = cw * (1 - P.gap), ph = ch * (1 - P.gap);
+  ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H); const flash = 0.82 + 0.18 * A.beat;
+  for (let c = 0; c < C; c++) {
+    const i = Math.round(c * 63 / (C - 1)), lit = Math.round(Math.pow(A.spectrum[i], 1.1) * Rr), pk = Math.min(Rr - 1, Math.round(Math.pow(K.peak(A, i), 1.1) * Rr));
+    for (let r = 0; r < Rr; r++) {
+      const x = x0 + c * cw + (cw - pw) / 2, y = y0 + (Rr - 1 - r) * ch + (ch - ph) / 2, u = r / (Rr - 1);
+      ctx.fillStyle = r < lit ? K.css(P.palette, u, flash) : r === pk ? K.css(P.palette, 1, 0.95) : 'rgba(255,255,255,0.045)';
+      ctx.beginPath(); ctx.roundRect(x, y, pw, ph, 3); ctx.fill();
+    }
+  }
+}
+});
+</script>

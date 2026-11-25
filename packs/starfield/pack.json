@@ -1,0 +1,14 @@
+{
+  "name": "Starfield",
+  "description": "Warp-speed star streaks; bass lengthens the streaks, beats flash the core.",
+  "type": "native",
+  "width": 1920,
+  "height": 1080,
+  "loopSeconds": 12,
+  "params": {
+    "palette": { "type": "select", "label": "Palette", "options": ["aurora", "sunset", "neon", "ember", "ocean", "mono", "candy"], "default": "candy" },
+    "bg": { "type": "color", "label": "Background", "default": "#04030c" },
+    "count": { "type": "number", "label": "Stars", "default": 700, "min": 100, "max": 1200, "step": 50 },
+    "speed": { "type": "number", "label": "Cycles per loop", "default": 3, "min": 1, "max": 8, "step": 1 }
+  }
+}

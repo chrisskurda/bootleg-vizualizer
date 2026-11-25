@@ -1,0 +1,29 @@
+<!doctype html><meta charset="utf-8"><title>Starfield</title>
+<script src="../../core/pack-runtime.js"></script>
+<script>
+let S;
+definePack({
+  init(ctx, K) { const r = K.rng(5); S = Array.from({ length: 1200 }, () => ({ x: r() * 2 - 1, y: r() * 2 - 1, z: r(), u: r(), s: .6 + r() * 1.4 })); },
+  draw(ctx, T, A, P, K) {
+    const W = 1920, H = 1080, cx = W / 2, cy = H / 2;
+    ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H);
+    let g = ctx.createRadialGradient(cx, cy, 0, cx, cy, 700);
+    g.addColorStop(0, K.css(P.palette, .5, .05 + A.beat * .35)); g.addColorStop(1, K.css(P.palette, .5, 0));
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round';
+    const tail = .012 + A.bass * .05 + A.level * .02;
+    for (let i = 0; i < P.count; i++) {
+      const s = S[i], f = (s.z + T / 12 * P.speed) % 1, z = .04 + .96 * f, z2 = Math.min(1, z + tail);
+      const k = W * .22, x1 = cx + s.x * k / z, y1 = cy + s.y * k / z * .8, x2 = cx + s.x * k / z2, y2 = cy + s.y * k / z2 * .8;
+      if (x1 < -50 || x1 > W + 50 || y1 < -50 || y1 > H + 50) continue;
+      ctx.strokeStyle = K.css(P.palette, s.u, Math.min(1, (1 - z) * 1.6 + .1)); ctx.lineWidth = s.s * (.6 + 2.2 * (1 - z));
+      ctx.beginPath(); ctx.moveTo(x2, y2); ctx.lineTo(x1, y1); ctx.stroke();
+    }
+    ctx.lineWidth = 4;
+    for (let k = 0; k < 2; k++) { const e = Math.max(0, A.beat - k * .12); ctx.strokeStyle = K.css(P.palette, .3 + k * .4, e * .7); ctx.beginPath(); ctx.arc(cx, cy, 40 + (1 - e) * (180 + k * 120), 0, K.TAU); ctx.stroke(); }
+    ctx.globalCompositeOperation = 'source-over';
+    K.text(ctx, A.meta.title, 90, H - 100, { font: '600 44px system-ui', maxW: 900, alpha: .9 });
+    K.text(ctx, A.meta.artist, 90, H - 56, { font: '400 26px system-ui', maxW: 900, alpha: .6 });
+  }
+});
+</script>

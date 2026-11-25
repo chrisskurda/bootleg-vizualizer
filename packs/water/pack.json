@@ -1,0 +1,37 @@
+{
+  "name": "Splash",
+  "description": "Rippling water surface; every bass onset (found via A.past) throws a crown of droplets.",
+  "type": "native",
+  "width": 1920,
+  "height": 1080,
+  "loopSeconds": 12,
+  "params": {
+    "palette": {
+      "type": "select",
+      "label": "Palette",
+      "options": [
+        "aurora",
+        "sunset",
+        "neon",
+        "ember",
+        "ocean",
+        "mono",
+        "candy"
+      ],
+      "default": "ocean"
+    },
+    "bg": {
+      "type": "color",
+      "label": "Background",
+      "default": "#031226"
+    },
+    "drops": {
+      "type": "number",
+      "label": "Droplets per splash",
+      "default": 16,
+      "min": 4,
+      "max": 30,
+      "step": 1
+    }
+  }
+}

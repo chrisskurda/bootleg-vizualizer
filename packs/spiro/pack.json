@@ -1,0 +1,34 @@
+{
+  "name": "Spirograph",
+  "description": "Rolling-gear hypotrochoids: a pen traces a comet-tail curve while the gears turn. Spectrum bends the pen arm.",
+  "type": "native",
+  "width": 1920,
+  "height": 1080,
+  "loopSeconds": 20,
+  "params": {
+    "palette": {
+      "type": "select",
+      "label": "Palette",
+      "options": [
+        "aurora",
+        "sunset",
+        "neon",
+        "ember",
+        "ocean",
+        "mono",
+        "candy"
+      ],
+      "default": "sunset"
+    },
+    "bg": {
+      "type": "color",
+      "label": "Background",
+      "default": "#0c0814"
+    },
+    "gears": {
+      "type": "bool",
+      "label": "Show gears",
+      "default": true
+    }
+  }
+}

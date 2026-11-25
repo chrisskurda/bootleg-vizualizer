@@ -1,0 +1,37 @@
+{
+  "name": "Vinyl",
+  "description": "Record spinning at 33⅓ rpm; the tonearm tracks inward as the song plays.",
+  "type": "native",
+  "width": 1920,
+  "height": 1080,
+  "loopSeconds": 20,
+  "params": {
+    "palette": {
+      "type": "select",
+      "label": "Palette",
+      "options": [
+        "aurora",
+        "sunset",
+        "neon",
+        "ember",
+        "ocean",
+        "mono",
+        "candy"
+      ],
+      "default": "sunset"
+    },
+    "bg": {
+      "type": "color",
+      "label": "Background",
+      "default": "#1a0f14"
+    },
+    "rpm": {
+      "type": "number",
+      "label": "RPM",
+      "default": 33.3,
+      "min": 10,
+      "max": 78,
+      "step": 0.1
+    }
+  }
+}

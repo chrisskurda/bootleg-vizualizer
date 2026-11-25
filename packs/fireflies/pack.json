@@ -1,0 +1,37 @@
+{
+  "name": "Fireflies",
+  "description": "Fireflies drifting over dark hills; blink with the spectrum and scatter on beats.",
+  "type": "native",
+  "width": 1920,
+  "height": 1080,
+  "loopSeconds": 20,
+  "params": {
+    "palette": {
+      "type": "select",
+      "label": "Palette",
+      "options": [
+        "aurora",
+        "sunset",
+        "neon",
+        "ember",
+        "ocean",
+        "mono",
+        "candy"
+      ],
+      "default": "aurora"
+    },
+    "bg": {
+      "type": "color",
+      "label": "Background",
+      "default": "#04090d"
+    },
+    "count": {
+      "type": "number",
+      "label": "Fireflies",
+      "default": 90,
+      "min": 20,
+      "max": 160,
+      "step": 5
+    }
+  }
+}

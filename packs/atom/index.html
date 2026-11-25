@@ -1,0 +1,27 @@
+<!doctype html><meta charset="utf-8"><title>Atom</title>
+<script src="../../core/pack-runtime.js"></script>
+<script>
+const L = 20, W = 1920, H = 1080, fr = x => x - Math.floor(x), hs = (a, b) => fr(Math.sin(a * 12.9898 + b * 78.233) * 43758.5453);
+
+definePack({
+  draw(ctx, T, A, P, K) {
+    const TAU = K.TAU, cx = 960, cy = 540, u = T / L, tilt = [0, TAU / 3, TAU * 2 / 3, TAU / 6], base = TAU * u * .0;
+    ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H); ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round';
+    const orbit = (o, t, rx, ry) => { const x = Math.cos(t) * rx, y = Math.sin(t) * ry, c = Math.cos(tilt[o] + TAU * u), s = Math.sin(tilt[o] + TAU * u); return [cx + x * c - y * s, cy + x * s + y * c]; };
+    for (let o = 0; o < 4; o++) {
+      const rx = 440 - o * 30 + A.spectrum[o * 8] * 30, ry = 130 + o * 22;
+      ctx.strokeStyle = K.css(P.palette, o / 4, .22); ctx.lineWidth = 2; ctx.beginPath(); for (let i = 0; i <= 120; i++) { const p = orbit(o, i / 120 * TAU, rx, ry); i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]); } ctx.stroke();
+      const n = 1 + (o % 2) + 1;
+      for (let e = 0; e < n; e++) {
+        const head = (K.phase(T, L, 3 + o) * (o % 2 ? -1 : 1) + e / n) * TAU, v = A.spectrum[o * 12 + e * 4 + 3], TR = 40;
+        for (let i = TR; i >= 0; i--) { const f = 1 - i / TR, p = orbit(o, head - i * .035 * (o % 2 ? -1 : 1), rx, ry), q = orbit(o, head - (i + 1) * .035 * (o % 2 ? -1 : 1), rx, ry); ctx.strokeStyle = K.css(P.palette, (o / 4 + f * .2) % 1, f * f * .8); ctx.lineWidth = 1 + f * 7; ctx.beginPath(); ctx.moveTo(p[0], p[1]); ctx.lineTo(q[0], q[1]); ctx.stroke(); }
+        const h = orbit(o, head, rx, ry), r = 14 + v * 36 + A.beat * 8, g = ctx.createRadialGradient(h[0], h[1], 0, h[0], h[1], r * 2.5); g.addColorStop(0, 'rgba(255,255,255,.95)'); g.addColorStop(.3, K.css(P.palette, o / 4, .7)); g.addColorStop(1, K.css(P.palette, o / 4, 0)); ctx.fillStyle = g; ctx.fillRect(h[0] - r * 2.5, h[1] - r * 2.5, r * 5, r * 5);
+      }
+    }
+    for (let i = 0; i < 7; i++) { const a = i / 7 * TAU + TAU * u * 2, rr = 22 + A.bass * 14, x = cx + Math.cos(a) * rr * (.4 + (i % 3) * .3), y = cy + Math.sin(a) * rr * (.4 + (i % 3) * .3), r = 26 + A.spectrum[i * 3] * 20; const g = ctx.createRadialGradient(x, y, 0, x, y, r * 2); g.addColorStop(0, K.css(P.palette, (i % 2) * .5 + .2, .85)); g.addColorStop(1, K.css(P.palette, .5, 0)); ctx.fillStyle = g; ctx.fillRect(x - r * 2, y - r * 2, r * 4, r * 4); }
+    const ng = ctx.createRadialGradient(cx, cy, 0, cx, cy, 160 + A.beat * 60); ng.addColorStop(0, K.css(P.palette, .8, .4 + A.level * .3)); ng.addColorStop(1, K.css(P.palette, .5, 0)); ctx.fillStyle = ng; ctx.fillRect(cx - 260, cy - 260, 520, 520);
+    ctx.globalCompositeOperation = 'source-over';
+    K.text(ctx, A.meta.title, 90, 100, { font: '600 40px system-ui', maxW: 800, alpha: .9 });
+  }
+});
+</script>

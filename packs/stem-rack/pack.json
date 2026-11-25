@@ -1,0 +1,15 @@
+{
+  "name": "Stem Rack",
+  "description": "One lane per stem: its name, mix gain, the sample playing on it right now, a level meter, and a glyph chosen by its role (kick rings, snare bursts, hat sparkles, bass wave, key spectrum). Uses real stems when the track has them; otherwise it estimates the lanes from the mix.",
+  "type": "native",
+  "width": 1920,
+  "height": 1080,
+  "loopSeconds": 20,
+  "params": {
+    "palette": { "type": "select", "label": "Palette", "options": ["aurora", "sunset", "neon", "ember", "ocean", "mono", "candy"], "default": "neon" },
+    "bg": { "type": "color", "label": "Background", "default": "#07080f" },
+    "lanes": { "type": "number", "label": "Max lanes", "default": 8, "min": 2, "max": 10, "step": 1 },
+    "glyphs": { "type": "bool", "label": "Role glyphs (else spectrum bars)", "default": true },
+    "text": { "type": "bool", "label": "Names, gains and sample labels", "default": true }
+  }
+}

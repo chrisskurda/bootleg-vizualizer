@@ -1,0 +1,39 @@
+<!doctype html><meta charset="utf-8"><title>Fire</title>
+<script src="../../core/pack-runtime.js"></script>
+<script>
+const L = 20, W = 1920, H = 1080, N = 40;
+let T0, EM;
+definePack({
+  init(ctx, K) { const r = K.rng(31); T0 = Array.from({ length: N }, () => ({ s: r(), f: 2 + (r() * 4 | 0), ph: r() * 6.28, f2: 5 + (r() * 5 | 0), ph2: r() * 6.28 })); EM = Array.from({ length: 240 }, () => ({ x: r() * W, laps: 1 + (r() * 3 | 0), off: r(), sw: 2 + (r() * 5 | 0), ph: r() * 6.28, s: 1.5 + r() * 3.5, u: r() })); },
+  draw(ctx, T, A, P, K) {
+    const TAU = K.TAU, base = 1010, u = T / L;
+    ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H);
+    const gl = ctx.createLinearGradient(0, H * .3, 0, H); gl.addColorStop(0, K.css(P.palette, .1, 0)); gl.addColorStop(1, K.css(P.palette, .3, .35 + A.level * .35)); ctx.fillStyle = gl; ctx.fillRect(0, 0, W, H);
+    ctx.globalCompositeOperation = 'lighter';
+    const flame = (cx, w, h, lean, g0, g1, a) => {
+      const gr = ctx.createLinearGradient(0, base, 0, base - h); gr.addColorStop(0, K.css(P.palette, g0, a)); gr.addColorStop(1, K.css(P.palette, g1, 0));
+      ctx.fillStyle = gr; ctx.beginPath(); ctx.moveTo(cx - w, base + 30);
+      ctx.bezierCurveTo(cx - w * 1.1, base - h * .35, cx - w * .35 + lean * .3, base - h * .6, cx + lean, base - h);
+      ctx.bezierCurveTo(cx + w * .35 + lean * .3, base - h * .6, cx + w * 1.1, base - h * .35, cx + w, base + 30); ctx.closePath(); ctx.fill();
+    };
+    for (let layer = 0; layer < 3; layer++) {
+      const sc = [1, .68, .38][layer], g0 = [.45, .75, 1][layer], g1 = [.1, .4, .8][layer], a = [.55, .6, .7][layer];
+      for (let i = 0; i < N; i++) {
+        const t = T0[i], x = (i + .5) / N * W + (layer - 1) * 12, b = Math.min(63, Math.floor(i / N * 40) + 2 + layer), v = A.spectrum[b] * .8 + A.bass * .25 + A.beat * .1;
+        const flick = .5 + .5 * Math.sin(TAU * t.f * u + t.ph), flick2 = .5 + .5 * Math.sin(TAU * t.f2 * u + t.ph2);
+        const h = (140 + t.s * 120 + flick * 90 + flick2 * 40 + v * 520) * sc * P.height, lean = Math.sin(TAU * (2 * u) + i * .5 + t.ph) * (30 + v * 60) * sc + Math.sin(TAU * t.f2 * u + t.ph2) * 24 * sc;
+        flame(x, (W / N) * (1.15 - layer * .25) * (.9 + flick2 * .2), h, lean, g0, g1, a);
+      }
+    }
+    const span = H + 200;
+    for (let i = 0; i < P.embers; i++) {
+      const e = EM[i], p = (K.drift(T, L, e.laps, span) + e.off * span) % span, y = base - p, k = p / span, x = e.x + Math.sin(TAU * e.sw * u + e.ph) * (30 + 60 * k) + A.mid * 20 * Math.sin(e.ph);
+      const a = (1 - k) * (.5 + .5 * Math.sin(TAU * 7 * u + e.ph) ** 2) * (.5 + A.high), r = e.s * (1 - k * .6) * (1 + A.beat * .5);
+      const g = ctx.createRadialGradient(x, y, 0, x, y, r * 4); g.addColorStop(0, K.css(P.palette, .85 + e.u * .15, a)); g.addColorStop(1, K.css(P.palette, .5, 0)); ctx.fillStyle = g; ctx.fillRect(x - r * 4, y - r * 4, r * 8, r * 8);
+    }
+    ctx.globalCompositeOperation = 'source-over';
+    K.text(ctx, A.meta.title, 90, 100, { font: '700 44px system-ui', maxW: 900, alpha: .9 });
+    K.text(ctx, A.meta.artist, 90, 144, { font: '400 28px system-ui', maxW: 700, alpha: .65 });
+  }
+});
+</script>

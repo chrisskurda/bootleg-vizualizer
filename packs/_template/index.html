@@ -1,0 +1,20 @@
+<!doctype html><meta charset="utf-8"><title>Template</title>
+<script src="/core/pack-runtime.js"></script>
+<script>
+// draw(ctx, T, A, P, K): depend ONLY on these. No Math.random()/Date.now()/state between frames (use K.rng(seed) at module level).
+// A.bass/mid/high/beat/level (0..1) · A.spectrum[64] · A.wave[128] (-1..1) · A.past(sec) -> spectrum `sec` ago · P = params · K = helpers
+const rnd = K_rng(42); function K_rng(s) { return () => (s = (s * 16807) % 2147483647) / 2147483647; }
+const DOTS = Array.from({ length: 140 }, () => ({ a: rnd() * 6.283, r: 80 + rnd() * 800, sp: 1 + Math.floor(rnd() * 4), sz: 1 + rnd() * 3 }));
+definePack({
+  draw(ctx, T, A, P, K) {
+    const W = 1920, H = 1080, cx = W / 2, cy = H / 2, TAU = K.TAU;
+    ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H);
+    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, 700); g.addColorStop(0, K.css(P.palette, 0.5, 0.1 + 0.5 * A.bass)); g.addColorStop(1, K.css(P.palette, 0.5, 0));
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    for (let i = 0; i < 6; i++) { ctx.beginPath(); ctx.arc(cx, cy, 120 + i * 90 + 60 * A.bass * (1 + i * .3), 0, TAU);
+      ctx.strokeStyle = K.css(P.palette, i / 5, 0.6 - i * 0.07 + 0.3 * A.beat); ctx.lineWidth = 2 + 6 * A.beat; ctx.stroke(); }
+    for (const d of DOTS) { const a = d.a + TAU * d.sp * T / 60, r = d.r * (1 + 0.15 * A.mid);
+      ctx.beginPath(); ctx.arc(cx + Math.cos(a) * r, cy + Math.sin(a) * r * 0.6, d.sz * (1 + 2 * A.high), 0, TAU); ctx.fillStyle = `rgba(200,220,255,${0.3 + 0.7 * A.high})`; ctx.fill(); }
+  }
+});
+</script>

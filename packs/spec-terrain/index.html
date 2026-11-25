@@ -1,0 +1,16 @@
+<!doctype html><meta charset="utf-8"><title>Spectrum: Terrain</title>
+<script src="/core/pack-runtime.js"></script>
+<script>
+definePack({
+
+draw(ctx, T, A, P, K) {
+  const W = 1920, H = 1080, n = 64; ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H);
+  for (let r = P.rows - 1; r >= 0; r--) {
+    const sp = A.past(r * P.step), z = r / (P.rows - 1), y0 = 960 - Math.pow(z, 0.8) * 640, half = W * 0.46 * (1 - 0.5 * z), amp = P.height * (1 - 0.55 * z), pts = [];
+    for (let i = 0; i < n; i++) { const e = Math.pow(Math.sin(Math.PI * i / (n - 1)), 0.7); pts.push([W / 2 - half + 2 * half * i / (n - 1), y0 - Math.pow(sp[i], 1.4) * amp * e]); }
+    ctx.beginPath(); K.smooth(ctx, pts); ctx.lineTo(W / 2 + half, y0 + 500); ctx.lineTo(W / 2 - half, y0 + 500); ctx.closePath(); ctx.fillStyle = P.bg; ctx.fill();
+    ctx.beginPath(); K.smooth(ctx, pts); ctx.strokeStyle = K.css(P.palette, 0.25 + 0.75 * (1 - z), 1 - z * 0.85); ctx.lineWidth = 3 * (1 - 0.55 * z); ctx.stroke();
+  }
+}
+});
+</script>

@@ -1,0 +1,153 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Live Visualizer</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+html,body{margin:0;height:100%;background:#000;color:#cfe0ff;font:13px -apple-system,system-ui,sans-serif;overflow:hidden}
+iframe{position:absolute;inset:0;width:100%;height:100%;border:0;background:#000}
+#ui{position:absolute;left:12px;right:12px;bottom:12px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;padding:10px 12px;background:rgba(10,12,30,.78);backdrop-filter:blur(8px);border-radius:12px;transition:opacity .4s}
+#ui.hide{opacity:0;pointer-events:none}
+button,select{background:#1c2148;color:#dfe8ff;border:1px solid #39407a;border-radius:8px;padding:6px 10px;font:inherit;cursor:pointer}
+button:hover,select:hover{background:#262d66}
+audio{height:32px;max-width:320px}
+#hud{position:absolute;top:10px;left:10px;padding:8px 10px;background:rgba(0,0,0,.55);border-radius:8px;font:12px ui-monospace,monospace;white-space:pre;pointer-events:none}
+#msg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);padding:14px 20px;background:rgba(10,12,30,.85);border-radius:12px;cursor:pointer}
+.meter{display:inline-block;width:5px;height:22px;background:#2a3170;position:relative;margin-right:2px;vertical-align:middle}
+.meter i{position:absolute;bottom:0;left:0;right:0;background:#8fb0ff}
+.sp{flex:1}
+#panel{position:absolute;top:10px;right:10px;bottom:84px;width:270px;overflow:auto;padding:12px;background:rgba(10,12,30,.86);backdrop-filter:blur(8px);border-radius:12px;transition:opacity .4s,transform .3s}
+#panel.off{opacity:0;pointer-events:none;transform:translateX(20px)}
+#panel h4{margin:10px 0 6px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#8fa0e0}
+#panel label{display:block;margin:6px 0;font-size:12px}
+#panel label span{display:flex;justify-content:space-between}
+#panel input[type=range]{width:100%}
+#panel input[type=color]{width:100%;height:26px;border:0;background:none;padding:0}
+#panel select{width:100%}
+</style></head><body>
+<iframe id="pack" allow="autoplay"></iframe>
+<script src="/core/look.js"></script>
+<script src="/core/meta.js"></script>
+<script src="/core/stems.js"></script>
+<div id="panel" class="off"></div>
+<div id="hud"></div>
+<div id="msg" hidden></div>
+<div id="ui">
+  <select id="packSel" title="animation pack"></select>
+  <button id="bFile">Open file…</button><input id="file" type="file" accept="audio/*" hidden>
+  <select id="lib" title="media library (start server with --media DIR)"><option value="">Library…</option></select>
+  <button id="bMic">Mic / line-in</button>
+  <button id="bTab" title="Share a tab or screen with audio — captures any player">Tab / system audio</button>
+  <audio id="aud" controls crossorigin="anonymous"></audio>
+  <span id="meters"></span><span class="sp"></span>
+  <button id="bImg" title="Background image for packs that use one (or drop an image on the preview)">Image…</button><input id="imgf" type="file" accept="image/*" hidden><button id="bTweak">Tweak</button><button id="bHud">HUD</button><button id="bFs">Fullscreen</button>
+</div>
+<script type="module">
+import { AudioFeed } from './audio.js';
+const $ = id => document.getElementById(id), q = new URLSearchParams(location.search);
+const feed = new AudioFeed(), frame = $('pack'), aud = $('aud');
+const say = (t, click) => { const m = $('msg'); m.hidden = !t; m.textContent = t || ''; m.onclick = click || null; };
+let packs = [], hudOn = q.get('hud') !== '0';
+if (q.get('ui') === '0') $('ui').style.display = 'none';
+
+// ---- packs
+packs = await (await fetch('/api/packs')).json();
+$('packSel').innerHTML = packs.map(p => `<option value="${p.id}">${p.name}</option>`).join('');
+let cur = null, params = {}; const look = { ...LOOK_DEFAULTS, ...JSON.parse(q.get('look') || '{}') };
+let urlParams = JSON.parse(q.get('params') || '{}'), firstLoad = true;
+function syncUrl() { const u = new URLSearchParams(location.search); u.set('pack', cur.id);
+  const defs = Object.fromEntries(Object.entries(cur.params || {}).map(([k, d]) => [k, d.default])), diff = Object.fromEntries(Object.entries(params).filter(([k, v]) => v !== defs[k]));
+  Object.keys(diff).length ? u.set('params', JSON.stringify(diff)) : u.delete('params');
+  const ld = Object.fromEntries(Object.entries(look).filter(([k, v]) => v !== LOOK_DEFAULTS[k])); Object.keys(ld).length ? u.set('look', JSON.stringify(ld)) : u.delete('look');
+  history.replaceState(null, '', '?' + u); }
+function loadPack(id) { const p = packs.find(x => x.id === id) || packs[0]; cur = p; $('packSel').value = p.id;
+  params = Object.fromEntries(Object.entries(p.params || {}).map(([k, d]) => [k, d.default])); if (firstLoad) Object.assign(params, urlParams); firstLoad = false;
+  frame.src = `/packs/${p.id}/${encodeURI(p.page)}`; buildPanel(); syncUrl(); }
+const LOOKS = [['roto', 0, 2, 1, 'Roto (flat tones, ink)'], ['glitch', 0, 1, .01, 'Glitch bursts'], ['screen', 0, 3, 1, 'Screen: scan / CRT / curved'], ['hue', -180, 180, 1, 'Hue shift'], ['sat', 0, 2, .01, 'Saturation'], ['bright', .3, 1.8, .01, 'Brightness'], ['contrast', .5, 1.6, .01, 'Contrast'], ['blur', 0, 12, .5, 'Blur px'],
+  ['invert', 0, 1, .01, 'Invert'], ['sepia', 0, 1, .01, 'Sepia'], ['gray', 0, 1, .01, 'Grayscale'], ['hueDrift', -60, 60, 1, 'Hue drift °/s'], ['hueBeat', 0, 120, 1, 'Hue kick on beat °'], ['brightBass', 0, 1, .01, 'Brightness on bass'], ['satMid', 0, 1, .01, 'Saturation on mids']];
+function buildPanel() {
+  const P = $('panel'); P.innerHTML = `<h4>${cur.name}</h4>`;
+  const add = (html, bind) => { const d = document.createElement('div'); d.innerHTML = html; P.appendChild(d.firstElementChild); bind(P.lastElementChild); };
+  const row = (obj, key, def, onch) => {
+    const lab = def.label || key, v = obj[key];
+    if (def.type === 'number') add(`<label><span>${lab}<b>${v}</b></span><input type="range" min="${def.min}" max="${def.max}" step="${def.step}" value="${v}"></label>`, el => el.querySelector('input').oninput = e => { obj[key] = +e.target.value; el.querySelector('b').textContent = obj[key]; onch(); });
+    else if (def.type === 'color') add(`<label><span>${lab}</span><input type="color" value="${v}"></label>`, el => el.querySelector('input').oninput = e => { obj[key] = e.target.value; onch(); });
+    else if (def.type === 'select') add(`<label><span>${lab}</span><select>${def.options.map(o => `<option ${o === v ? 'selected' : ''}>${o}</option>`).join('')}</select></label>`, el => el.querySelector('select').onchange = e => { obj[key] = e.target.value; onch(); });
+    else if (def.type === 'bool') add(`<label><span>${lab}<input type="checkbox" ${v ? 'checked' : ''}></span></label>`, el => el.querySelector('input').onchange = e => { obj[key] = e.target.checked; onch(); });
+  };
+  for (const [k, d] of Object.entries(cur.params || {})) row(params, k, d, syncUrl);
+  P.insertAdjacentHTML('beforeend', '<h4>Look (applies to any pack)</h4>');
+  for (const [k, mn, mx, st, lb] of LOOKS) row(look, k, { type: 'number', min: mn, max: mx, step: st, label: lb }, syncUrl);
+  P.insertAdjacentHTML('beforeend', '<h4>Preset</h4><button id="bCopy">Copy render command</button> <button id="bReset">Reset</button>');
+  $('bCopy').onclick = () => { const defs = Object.fromEntries(Object.entries(cur.params || {}).map(([k, d]) => [k, d.default]));
+    const ps = Object.entries(params).filter(([k, v]) => v !== defs[k]).map(([k, v]) => `--param ${k}='${v}'`).join(' '), ld = Object.fromEntries(Object.entries(look).filter(([k, v]) => v !== LOOK_DEFAULTS[k]));
+    const cmd = `node bin/render.mjs --pack ${cur.id} --audio <song> ${ps} ${Object.keys(ld).length ? `--look '${JSON.stringify(ld)}'` : ''}`.replace(/\s+/g, ' ').trim();
+    navigator.clipboard?.writeText(cmd); say('Copied: ' + cmd); setTimeout(() => say(''), 4000); };
+  $('bReset').onclick = () => { Object.assign(look, LOOK_DEFAULTS); loadPack(cur.id); };
+}
+$('bTweak').onclick = () => $('panel').classList.toggle('off');
+$('packSel').onchange = e => loadPack(e.target.value);
+loadPack(q.get('pack') || packs[0].id);
+
+
+// ---- sources
+const useAudioEl = () => { feed.fromElement(aud); };
+const play = async () => { try { await aud.play(); say(''); } catch { say('Click to start audio', () => { aud.play(); say(''); }); } };
+let imageUrl = q.get('image') || null;
+const setImage = f => { if (imageUrl && imageUrl.startsWith('blob:')) URL.revokeObjectURL(imageUrl); imageUrl = f ? (typeof f === 'string' ? f : URL.createObjectURL(f)) : null; $('bImg').textContent = imageUrl ? 'Image ✕' : 'Image…'; };
+$('bImg').onclick = () => imageUrl ? setImage(null) : $('imgf').click();
+$('imgf').onchange = e => { if (e.target.files[0]) setImage(e.target.files[0]); e.target.value = ''; };
+addEventListener('dragover', e => e.preventDefault()); addEventListener('drop', e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f && /^image\//.test(f.type)) setImage(f); });
+if (imageUrl) $('bImg').textContent = 'Image ✕';
+let meta = {}, metaOv = JSON.parse(q.get('meta') || '{}'), tStart = performance.now() / 1000;
+const setMeta = m => { meta = { ...m, ...metaOv }; };
+async function loadMeta(url, file) { try { setMeta(file ? await (await fetch('/api/meta?name=' + encodeURIComponent(file.name), { method: 'POST', body: file })).json()
+    : url.startsWith('/media/') ? await (await fetch('/api/meta?url=' + encodeURIComponent(url))).json() : { title: decodeURIComponent(url.split('/').pop().replace(/\.[^.]+$/, '')) }); } catch { setMeta({}); } }
+let stemsPrep = null;   // per-stem analysis for library files that have a stems/ folder (server computes + caches it)
+async function loadStems(url) { stemsPrep = null; if (!url.startsWith('/media/')) return; try { const j = await (await fetch('/api/stems?url=' + encodeURIComponent(url))).json(); if (j && j.stems) stemsPrep = VisStems.prepare(j); } catch {} }
+function setSrc(url, file) { aud.src = url; setMeta({}); loadMeta(url, file); loadStems(url); useAudioEl(); play(); }
+$('bFile').onclick = () => $('file').click();
+$('file').onchange = e => { const f = e.target.files[0]; if (f) setSrc(URL.createObjectURL(f), f); };
+$('bMic').onclick = async () => { try { await feed.fromMic(); aud.pause(); say(''); } catch (e) { say('Mic: ' + e.message); } };
+$('bTab').onclick = async () => { try { await feed.fromTab(); aud.pause(); say(''); } catch (e) { say(e.message); } };
+fetch('/api/media').then(r => r.json()).then(list => { list.forEach(m => $('lib').add(new Option(m.name, m.url))); }).catch(() => {});
+$('lib').onchange = e => e.target.value && setSrc(e.target.value);
+if (q.get('audio')) { aud.crossOrigin = 'anonymous'; setSrc(q.get('audio')); }
+aud.addEventListener('play', () => { if (feed.src !== aud._mes) useAudioEl(); });
+
+// ---- host-app API: a parent page can push its own features or switch packs
+//   postMessage({type:'viz-features', bass, mid, high, beat, level})  /  postMessage({type:'viz-pack', id})
+let extT = 0;
+addEventListener('message', e => { const d = e.data || {};
+  if (d.type === 'viz-features') { feed.external = { bass: +d.bass || 0, mid: +d.mid || 0, high: +d.high || 0, beat: +d.beat || 0, level: +d.level || 0 }; extT = performance.now(); }
+  if (d.type === 'viz-meta') { metaOv = { ...metaOv, ...d.meta }; setMeta(meta); }  // host app supplies song info (title, artist, bpm, key, sections, ...)
+  if (d.type === 'viz-image-file' && d.file) setImage(d.file);   // image dropped inside a pack frame
+  if (d.type === 'viz-image') setImage(d.url || null);            // host app supplies an image URL (or null to clear)
+  if (d.type === 'viz-pack') loadPack(d.id); });
+
+// ---- UI chrome
+const mt = $('meters'); mt.innerHTML = '<span class="meter"><i></i></span>'.repeat(4);
+const bars = [...mt.querySelectorAll('i')];
+$('bHud').onclick = () => { hudOn = !hudOn; };
+$('bFs').onclick = () => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen();
+let idle; const wake = () => { if (q.get('ui') === '0') return; $('ui').classList.remove('hide'); clearTimeout(idle); idle = setTimeout(() => $('ui').classList.add('hide'), 3500); };
+addEventListener('mousemove', wake); addEventListener('keydown', e => { wake(); if (e.key === 'f') $('bFs').click(); if (e.key === 'h') hudOn = !hudOn; }); wake();
+
+// ---- main loop: analyze -> hand features to the pack's window
+const ZS = new Float32Array(64), ZW = new Float32Array(128); let lastCss = '', last = performance.now(), ema = 16.7, worst = 0, winStart = last, winWorst = 0;
+function loop(now) {
+  const dt = Math.max(0, Math.min(0.1, (now - last) / 1000)); last = now;
+  if (feed.external && performance.now() - extT > 1000) feed.external = null;
+  const A = feed.update(dt);
+  if (!A.spectrum) { A.spectrum = ZS; A.wave = ZW; A.past = () => ZS; A.live = false; }  // no source yet / pushed features: idle but never undefined
+  VisStems.attach(A, stemsPrep ? VisStems.at(stemsPrep, aud.currentTime) : []);   // A.stems / A.stem(): real when the track has stems, else estimated from the mix
+  A.meta = meta; A.t = aud._mes && feed.src === aud._mes ? aud.currentTime : now / 1000 - tStart; A.duration = meta.duration || aud.duration || 0; Object.assign(A, metaAt(meta, A.t));
+  try { frame.contentWindow.__META = meta; if (imageUrl) frame.contentWindow.__IMAGE_URL = imageUrl; else delete frame.contentWindow.__IMAGE_URL; frame.contentWindow.__AUDIO = A; frame.contentWindow.__PARAMS = params; frame.contentWindow.__FX = lookFx(look); } catch {}
+  const css = lookToCss(look, A, now / 1000); if (css !== lastCss) { frame.style.filter = css; lastCss = css; }
+  const ms = dt * 1000; ema += (ms - ema) * 0.05; winWorst = Math.max(winWorst, ms);
+  if (now - winStart > 2000) { worst = winWorst; winWorst = 0; winStart = now; }
+  [A.bass, A.mid, A.high, A.beat].forEach((v, i) => bars[i].style.height = (v * 100) + '%');
+  $('hud').hidden = !hudOn;
+  if (hudOn) $('hud').textContent = `${(1000 / ema).toFixed(1)} fps  (${ema.toFixed(1)} ms, worst ${worst.toFixed(0)} ms)\n${meta.title ? (meta.artist ? meta.artist + ' — ' : '') + meta.title + (meta.bpm ? '  ' + meta.bpm + ' BPM' : '') + (meta.key ? '  ' + meta.key : '') + (A.section ? '  [' + A.section.name + ']' : '') + '\n' : ''}bass ${A.bass.toFixed(2)}  mid ${A.mid.toFixed(2)}  high ${A.high.toFixed(2)}  beat ${A.beat.toFixed(2)}\n[f] fullscreen  [h] hud`;
+  window.__vizStats = { fps: 1000 / ema, worst, A };
+  requestAnimationFrame(loop);
+}
+requestAnimationFrame(loop);
+</script></body></html>

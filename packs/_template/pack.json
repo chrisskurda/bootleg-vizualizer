@@ -1,0 +1,5 @@
+{ "name": "Template: Pulse Rings", "page": "index.html", "type": "native", "width": 1920, "height": 1080, "loopSeconds": 60,
+  "description": "Copy this folder to start a new animation.",
+  "params": {
+    "palette": { "type": "select", "label": "Palette", "options": ["aurora","sunset","neon","ember","ocean","mono","candy"], "default": "neon" },
+    "bg": { "type": "color", "label": "Background", "default": "#070816" } } }

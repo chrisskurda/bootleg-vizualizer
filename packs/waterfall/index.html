@@ -1,0 +1,33 @@
+<!doctype html><meta charset="utf-8"><title>Waterfall</title>
+<script src="../../core/pack-runtime.js"></script>
+<script>
+let STARS;
+definePack({
+  init(ctx, K) { const r = K.rng(11); STARS = Array.from({ length: 90 }, () => [r() * 1080, r() * 560, r() * 1.8 + .6, r() * 6.28]); },
+  draw(ctx, T, A, P, K) {
+    const W = 1080, H = 1920, cx = W / 2, hz = 560, front = 1720, R = 56;
+    ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H);
+    for (const s of STARS) { ctx.fillStyle = K.css(P.palette, 1, .25 + .35 * Math.sin(T / 12 * K.TAU * 2 + s[3]) ** 2); ctx.fillRect(s[0], s[1], s[2], s[2]); }
+    if (P.sun) {
+      const r = 230 + A.bass * 40 + A.beat * 20, g = ctx.createRadialGradient(cx, hz - 80, r * .2, cx, hz - 80, r * 2.2);
+      g.addColorStop(0, K.css(P.palette, .85, .55)); g.addColorStop(.4, K.css(P.palette, .5, .18)); g.addColorStop(1, K.css(P.palette, .5, 0));
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, hz + 100);
+      const gd = ctx.createLinearGradient(0, hz - 80 - r, 0, hz - 80 + r); gd.addColorStop(0, K.css(P.palette, 1)); gd.addColorStop(1, K.css(P.palette, .45));
+      ctx.fillStyle = gd; ctx.beginPath(); ctx.arc(cx, hz - 80, r, 0, K.TAU); ctx.fill();
+    }
+    ctx.lineWidth = 3; ctx.lineJoin = 'round';
+    for (let r = R - 1; r >= 0; r--) {
+      const d = r / (R - 1), sp = A.past(r * .085), y0 = hz + (front - hz) * Math.pow(1 - d, 1.8), span = W * (1.02 - d * .62), amp = 380 * (1 - d * .55) * P.height;
+      const pts = [];
+      for (let j = 0; j < 127; j++) { const b = Math.abs(j - 63) / 63, v = sp[Math.round(b * 63)]; pts.push([cx + (j / 126 - .5) * span, y0 - v * amp]); }
+      ctx.beginPath(); ctx.moveTo(pts[0][0], y0 + 400); for (const p of pts) ctx.lineTo(p[0], p[1]); ctx.lineTo(pts[126][0], y0 + 400); ctx.closePath();
+      ctx.fillStyle = P.bg; ctx.fill();
+      ctx.beginPath(); for (let j = 0; j < 127; j++) j ? ctx.lineTo(pts[j][0], pts[j][1]) : ctx.moveTo(pts[j][0], pts[j][1]);
+      ctx.strokeStyle = K.css(P.palette, .15 + (1 - d) * .6 + sp[2] * .25, .25 + (1 - d) * .75); ctx.stroke();
+    }
+    K.text(ctx, A.meta.title, 80, 130, { font: '600 64px system-ui', maxW: 920, upper: true });
+    K.text(ctx, [A.meta.artist, A.section && A.section.name].filter(Boolean).join('  /  '), 80, 184, { font: '400 32px system-ui', alpha: .7, maxW: 920 });
+    K.text(ctx, K.fmtTime(A.t), W - 80, H - 70, { font: '400 36px ui-monospace,monospace', align: 'right', alpha: .8 });
+  }
+});
+</script>

@@ -1,0 +1,14 @@
+{
+  "name": "Halo",
+  "description": "Radial spectrum ring with beat pulse and orbiting dots.",
+  "type": "native",
+  "width": 1920,
+  "height": 1080,
+  "loopSeconds": 16,
+  "params": {
+    "palette": { "type": "select", "label": "Palette", "options": ["aurora", "sunset", "neon", "ember", "ocean", "mono", "candy"], "default": "neon" },
+    "bg": { "type": "color", "label": "Background", "default": "#070a18" },
+    "gain": { "type": "number", "label": "Bar height", "default": 1, "min": 0.3, "max": 1.6, "step": 0.05 },
+    "title": { "type": "bool", "label": "Show title", "default": true }
+  }
+}

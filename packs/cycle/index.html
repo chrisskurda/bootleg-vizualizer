@@ -1,0 +1,78 @@
+<!doctype html><meta charset="utf-8"><title>Cycle</title>
+<script src="../../core/pack-runtime.js"></script>
+<script>
+const W = 1920, H = 1080, cx = W / 2, cy = H / 2, NAMES = ['Tunnel', 'Grid', 'Bloom', 'Bars', 'Orbit'];
+const frac = x => x - Math.floor(x);
+const SC = [
+  function tunnel(ctx, t, A, P, K) {
+    ctx.lineWidth = 6; ctx.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < 16; i++) {
+      const u = frac(i / 16 - t * .12 - A.bass * .01), s = u * u * 1500 * (1 + A.beat * .06), rot = u * 1.4 + t * .25;
+      ctx.save(); ctx.translate(cx, cy); ctx.rotate(rot); ctx.strokeStyle = K.css(P.palette, 1 - u, Math.min(1, u * 2) * (1 - u * .3) * (.5 + A.spectrum[i * 3] * .7));
+      ctx.lineWidth = 2 + u * 10; ctx.beginPath(); ctx.roundRect(-s / 2, -s * .3, s, s * .6, s * .12); ctx.stroke(); ctx.restore();
+    }
+    ctx.globalCompositeOperation = 'source-over';
+  },
+  function grid(ctx, t, A, P, K) {
+    const hz = 560; ctx.lineWidth = 2;
+    const g = ctx.createLinearGradient(0, hz - 300, 0, hz); g.addColorStop(0, K.css(P.palette, .3, 0)); g.addColorStop(1, K.css(P.palette, .6, .3 + A.bass * .3));
+    ctx.fillStyle = g; ctx.fillRect(0, hz - 300, W, 300);
+    for (let i = -16; i <= 16; i++) { ctx.strokeStyle = K.css(P.palette, .5 + i / 40, .5); ctx.beginPath(); ctx.moveTo(cx + i * 40, hz); ctx.lineTo(cx + i * 300, H); ctx.stroke(); }
+    for (let j = 0; j < 14; j++) { const u = frac(j / 14 + t * .15), y = hz + (H - hz) * u * u; ctx.strokeStyle = K.css(P.palette, u, .15 + u * .6); ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+    for (let b = 0; b < 64; b++) { const h = 20 + A.spectrum[b] * 330; ctx.fillStyle = K.css(P.palette, b / 63, .9); ctx.fillRect(b * 30, hz - h, 22, h); }
+  },
+  function bloom(ctx, t, A, P, K) {
+    ctx.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < 16; i++) {
+      const a = i / 16 * K.TAU + t * .2, len = 150 + A.spectrum[i * 3] * 480 + A.beat * 40;
+      ctx.save(); ctx.translate(cx, cy); ctx.rotate(a); ctx.fillStyle = K.css(P.palette, i / 16, .28);
+      ctx.beginPath(); ctx.ellipse(len / 2, 0, len / 2, 46 + A.mid * 30, 0, 0, K.TAU); ctx.fill(); ctx.restore();
+    }
+    const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, 160 + A.bass * 80); g.addColorStop(0, K.css(P.palette, .95, .9)); g.addColorStop(1, K.css(P.palette, .6, 0));
+    ctx.fillStyle = g; ctx.fillRect(cx - 300, cy - 300, 600, 600); ctx.globalCompositeOperation = 'source-over';
+  },
+  function bars(ctx, t, A, P, K) {
+    const pk = A.past(.3), bw = 26;
+    for (let b = 0; b < 64; b++) {
+      const x = cx + (b - 31.5) * 29 - bw / 2 + Math.sin(t) * 0, h = 10 + A.spectrum[b] * 420, hp = 10 + pk[b] * 420;
+      ctx.fillStyle = K.css(P.palette, b / 63, .95); ctx.fillRect(x, cy - h, bw, h * 2);
+      ctx.fillStyle = K.css(P.palette, b / 63, .9); ctx.fillRect(x, cy - Math.max(h, hp) - 12, bw, 5); ctx.fillRect(x, cy + Math.max(h, hp) + 7, bw, 5);
+    }
+  },
+  function orbit(ctx, t, A, P, K) {
+    ctx.globalCompositeOperation = 'lighter';
+    for (let o = 0; o < 6; o++) {
+      const r = 110 + o * 85, v = A.spectrum[o * 8 + 4];
+      ctx.strokeStyle = K.css(P.palette, o / 5, .2); ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(cx, cy, r * 1.5, r * .8, 0, 0, K.TAU); ctx.stroke();
+      for (let k = 0; k < o + 2; k++) {
+        const a = t * (.5 - o * .06) * (o % 2 ? -1 : 1) + k / (o + 2) * K.TAU, x = cx + Math.cos(a) * r * 1.5, y = cy + Math.sin(a) * r * .8, rad = 8 + v * 36 + A.beat * 6;
+        const g = ctx.createRadialGradient(x, y, 0, x, y, rad * 2.2); g.addColorStop(0, K.css(P.palette, o / 5, .95)); g.addColorStop(1, K.css(P.palette, o / 5, 0));
+        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, rad * 2.2, 0, K.TAU); ctx.fill();
+      }
+    }
+    ctx.globalCompositeOperation = 'source-over';
+  }
+];
+definePack({
+  draw(ctx, T, A, P, K) {
+    const hold = NAMES.indexOf(P.scene);
+    let { idx, local, len } = K.scenes(T, A, { count: 5, mode: P.cycle, beats: P.sceneBeats, loop: 60, durs: [12, 12, 12, 12, 12] });
+    if (hold >= 0) idx = hold;
+    ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H);
+    SC[idx](ctx, local, A, P, K);
+    const wl = .45;
+    if (hold < 0 && local < wl) {
+      const p = local / wl, x = W * p, prev = (idx + 4) % 5;
+      ctx.save(); ctx.beginPath(); ctx.rect(x, 0, W - x, H); ctx.clip(); ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H); SC[prev](ctx, local + len, A, P, K); ctx.restore();
+      ctx.fillStyle = K.css(P.palette, .9); ctx.fillRect(x - 10, 0, 20, H);
+    }
+    if (hold < 0 && local > len - wl) {
+      const x = W * (1 - (local - (len - wl)) / wl) * 0 + W * ((local - (len - wl)) / wl) * 0; // pre-cut: thin bar waiting at the left edge
+      ctx.fillStyle = K.css(P.palette, .9, (local - (len - wl)) / wl); ctx.fillRect(x, 0, 6, H);
+    }
+    K.text(ctx, String(idx + 1).padStart(2, '0') + '  ' + NAMES[idx], 90, 110, { font: '600 40px system-ui', upper: true });
+    K.text(ctx, [A.meta.title, A.section && A.section.name].filter(Boolean).join('  /  '), 90, 152, { font: '400 26px system-ui', alpha: .65, maxW: 900 });
+    for (let i = 0; i < 5; i++) { ctx.fillStyle = K.css(P.palette, .8, i === idx ? 1 : .25); ctx.fillRect(90 + i * 44, 180, 36, 5); }
+  }
+});
+</script>

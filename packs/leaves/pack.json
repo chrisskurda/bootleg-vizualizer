@@ -1,0 +1,45 @@
+{
+  "name": "Leaves",
+  "description": "Leaves tumbling across a dusk sky; loudness becomes wind gusts.",
+  "type": "native",
+  "width": 1920,
+  "height": 1080,
+  "loopSeconds": 24,
+  "params": {
+    "palette": {
+      "type": "select",
+      "label": "Palette",
+      "options": [
+        "aurora",
+        "sunset",
+        "neon",
+        "ember",
+        "ocean",
+        "mono",
+        "candy"
+      ],
+      "default": "ember"
+    },
+    "bg": {
+      "type": "color",
+      "label": "Background",
+      "default": "#1a0f1c"
+    },
+    "count": {
+      "type": "number",
+      "label": "Leaves",
+      "default": 70,
+      "min": 20,
+      "max": 140,
+      "step": 5
+    },
+    "wind": {
+      "type": "number",
+      "label": "Wind strength",
+      "default": 1,
+      "min": 0,
+      "max": 2,
+      "step": 0.1
+    }
+  }
+}

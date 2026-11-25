@@ -1,0 +1,31 @@
+<!doctype html><meta charset="utf-8"><title>Spirograph</title>
+<script src="../../core/pack-runtime.js"></script>
+<script>
+const L = 20, W = 1920, H = 1080;
+
+definePack({
+  draw(ctx, T, A, P, K) {
+    const TAU = K.TAU, cx = 960, cy = 540, u = T / L;
+    ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H); ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    const sets = [{ R: 480, k: 5, m: 3, d: .9, rot: 1, hue: 0 }, { R: 330, k: 7, m: 4, d: .75, rot: -2, hue: .5 }, { R: 190, k: 3, m: 2, d: 1.1, rot: 3, hue: .25 }];
+    sets.forEach((s, si) => {
+      const R = s.R * (1 + A.bass * .04 + A.beat * .02), r = R * s.m / s.k, dd = r * s.d * (1 + A.spectrum[si * 10 + 4] * .5), N = 360 * s.k, turns = s.k;
+      const pen = K.phase(T, L, 1) * TAU * turns, trail = TAU * turns * .35, rot = TAU * s.rot * u, c = Math.cos(rot), sn = Math.sin(rot);
+      const at = t => { const x = (R - r) * Math.cos(t) + dd * Math.cos((R - r) / r * t), y = (R - r) * Math.sin(t) - dd * Math.sin((R - r) / r * t); return [cx + x * c - y * sn, cy + x * sn + y * c]; };
+      ctx.lineWidth = 1.5; ctx.strokeStyle = K.css(P.palette, (s.hue + .1) % 1, .12); ctx.beginPath(); for (let i = 0; i <= N; i++) { const p = at(i / N * TAU * turns); i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]); } ctx.stroke();
+      const SEG = 140;
+      for (let i = 0; i < SEG; i++) { const t0 = pen - trail * i / SEG, t1 = pen - trail * (i + 1) / SEG, p = at(t0), q = at(t1), f = 1 - i / SEG; ctx.strokeStyle = K.css(P.palette, (s.hue + f * .4) % 1, f * f * (.6 + A.level * .4)); ctx.lineWidth = 2 + f * 6; ctx.beginPath(); ctx.moveTo(p[0], p[1]); ctx.lineTo(q[0], q[1]); ctx.stroke(); }
+      const hp = at(pen), g = ctx.createRadialGradient(hp[0], hp[1], 0, hp[0], hp[1], 40 + A.beat * 30); g.addColorStop(0, 'rgba(255,255,255,.95)'); g.addColorStop(.3, K.css(P.palette, s.hue, .5)); g.addColorStop(1, K.css(P.palette, s.hue, 0)); ctx.fillStyle = g; ctx.fillRect(hp[0] - 80, hp[1] - 80, 160, 160);
+      if (P.gears && si === 0) {
+        ctx.strokeStyle = 'rgba(255,255,255,.25)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.stroke();
+        const ga = pen, gx = (R - r) * Math.cos(ga), gy = (R - r) * Math.sin(ga), X = cx + gx * c - gy * sn, Y = cy + gx * sn + gy * c;
+        ctx.strokeStyle = K.css(P.palette, .6, .45); ctx.beginPath(); ctx.arc(X, Y, r, 0, TAU); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(X, Y); ctx.lineTo(hp[0], hp[1]); ctx.stroke();
+        for (let k = 0; k < 24; k++) { const a = k / 24 * TAU + ga * (1 - R / r) + rot * 0; ctx.beginPath(); ctx.moveTo(X + Math.cos(a) * r, Y + Math.sin(a) * r); ctx.lineTo(X + Math.cos(a) * (r - 14), Y + Math.sin(a) * (r - 14)); ctx.stroke(); }
+      }
+    });
+    ctx.globalCompositeOperation = 'source-over';
+    K.text(ctx, A.meta.title, 90, 100, { font: '600 40px system-ui', maxW: 800, alpha: .9 }); K.text(ctx, A.meta.artist, 90, 140, { font: '400 26px system-ui', maxW: 700, alpha: .6 });
+  }
+});
+</script>

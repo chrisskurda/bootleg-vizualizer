@@ -1,0 +1,30 @@
+{
+  "name": "Aqua Orb",
+  "description": "Frutiger Aero: glass sphere whose water level rises with the music.",
+  "type": "native",
+  "width": 1920,
+  "height": 1080,
+  "loopSeconds": 20,
+  "params": {
+    "palette": {
+      "type": "select",
+      "label": "Palette",
+      "options": [
+        "aurora",
+        "sunset",
+        "neon",
+        "ember",
+        "ocean",
+        "mono",
+        "candy",
+        "aero"
+      ],
+      "default": "aero"
+    },
+    "bg": {
+      "type": "color",
+      "label": "Background",
+      "default": "#0a5fc4"
+    }
+  }
+}

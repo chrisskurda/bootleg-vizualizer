@@ -1,0 +1,26 @@
+{
+  "width": 128, "height": 72,
+  "cases": [
+    {"name": "glitch_burst_0", "kind": "look", "roto": 0, "glitch": 1.0, "seconds": 0.28272727},
+    {"name": "glitch_burst_1", "kind": "look", "roto": 0, "glitch": 1.0, "seconds": 0.37363636},
+    {"name": "glitch_burst_2", "kind": "look", "roto": 0, "glitch": 1.0, "seconds": 0.55545455},
+    {"name": "glitch_burst_3", "kind": "look", "roto": 0, "glitch": 1.0, "seconds": 0.9190909},
+    {"name": "glitch_burst_4", "kind": "look", "roto": 0, "glitch": 1.0, "seconds": 1.1918181},
+    {"name": "glitch_burst_5", "kind": "look", "roto": 0, "glitch": 1.0, "seconds": 1.7372727},
+    {"name": "glitch_quiet_0", "kind": "look", "roto": 0, "glitch": 1.0, "seconds": 0.01},
+    {"name": "glitch_quiet_1", "kind": "look", "roto": 0, "glitch": 1.0, "seconds": 0.10090909},
+    {"name": "glitch_low", "kind": "look", "roto": 0, "glitch": 0.35, "seconds": 0.55545455},
+    {"name": "roto_glitch", "kind": "look", "roto": 1, "glitch": 0.8, "seconds": 0.55545455},
+    {"name": "roto_heavy_glitch", "kind": "look", "roto": 2, "glitch": 1.0, "seconds": 0.9190909},
+    {"name": "roto", "kind": "look", "roto": 1, "glitch": 0.0, "seconds": 0.0},
+    {"name": "roto_heavy", "kind": "look", "roto": 2, "glitch": 0.0, "seconds": 0.0},
+    {"name": "chain_roto_glitch_crt", "kind": "chain", "roto": 1, "glitch": 0.8, "seconds": 0.55545455, "mode": 2, "outH": 1080},
+    {"name": "chain_glitch_curved", "kind": "chain", "roto": 0, "glitch": 1.0, "seconds": 1.1918181, "mode": 3, "outH": 72},
+    {"name": "screen1", "kind": "screen", "mode": 1, "outH": 72},
+    {"name": "screen1_1080", "kind": "screen", "mode": 1, "outH": 1080},
+    {"name": "screen2", "kind": "screen", "mode": 2, "outH": 72},
+    {"name": "screen2_1080", "kind": "screen", "mode": 2, "outH": 1080},
+    {"name": "screen3", "kind": "screen", "mode": 3, "outH": 72},
+    {"name": "screen3_1080", "kind": "screen", "mode": 3, "outH": 1080}
+  ]
+}

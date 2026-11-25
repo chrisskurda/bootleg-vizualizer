@@ -1,0 +1,34 @@
+<!doctype html><meta charset="utf-8"><title>Fireflies</title>
+<script src="../../core/pack-runtime.js"></script>
+<script>
+let F, G;
+definePack({
+  init(ctx, K) {
+    const r = K.rng(21);
+    F = Array.from({ length: 160 }, () => ({ hx: 100 + r() * 1720, hy: 220 + r() * 640, ax: 40 + r() * 120, ay: 30 + r() * 80, fx: 1 + (r() * 3 | 0), fy: 1 + (r() * 3 | 0), px: r() * 6.28, py: r() * 6.28, bl: 2 + (r() * 4 | 0), ph: r() * 6.28, b: r() * 52 | 0, u: .7 + r() * .3, s: 14 + r() * 22 }));
+    G = Array.from({ length: 140 }, () => ({ x: r() * 1940 - 10, h: 50 + r() * 110, ph: r() * 6.28 }));
+  },
+  draw(ctx, T, A, P, K) {
+    const W = 1920, H = 1080, TAU = K.TAU, ph = T / 20 * TAU;
+    ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H);
+    let g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, K.css(P.palette, .05, .35)); g.addColorStop(1, K.css(P.palette, .3, 0)); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    const hill = (base, amp, k, col, o) => { ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(0, H); for (let x = 0; x <= W; x += 20) ctx.lineTo(x, base + amp * Math.sin(x / W * TAU * k + o) + amp * .5 * Math.sin(x / W * TAU * (k * 2 + 1) + o * 2)); ctx.lineTo(W, H); ctx.fill(); };
+    hill(760, 50, 1, K.css(P.palette, .05, .5), 1); hill(850, 55, 2, K.css(P.palette, .0, .75), 3);
+    ctx.globalCompositeOperation = 'lighter';
+    for (let i = 0; i < P.count; i++) {
+      const f = F[i], sc = A.beat * 70;
+      let x = f.hx + f.ax * Math.sin(ph * f.fx + f.px) + f.ax * .4 * Math.sin(ph * (f.fx + 1) + f.py) + Math.cos(f.ph) * sc;
+      let y = f.hy + f.ay * Math.sin(ph * f.fy + f.py) + f.ay * .4 * Math.sin(ph * (f.fy + 2) + f.px) + Math.sin(f.ph) * sc - A.mid * 12;
+      const bw = Math.pow(Math.max(0, Math.sin(ph * f.bl + f.ph)), 2), glow = (.25 + .75 * bw) * (.45 + A.spectrum[f.b] * 1.3 + A.beat * .3), r = f.s * (.8 + glow * .5);
+      const gr = ctx.createRadialGradient(x, y, 0, x, y, r); gr.addColorStop(0, K.css(P.palette, f.u, Math.min(1, glow))); gr.addColorStop(.25, K.css(P.palette, f.u, glow * .35)); gr.addColorStop(1, K.css(P.palette, f.u, 0));
+      ctx.fillStyle = gr; ctx.fillRect(x - r, y - r, r * 2, r * 2);
+      ctx.fillStyle = 'rgba(255,255,240,' + Math.min(1, glow) + ')'; ctx.beginPath(); ctx.arc(x, y, 2.2, 0, TAU); ctx.fill();
+    }
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.strokeStyle = K.css(P.palette, 0, .95); ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.beginPath();
+    for (const b of G) { const sw = Math.sin(ph * 2 + b.ph) * (14 + A.mid * 30); ctx.moveTo(b.x, H); ctx.quadraticCurveTo(b.x + sw * .3, H - b.h * .6, b.x + sw, H - b.h); }
+    ctx.stroke();
+    K.text(ctx, A.meta.title, 90, 100, { font: '500 34px system-ui', alpha: .75, maxW: 800 });
+  }
+});
+</script>

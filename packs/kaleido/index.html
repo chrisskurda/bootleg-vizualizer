@@ -1,0 +1,33 @@
+<!doctype html><meta charset="utf-8"><title>Kaleidoscope</title>
+<script src="../../core/pack-runtime.js"></script>
+<script>
+const L = 20, W = 1920, H = 1080;
+
+definePack({
+  draw(ctx, T, A, P, K) {
+    const TAU = K.TAU, cx = 960, cy = 540, u = T / L, n = +P.segments, wedge = TAU / n, R = 900;
+    ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H);
+    const content = () => {
+      ctx.globalCompositeOperation = 'lighter';
+      for (let i = 0; i < 14; i++) {
+        const f1 = 1 + i % 3, f2 = 2 + i % 4, rad = 120 + (i * 53) % 640 + Math.sin(TAU * f1 * u + i) * 90, a = TAU * (f2 * u) * (i % 2 ? -1 : 1) / 2 + i * 1.7 - wedge / 2 + wedge * .5 + Math.sin(TAU * u * 2 + i) * wedge * .3;
+        const v = A.spectrum[Math.min(63, 3 + i * 4)], s = 36 + (i * 17) % 60 + v * 90, x = Math.cos(a) * rad, y = Math.sin(a) * rad, col = (i / 14 + u * 2) % 1;
+        ctx.save(); ctx.translate(x, y); ctx.rotate(TAU * u * (1 + i % 2) + i);
+        const g = ctx.createRadialGradient(0, 0, 0, 0, 0, s); g.addColorStop(0, K.css(P.palette, col, .75)); g.addColorStop(1, K.css(P.palette, col, .05)); ctx.fillStyle = g; ctx.strokeStyle = K.css(P.palette, col, .9); ctx.lineWidth = 3;
+        ctx.beginPath(); const sides = 3 + i % 4; for (let k = 0; k < sides; k++) { const t = k / sides * TAU; k ? ctx.lineTo(Math.cos(t) * s, Math.sin(t) * s) : ctx.moveTo(Math.cos(t) * s, Math.sin(t) * s); } ctx.closePath(); if (i % 3) ctx.fill(); ctx.stroke(); ctx.restore();
+      }
+      ctx.lineWidth = 4; for (let i = 0; i < 6; i++) { const rr = 160 + i * 110, a0 = TAU * u * (i % 2 ? -1 : 1) * 2 + i; ctx.strokeStyle = K.css(P.palette, (i / 6 + .3) % 1, .4 + A.spectrum[i * 6] * .6); ctx.beginPath(); ctx.arc(0, 0, rr, a0, a0 + wedge * .8); ctx.stroke(); }
+    };
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(TAU * u);
+    for (let m = 0; m < n; m++) {
+      ctx.save(); ctx.rotate(m * wedge); if (m % 2) ctx.scale(1, -1);
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(R, 0); ctx.arc(0, 0, R, 0, wedge); ctx.closePath(); ctx.clip();
+      ctx.rotate(0); content(); ctx.restore();
+    }
+    ctx.restore();
+    ctx.globalCompositeOperation = 'lighter'; const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, 90 + A.beat * 40); g.addColorStop(0, 'rgba(255,255,255,.7)'); g.addColorStop(1, K.css(P.palette, .5, 0)); ctx.fillStyle = g; ctx.fillRect(cx - 200, cy - 200, 400, 400);
+    ctx.globalCompositeOperation = 'source-over';
+    K.text(ctx, A.meta.title, 90, H - 70, { font: '600 36px system-ui', maxW: 800, alpha: .85 });
+  }
+});
+</script>

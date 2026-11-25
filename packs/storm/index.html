@@ -1,0 +1,31 @@
+<!doctype html><meta charset="utf-8"><title>Storm</title>
+<script src="../../core/pack-runtime.js"></script>
+<script>
+const L = 20, W = 1920, H = 1080, fr = x => x - Math.floor(x), hs = (a, b) => fr(Math.sin(a * 12.9898 + b * 78.233) * 43758.5453);
+
+let RN, CL;
+const bolt = (K, P, x0, y0, x1, y1, id, w, a, depth, ctx) => {
+  const pts = [[x0, y0]], seg = 14;
+  for (let k = 1; k <= seg; k++) { const f = k / seg, j = (hs(id * 7 + k, depth) - .5) * 2 * 70 * (1 - f * .3); pts.push([x0 + (x1 - x0) * f + (k < seg ? j : 0), y0 + (y1 - y0) * f]); }
+  ctx.beginPath(); pts.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1])); ctx.strokeStyle = K.css(P.palette, .7, a * .22); ctx.lineWidth = w * 6; ctx.stroke(); ctx.strokeStyle = K.css(P.palette, .8, a * .5); ctx.lineWidth = w * 2.5; ctx.stroke(); ctx.strokeStyle = 'rgba(255,255,255,' + a + ')'; ctx.lineWidth = w; ctx.stroke();
+  if (depth < 2) for (let k = 3; k < seg - 2; k++) if (hs(id * 3 + k, depth + 9) > .78) { const p = pts[k], dir = hs(id + k, 5) > .5 ? 1 : -1; bolt(K, P, p[0], p[1], p[0] + dir * (120 + hs(k, id) * 220), p[1] + 180 + hs(id, k) * 260, id * 13 + k, w * .55, a * .8, depth + 1, ctx); }
+};
+definePack({
+  init(ctx, K) { const r = K.rng(61); RN = Array.from({ length: 500 }, () => ({ x: r() * (W + 400), y: r() * H, l: 40 + r() * 50, laps: 3 + (r() * 3 | 0), z: .4 + r() * .6 })); CL = Array.from({ length: 12 }, () => ({ x: r() * W, y: 40 + r() * 200, s: 200 + r() * 260, laps: 1 + (r() * 2 | 0), ph: r() * 6.28 })); },
+  draw(ctx, T, A, P, K) {
+    const TAU = K.TAU, u = T / L;
+    let strike, flash;
+    if (A.live) { const bi = Math.floor(A.t * 2); strike = bi; flash = A.beat * (hs(bi, 3) > .45 ? 1 : 0); }
+    else { const Ts = T + 2.3, k = Math.floor(Ts / 4); strike = 1000 + (k % 5); flash = Math.pow(Math.max(0, 1 - (Ts - k * 4) * 2.5), 2); }   /* strikes every 4 s, offset so none lands on the loop seam */
+    const sky = ctx.createLinearGradient(0, 0, 0, H); sky.addColorStop(0, P.bg); sky.addColorStop(1, K.css(P.palette, .15, .9)); ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = K.css(P.palette, .9, flash * .45); ctx.fillRect(0, 0, W, H);
+    for (const c of CL) { const x = (K.drift(T, L, c.laps, W + 800) + c.x) % (W + 800) - 400; for (let k = 0; k < 6; k++) { const px = x + (k - 2.5) * c.s * .35, py = c.y + Math.sin(TAU * 2 * u + c.ph + k) * 10 + (k % 2) * 30, r = c.s * (.5 + (k % 3) * .12); const g = ctx.createRadialGradient(px, py, 0, px, py, r); g.addColorStop(0, K.css(P.palette, .3, .5 + flash * .3)); g.addColorStop(1, K.css(P.palette, .1, 0)); ctx.fillStyle = g; ctx.fillRect(px - r, py - r, r * 2, r * 2); } }
+    if (P.bolts && flash > .02) { ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; const bx = 300 + hs(strike, 1) * 1300; bolt(K, P, bx, 160, bx + (hs(strike, 2) - .5) * 400, 960, strike, 4, Math.min(1, flash * 1.4), 0, ctx); ctx.globalCompositeOperation = 'source-over'; }
+    ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round';
+    for (let i = 0; i < P.rain; i++) { const d = RN[i], y = (K.drift(T, L, d.laps, H + 200) + d.y) % (H + 200) - 100, x = d.x - y * .18 - 100; ctx.strokeStyle = K.css(P.palette, .8, (.14 + A.level * .12 + flash * .25) * d.z); ctx.lineWidth = 1 + d.z * 1.5; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - d.l * .18, y + d.l); ctx.stroke(); }
+    for (let i = 0; i < 24; i++) { const ph = K.phase(T, L, 2 + i % 3), x = (hs(i, 4) * W), a = (1 - ph) * .5, r = ph * 50; ctx.strokeStyle = K.css(P.palette, .8, a * .6); ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(x, 1000 + hs(i, 8) * 60, r * 1.6, r * .35, 0, 0, TAU); ctx.stroke(); }
+    ctx.globalCompositeOperation = 'source-over';
+    K.text(ctx, A.meta.title, 90, H - 70, { font: '600 36px system-ui', maxW: 800, alpha: .8 });
+  }
+});
+</script>

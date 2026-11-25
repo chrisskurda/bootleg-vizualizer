@@ -1,0 +1,14 @@
+{
+  "name": "Phosphor",
+  "description": "Oscilloscope waveform with fading phosphor trails from audio history.",
+  "type": "native",
+  "width": 1920,
+  "height": 1080,
+  "loopSeconds": 10,
+  "params": {
+    "palette": { "type": "select", "label": "Palette", "options": ["aurora", "sunset", "neon", "ember", "ocean", "mono", "candy"], "default": "aurora" },
+    "bg": { "type": "color", "label": "Background", "default": "#03090a" },
+    "trails": { "type": "number", "label": "Trail count", "default": 9, "min": 0, "max": 14, "step": 1 },
+    "grid": { "type": "bool", "label": "Graticule", "default": true }
+  }
+}

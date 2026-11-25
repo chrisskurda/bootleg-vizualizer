@@ -1,0 +1,29 @@
+{
+  "name": "Neon City",
+  "description": "Synthwave: night skyline whose rooftops rise with the spectrum, blinking windows, rain.",
+  "type": "native",
+  "width": 1920,
+  "height": 1080,
+  "loopSeconds": 20,
+  "params": {
+    "palette": {
+      "type": "select",
+      "label": "Palette",
+      "options": [
+        "aurora",
+        "sunset",
+        "neon",
+        "ember",
+        "ocean",
+        "mono",
+        "candy"
+      ],
+      "default": "neon"
+    },
+    "bg": {
+      "type": "color",
+      "label": "Background",
+      "default": "#0b0620"
+    }
+  }
+}

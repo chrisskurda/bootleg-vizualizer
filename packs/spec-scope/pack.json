@@ -1,0 +1,54 @@
+{
+ "name": "Scope: X-Y Lissajous",
+ "page": "index.html",
+ "type": "native",
+ "width": 1920,
+ "height": 1080,
+ "loopSeconds": 60,
+ "description": "Vector oscilloscope: the waveform plotted against a delayed copy of itself, with phosphor glow.",
+ "params": {
+  "palette": {
+   "type": "select",
+   "label": "Palette",
+   "options": [
+    "aurora",
+    "sunset",
+    "neon",
+    "ember",
+    "ocean",
+    "mono",
+    "candy"
+   ],
+   "default": "ocean"
+  },
+  "bg": {
+   "type": "color",
+   "label": "Background",
+   "default": "#03060a"
+  },
+  "size": {
+   "type": "number",
+   "label": "Size",
+   "default": 380,
+   "min": 150,
+   "max": 480,
+   "step": 10
+  },
+  "delay": {
+   "type": "number",
+   "label": "Phase delay",
+   "default": 32,
+   "min": 4,
+   "max": 64,
+   "step": 1
+  },
+  "smooth": {
+   "type": "number",
+   "label": "Smoothing",
+   "default": 3,
+   "min": 0,
+   "max": 8,
+   "step": 1
+  }
+ }
+}

@@ -1,0 +1,32 @@
+<!doctype html><meta charset="utf-8"><title>Aqua Orb</title>
+<script src="../../core/pack-runtime.js"></script>
+<script>
+const HX = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16)), L = 20, W = 1920, H = 1080, fr = x => x - Math.floor(x), hs = (a, b) => fr(Math.sin(a * 12.9898 + b * 78.233) * 43758.5453);
+let BK, BU;
+definePack({
+  init(ctx, K) { K.palettes.aero = ['#0b4fa8', '#1aa3e8', '#5fd0f5', '#8be36b', '#ffffff'].map(HX); const r = K.rng(8); BK = Array.from({ length: 24 }, () => [r() * W, r() * 700, 20 + r() * 80, r() * 6.28]); BU = Array.from({ length: 16 }, () => ({ x: r() * 2 - 1, s: 5 + r() * 12, laps: 1 + (r() * 2 | 0), off: r(), sw: 1 + (r() * 3 | 0), ph: r() * 6.28 })); },
+  draw(ctx, T, A, P, K) {
+    const TAU = K.TAU, cx = 960, cy = 450, R = 290; const sky = ctx.createLinearGradient(0, 0, 0, H); sky.addColorStop(0, P.bg); sky.addColorStop(.55, K.css(P.palette, .3)); sky.addColorStop(1, K.css(P.palette, .5)); ctx.fillStyle = sky; ctx.fillRect(0, 0, W, H);
+    for (const b of BK) { const x = (K.drift(T, L, 1, W + 300) + b[0]) % (W + 300) - 150; ctx.fillStyle = 'rgba(255,255,255,' + (.06 + .05 * Math.sin(TAU * 2 * T / L + b[3])) + ')'; ctx.beginPath(); ctx.arc(x, b[1], b[2], 0, TAU); ctx.fill(); }
+    const fl = ctx.createLinearGradient(0, 800, 0, H); fl.addColorStop(0, K.css(P.palette, .2, .0)); fl.addColorStop(1, K.css(P.palette, .1, .5)); ctx.fillStyle = fl; ctx.fillRect(0, 780, W, H - 780);
+    const lev = K.clamp(K.ema(A, s => { let t = 0; for (let k = 0; k < 40; k++) t += s[k]; return t / 40 * 2.4; })), wy = cy + R * .6 - lev * R * 1.2;
+    ctx.globalCompositeOperation = 'lighter'; const gl = ctx.createRadialGradient(cx, cy, R * .6, cx, cy, R * 1.9); gl.addColorStop(0, K.css(P.palette, .4, .25 + A.beat * .3)); gl.addColorStop(1, K.css(P.palette, .4, 0)); ctx.fillStyle = gl; ctx.fillRect(0, 0, W, H);
+    ctx.lineCap = 'round'; ctx.lineWidth = 12;
+    for (let i = 0; i < 48; i++) { const a = i / 48 * TAU - Math.PI / 2, v = A.spectrum[i < 24 ? i : 47 - i], r0 = R + 40; ctx.strokeStyle = K.css(P.palette, .3 + v * .5, .35 + v * .5); ctx.beginPath(); ctx.moveTo(cx + Math.cos(a) * r0, cy + Math.sin(a) * r0); ctx.lineTo(cx + Math.cos(a) * (r0 + 6 + v * 110), cy + Math.sin(a) * (r0 + 6 + v * 110)); ctx.stroke(); }
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = 'rgba(0,40,90,.25)'; ctx.beginPath(); ctx.ellipse(cx, cy + R + 60, R * .8, 26, 0, 0, TAU); ctx.fill();
+    const og = ctx.createRadialGradient(cx - R * .3, cy - R * .3, R * .1, cx, cy, R); og.addColorStop(0, 'rgba(255,255,255,.35)'); og.addColorStop(.7, K.css(P.palette, .55, .25)); og.addColorStop(1, K.css(P.palette, .3, .6)); ctx.fillStyle = og; ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.fill();
+    ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, R - 4, 0, TAU); ctx.clip();
+    const wg = ctx.createLinearGradient(0, wy, 0, cy + R); wg.addColorStop(0, K.css(P.palette, .45, .85)); wg.addColorStop(1, K.css(P.palette, .1, .95)); ctx.fillStyle = wg; ctx.beginPath(); ctx.moveTo(cx - R, cy + R);
+    const sw = (x) => wy + Math.sin(x / 70 + TAU * 2 * T / L) * (7 + A.bass * 16) + Math.sin(x / 33 - TAU * 3 * T / L) * 4;
+    for (let x = cx - R; x <= cx + R; x += 8) ctx.lineTo(x, sw(x)); ctx.lineTo(cx + R, cy + R); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,.85)'; ctx.lineWidth = 4; ctx.beginPath(); for (let x = cx - R; x <= cx + R; x += 8) x === cx - R ? ctx.moveTo(x, sw(x)) : ctx.lineTo(x, sw(x)); ctx.stroke();
+    const sp = 2 * R; for (const b of BU) { const y = cy + R - ((K.drift(T, L, b.laps, sp) + b.off * sp) % sp), x = cx + b.x * R * .8 + Math.sin(TAU * b.sw * T / L + b.ph) * 14; if (y < wy) continue; ctx.strokeStyle = 'rgba(255,255,255,.6)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, y, b.s, 0, TAU); ctx.stroke(); }
+    ctx.restore();
+    ctx.fillStyle = 'rgba(255,255,255,.55)'; ctx.beginPath(); ctx.ellipse(cx - R * .2, cy - R * .62, R * .55, R * .25, -.25, 0, TAU); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,.7)'; ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(cx, cy, R, 0, TAU); ctx.stroke();
+    ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 10; ctx.beginPath(); ctx.arc(cx, cy, R - 10, .5, 1.3); ctx.stroke();
+    K.text(ctx, A.meta.title, cx, 960, { font: '700 56px system-ui', align: 'center', maxW: 1400 }); K.text(ctx, A.meta.artist, cx, 1010, { font: '400 30px system-ui', align: 'center', alpha: .9, maxW: 900 });
+  }
+});
+</script>

@@ -1,0 +1,42 @@
+<!doctype html><meta charset="utf-8"><title>Reel to Reel</title>
+<script src="../../core/pack-runtime.js"></script>
+<script>
+
+const avg = (a, i, j) => { let s = 0; for (let k = i; k < j; k++) s += a[k]; return s / (j - i); };
+definePack({
+  draw(ctx, T, A, P, K) {
+    const W = 1920, H = 1080, TAU = K.TAU, prog = K.progress(A, T, 20), clock = A.live ? A.t : T, ry = 430;
+    ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H);
+    const pg = ctx.createLinearGradient(0, 80, 0, 1000); pg.addColorStop(0, '#d8d2c6'); pg.addColorStop(1, '#a9a396');
+    K.softShadow(ctx, 100, 70, 1720, 940, 30, { blur: 60, dy: 30, alpha: .6 }); ctx.fillStyle = pg; ctx.beginPath(); ctx.roundRect(100, 70, 1720, 940, 30); ctx.fill();
+    ctx.fillStyle = K.css(P.palette, .1); ctx.fillRect(100, 880, 1720, 130);
+    ctx.fillStyle = '#15110e'; for (const [x, y] of [[135, 105], [1785, 105], [135, 975], [1785, 975]]) { ctx.beginPath(); ctx.arc(x, y, 9, 0, TAU); ctx.fill(); }
+    const rl = 150 + (1 - prog) * 110, rr = 150 + prog * 110, lx = 520, rx = 1400;
+    const reel = (x, rad, sp) => {
+      ctx.fillStyle = '#4a2f1d'; ctx.beginPath(); ctx.arc(x, ry, rad, 0, TAU); ctx.fill(); ctx.strokeStyle = '#6a452c'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(x, ry, rad - 10, 0, TAU); ctx.stroke();
+      const a = A.live ? A.t * sp : K.phase(T, 20, 3) * TAU;
+      ctx.fillStyle = '#c9c4ba'; ctx.strokeStyle = '#8c877d'; ctx.lineWidth = 3; ctx.beginPath(); ctx.arc(x, ry, 148, 0, TAU); ctx.fill(); ctx.stroke();
+      ctx.save(); ctx.translate(x, ry); ctx.rotate(a);
+      for (let k = 0; k < 3; k++) { ctx.save(); ctx.rotate(k / 3 * TAU); ctx.fillStyle = '#2a2622'; ctx.beginPath(); ctx.moveTo(40, -2); ctx.arc(0, 0, 118, -.5, .5); ctx.lineTo(40, 20); ctx.closePath(); ctx.restore(); }
+      ctx.fillStyle = '#6a655b'; ctx.beginPath(); ctx.arc(0, 0, 44, 0, TAU); ctx.fill(); ctx.fillStyle = '#b8b2a6'; ctx.beginPath(); ctx.arc(0, 0, 14, 0, TAU); ctx.fill(); ctx.fillStyle = K.css(P.palette, .7); ctx.fillRect(100, -5, 18, 10);
+      ctx.restore();
+    };
+    reel(lx, rl, 160 / rl * 2.2); reel(rx, rr, 160 / rr * 2.2);
+    ctx.strokeStyle = '#3a2418'; ctx.lineWidth = 5; ctx.beginPath(); ctx.moveTo(lx + rl * .5, ry + rl * .87); ctx.lineTo(760, 830); ctx.lineTo(960, 800); ctx.lineTo(1160, 830); ctx.lineTo(rx - rr * .5, ry + rr * .87); ctx.stroke();
+    for (const x of [760, 1160]) { ctx.fillStyle = '#8c877d'; ctx.beginPath(); ctx.arc(x, 830, 20, 0, TAU); ctx.fill(); }
+    ctx.fillStyle = '#2a2622'; ctx.beginPath(); ctx.roundRect(890, 770, 140, 60, 8); ctx.fill();
+    // VU ballistics from history (no carried state): lows / highs of the recent spectrum, ~0.1 s time constant
+    [K.ema(A, s => avg(s, 0, 15)) * 1.3 + A.beat * .3, K.ema(A, s => avg(s, 15, 64)) * 2.2].map(v => K.clamp(v)).forEach((v, i) => {
+      const mx = 800 + i * 320, my = 330;
+      ctx.fillStyle = '#efe6cc'; ctx.beginPath(); ctx.roundRect(mx - 130, my - 110, 260, 190, 14); ctx.fill(); ctx.strokeStyle = '#222'; ctx.lineWidth = 3; ctx.stroke();
+      ctx.strokeStyle = '#222'; ctx.lineWidth = 2; for (let k = 0; k <= 10; k++) { const a = -2.3 + k / 10 * 1.0 - 0.0; const ang = -Math.PI / 2 + (k / 10 - .5) * 1.5; ctx.strokeStyle = k > 7 ? '#b5301f' : '#222'; ctx.beginPath(); ctx.moveTo(mx + Math.cos(ang) * 105, my + 40 + Math.sin(ang) * 105); ctx.lineTo(mx + Math.cos(ang) * 120, my + 40 + Math.sin(ang) * 120); ctx.stroke(); }
+      const ang = -Math.PI / 2 + (v - .5) * 1.5; ctx.strokeStyle = '#111'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(mx, my + 40); ctx.lineTo(mx + Math.cos(ang) * 115, my + 40 + Math.sin(ang) * 115); ctx.stroke();
+      K.text(ctx, 'VU', mx, my + 70, { font: '700 20px system-ui', color: '#222', align: 'center' }); K.text(ctx, i ? 'R' : 'L', mx - 110, my - 80, { font: '700 20px system-ui', color: '#222' });
+    });
+    ctx.fillStyle = '#15110e'; ctx.beginPath(); ctx.roundRect(840, 520, 240, 90, 10); ctx.fill();
+    K.text(ctx, String(clock | 0).padStart(4, '0'), 960, 590, { font: '600 64px ui-monospace,monospace', align: 'center', color: K.css(P.palette, .85) });
+    K.text(ctx, A.meta.title, 140, 960, { font: '600 40px system-ui', color: K.css(P.palette, .95), maxW: 900 });
+    K.text(ctx, [A.meta.artist, A.section && A.section.name].filter(Boolean).join('  /  '), 1780, 960, { font: '400 30px system-ui', color: K.css(P.palette, .95), align: 'right', maxW: 600 });
+  }
+});
+</script>

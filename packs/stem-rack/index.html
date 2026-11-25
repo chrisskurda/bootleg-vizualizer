@@ -1,0 +1,60 @@
+<!doctype html><meta charset="utf-8"><title>Stem Rack</title>
+<script src="../../core/pack-runtime.js"></script>
+<script>
+// One lane per stem. Everything is a function of (T, A, P): A.stems / A.stem(role) come from the host (SPEC §2c).
+const MONO = 'ui-monospace, Menlo, Consolas, monospace', SANS = 'system-ui, sans-serif';
+const DEFAULT_ROLES = ['kick', 'snare', 'hats', 'bass', 'keys', 'perc'];
+const SP = Array.from({ length: 10 }, (_, i) => { const r = ((s) => () => (s = (s * 16807) % 2147483647) / 2147483647)(1000 + i * 77); return Array.from({ length: 28 }, () => ({ x: r(), y: r(), ph: r(), sz: 3 + r() * 6 })); });
+const fmtDb = d => (d > 0 ? '+' : d < 0 ? '−' : '') + Math.abs(d).toFixed(1) + ' dB';
+
+// glyphs: (ctx, x, y, w, h, stem, col(alpha)->css, i, T, K) — each is drawn from the stem's own level / beat / spectrum
+const GLYPH = {
+  kick(c, x, y, w, h, s, col) { const cx = x + w / 2, cy = y + h / 2, R = Math.min(w, h) * 0.5;
+    for (let k = 0; k < 3; k++) { const r = R * (0.25 + 0.75 * ((1 - s.beat) * 0.9 + k * 0.1)) * (0.4 + 0.6 * Math.min(1, s.level + s.beat)), a = s.beat * (1 - k * 0.3); c.strokeStyle = col(Math.max(0, a)); c.lineWidth = 6 - k * 1.5; c.beginPath(); c.arc(cx, cy, r, 0, 6.2832); c.stroke(); }
+    c.fillStyle = col(0.25 + s.level * 0.7); c.beginPath(); c.arc(cx, cy, R * (0.12 + 0.2 * s.level + 0.15 * s.beat), 0, 6.2832); c.fill(); },
+  snare(c, x, y, w, h, s, col, i) { const cx = x + w / 2, cy = y + h / 2, R = Math.min(w, h) * 0.5; c.lineCap = 'round'; c.lineWidth = 4;
+    for (let k = 0; k < 24; k++) { const a = k / 24 * 6.2832 + 0.13 * i, j = SP[i % 10][k].y, r0 = R * 0.2, r1 = r0 + R * (0.15 + 0.7 * j) * Math.min(1, s.beat * 1.1 + s.level * 0.25);
+      c.strokeStyle = col(0.3 + 0.7 * s.beat); c.beginPath(); c.moveTo(cx + Math.cos(a) * r0, cy + Math.sin(a) * r0); c.lineTo(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1); c.stroke(); } },
+  hats(c, x, y, w, h, s, col, i) { for (const p of SP[i % 10]) { const a = Math.min(1, s.beat * (0.4 + p.ph) + s.level * 0.5 * p.ph); if (a < 0.06) continue; const px = x + p.x * w, py = y + p.y * h, r = p.sz * (0.6 + a);
+      c.strokeStyle = col(a); c.lineWidth = 2.5; c.beginPath(); c.moveTo(px - r, py); c.lineTo(px + r, py); c.moveTo(px, py - r); c.lineTo(px, py + r); c.stroke(); } },
+  bass(c, x, y, w, h, s, col, i, T, K) { const cy = y + h / 2, ph = K.phase(T, 20, 12) * 6.2832; c.lineWidth = 5; c.lineJoin = 'round'; c.strokeStyle = col(0.45 + 0.55 * s.level); c.beginPath();
+    for (let k = 0; k <= 96; k++) { const u = k / 96, yy = cy + Math.sin(u * 6.2832 * 3 - ph) * (h * 0.42) * (0.1 + 0.9 * s.level) * Math.sin(Math.PI * u); k ? c.lineTo(x + u * w, yy) : c.moveTo(x, yy); } c.stroke(); },
+  bars(c, x, y, w, h, s, col) { const n = s.spectrum.length, bw = w / n; for (let k = 0; k < n; k++) { const v = s.spectrum[k], bh = Math.max(3, v * h * 0.95); c.fillStyle = col(0.3 + 0.7 * v); c.beginPath(); c.roundRect(x + k * bw + bw * 0.15, y + h - bh, bw * 0.7, bh, 3); c.fill(); } },
+  dots(c, x, y, w, h, s, col) { const n = 8; for (let k = 0; k < n; k++) { const v = Math.max(s.spectrum[k * 2], s.spectrum[k * 2 + 1]) * 0.8 + s.beat * 0.4, r = (h * 0.12) + v * h * 0.3; c.fillStyle = col(0.25 + 0.75 * Math.min(1, v)); c.beginPath(); c.arc(x + (k + 0.5) * w / n, y + h / 2, r, 0, 6.2832); c.fill(); } },
+};
+const GLYPH_OF = { kick: GLYPH.kick, snare: GLYPH.snare, hats: GLYPH.hats, bass: GLYPH.bass, keys: GLYPH.bars, lead: GLYPH.bars, pad: GLYPH.bars, sample: GLYPH.bars, vocals: GLYPH.bars, perc: GLYPH.dots, drums: GLYPH.dots };
+
+definePack({
+  draw(ctx, T, A, P, K) {
+    const W = 1920, H = 1080, real = A.stems.length > 0, list = (real ? A.stems : DEFAULT_ROLES.map(r => A.stem(r))).slice(0, P.lanes | 0), n = list.length;
+    ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H);
+    const m = A.meta || {};
+    K.text(ctx, m.title || 'STEM RACK', 90, 96, { font: `700 44px ${SANS}`, maxW: 1000 });
+    K.text(ctx, [m.artist, A.section && A.section.name, m.bpm && Math.round(m.bpm) + ' BPM', m.key].filter(Boolean).join('   ·   ').toUpperCase(), 90, 138, { font: `500 22px ${MONO}`, alpha: 0.6, maxW: 1100 });
+    K.text(ctx, real ? `${n} STEMS` : 'ESTIMATED FROM THE MIX', W - 90, 96, { font: `600 26px ${MONO}`, align: 'right', alpha: real ? 0.8 : 0.5 });
+    K.text(ctx, K.fmtTime(A.t) + (A.duration ? ' / ' + K.fmtTime(A.duration) : ''), W - 90, 138, { font: `500 22px ${MONO}`, align: 'right', alpha: 0.6 });
+    const top = 180, bottom = 1030, gap = 12, lh = (bottom - top - gap * (n - 1)) / n;
+    for (let i = 0; i < n; i++) {
+      const s = list[i], y = top + i * (lh + gap), u = n > 1 ? i / (n - 1) : 0.5, dim = s.audible === false ? 0.28 : 1, col = a => K.css(P.palette, u, a * dim);
+      ctx.fillStyle = `rgba(255,255,255,${0.035 + 0.05 * s.beat})`; ctx.beginPath(); ctx.roundRect(70, y, W - 140, lh, 14); ctx.fill();
+      ctx.fillStyle = col(1); ctx.beginPath(); ctx.roundRect(70, y, 8, lh, 4); ctx.fill();
+      if (P.text) {
+        K.text(ctx, s.name, 110, y + Math.min(lh * 0.42, 44), { font: `700 ${Math.min(34, lh * 0.34)}px ${SANS}`, color: K.css(P.palette, u, 1), alpha: dim, upper: true, maxW: 420 });
+        K.text(ctx, `${s.role}  ·  ${fmtDb(s.gainDb)}${s.audible === false ? '  ·  MUTED' : ''}`, 110, y + Math.min(lh * 0.42, 44) + Math.min(26, lh * 0.25), { font: `500 ${Math.min(20, lh * 0.2)}px ${MONO}`, alpha: 0.55 * dim, maxW: 420 });
+        if (lh > 70) {
+          const fl = Math.min(22, lh * 0.22), fk = Math.min(17, lh * 0.17), yl = y + lh - 20;   // sample label on the bottom line, kit name on its own line above it
+          K.text(ctx, s.label || (s.estimated ? '' : '—'), 110, yl, { font: `500 ${fl}px ${SANS}`, alpha: 0.85 * dim, maxW: 520 });
+          if (s.kit) K.text(ctx, s.kit, 110, yl - fl - 6, { font: `400 ${fk}px ${MONO}`, alpha: 0.45 * dim, maxW: 520, upper: true });
+          if (s.clip) { ctx.fillStyle = col(0.7); ctx.fillRect(110, y + lh - 8, 500 * s.clip.progress, 3); ctx.fillStyle = 'rgba(255,255,255,0.12)'; ctx.fillRect(110 + 500 * s.clip.progress, y + lh - 8, 500 * (1 - s.clip.progress), 3); }
+        }
+      }
+      // level meter
+      const mx = 700, mw = 300, my = y + lh / 2 - 9; ctx.fillStyle = 'rgba(255,255,255,0.08)'; ctx.beginPath(); ctx.roundRect(mx, my, mw, 18, 9); ctx.fill();
+      ctx.fillStyle = col(0.95); ctx.beginPath(); ctx.roundRect(mx, my, Math.max(18, mw * Math.min(1, s.level)), 18, 9); ctx.fill();
+      // glyph by role
+      const gx = 1040, gw = 760, gh = lh - 16, gy = y + 8; ctx.save(); ctx.beginPath(); ctx.rect(gx, gy, gw, gh); ctx.clip();
+      (P.glyphs ? (GLYPH_OF[s.role] || GLYPH.bars) : GLYPH.bars)(ctx, gx, gy, gw, gh, s, col, i, T, K); ctx.restore();
+    }
+  }
+});
+</script>

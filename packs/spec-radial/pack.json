@@ -1,0 +1,51 @@
+{
+ "name": "Spectrum: Radial",
+ "page": "index.html",
+ "type": "native",
+ "width": 1920,
+ "height": 1080,
+ "loopSeconds": 60,
+ "description": "Mirrored spectrum spokes around a bass-pulsing ring with a waveform inside.",
+ "params": {
+  "palette": {
+   "type": "select",
+   "label": "Palette",
+   "options": [
+    "aurora",
+    "sunset",
+    "neon",
+    "ember",
+    "ocean",
+    "mono",
+    "candy"
+   ],
+   "default": "sunset"
+  },
+  "bg": {
+   "type": "color",
+   "label": "Background",
+   "default": "#06060f"
+  },
+  "spin": {
+   "type": "number",
+   "label": "Rotations per loop",
+   "default": 2,
+   "min": 0,
+   "max": 6,
+   "step": 1
+  },
+  "thick": {
+   "type": "number",
+   "label": "Spoke width",
+   "default": 7,
+   "min": 2,
+   "max": 14,
+   "step": 1
+  },
+  "showText": {
+   "type": "bool",
+   "label": "Show song info",
+   "default": true
+  }
+ }
+}

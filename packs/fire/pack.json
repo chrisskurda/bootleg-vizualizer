@@ -1,0 +1,45 @@
+{
+  "name": "Fire",
+  "description": "Layered flame tongues along the bottom, height driven by the spectrum, with rising embers and heat glow.",
+  "type": "native",
+  "width": 1920,
+  "height": 1080,
+  "loopSeconds": 20,
+  "params": {
+    "palette": {
+      "type": "select",
+      "label": "Palette",
+      "options": [
+        "aurora",
+        "sunset",
+        "neon",
+        "ember",
+        "ocean",
+        "mono",
+        "candy"
+      ],
+      "default": "ember"
+    },
+    "bg": {
+      "type": "color",
+      "label": "Background",
+      "default": "#080304"
+    },
+    "embers": {
+      "type": "number",
+      "label": "Embers",
+      "default": 120,
+      "min": 0,
+      "max": 240,
+      "step": 10
+    },
+    "height": {
+      "type": "number",
+      "label": "Flame height",
+      "default": 1,
+      "min": 0.4,
+      "max": 1.6,
+      "step": 0.05
+    }
+  }
+}

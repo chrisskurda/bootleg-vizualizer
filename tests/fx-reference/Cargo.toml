@@ -1,0 +1,10 @@
+[package]
+name = "fx-reference"
+version = "0.1.0"
+edition = "2021"
+publish = false
+
+[dependencies]
+
+[profile.release]
+opt-level = 3
