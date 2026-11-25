@@ -47,7 +47,8 @@ function staticChecks(id) {
   if (m.page && !fs.existsSync(path.join(dir, m.page))) bad.push('page file missing');
   const P = m.params || {};
   for (const [k, d] of Object.entries(P)) {
-    if (!['number', 'color', 'select', 'bool'].includes(d.type)) bad.push(`${k}: bad type ${d.type}`);
+    if (!['number', 'color', 'select', 'bool', 'multi'].includes(d.type)) bad.push(`${k}: bad type ${d.type}`);
+    if (d.type === 'multi' && !(Array.isArray(d.options) && d.options.length && Array.isArray(d.default) && d.default.every(x => d.options.includes(x)))) bad.push(`${k}: multi needs options[] and a default[] that is a subset of them`);
     if (d.default === undefined) bad.push(`${k}: no default`);
     if (d.type === 'select' && !(d.options || []).includes(d.default)) bad.push(`${k}: default not in options`);
     if (d.type === 'number' && !(d.min <= d.default && d.default <= d.max && d.step > 0)) bad.push(`${k}: default outside min/max or bad step`);
@@ -56,7 +57,7 @@ function staticChecks(id) {
   rec(id, 'manifest', bad.length ? 'FAIL' : 'PASS', bad.join('; '));
   const ownPalette = !!(P.palette && !(P.palette.options || []).every(o => KIT_PALETTES.includes(o)));  // pack defines its own themes (colors live in its palette table)
   const missing = ['palette', 'bg'].filter(k => !P[k] && !(ownPalette && k === 'bg')); rec(id, 'palette+bg params', missing.length ? 'WARN' : 'PASS', missing.length ? 'missing: ' + missing.join(', ') : '');
-  if (P.scene || P.cycle || P.sceneBeats) { const need = ['cycle', 'sceneBeats', 'scene'].filter(k => !P[k]); rec(id, 'multi-scene params (§2a)', need.length ? 'FAIL' : 'PASS', need.length ? 'missing: ' + need.join(', ') : ''); }
+  if (P.scenes || P.scene || P.cycle || P.sceneBeats) { const need = ['cycle', 'sceneBeats', 'scenes'].filter(k => !P[k]); rec(id, 'multi-scene params (§2a)', need.length ? 'FAIL' : P.scenes.type !== 'multi' ? 'FAIL' : 'PASS', need.length ? 'missing: ' + need.join(', ') : P.scenes.type !== 'multi' ? '`scenes` must be a multi param (pick a subset; one = hold it)' : ''); }
   // scan every text file in the pack
   const files = fs.readdirSync(dir, { recursive: true }).filter(f => /\.(html|js|css)$/.test(f)); let hits = [], colors = 0, palCalls = 0, fonts = new Set(), src = '', portable = new Set();
   for (const f of files) {
@@ -135,7 +136,7 @@ async function dynamic(id, m) {
   // every param option
   await pg.evaluate(([F, M]) => window.__loadFeatures(F, M), [F, LONG]); const bad = [];
   for (const [k, d] of Object.entries(m.params || {})) {
-    const vals = d.type === 'select' ? d.options : d.type === 'bool' ? [true, false] : d.type === 'number' ? [d.min, d.max] : ['#000000', '#ffffff'];
+    const vals = d.type === 'select' ? d.options : d.type === 'multi' ? [...d.options.map(o => [o]), d.options.slice(0, 2), [], d.options] : d.type === 'bool' ? [true, false] : d.type === 'number' ? [d.min, d.max] : ['#000000', '#ffffff'];   // multi: each option alone, a pair, none, all
     for (const v of vals) { let s; try { s = await pg.evaluate(([t, P]) => window.__drawAudio(t, P), [5, { [k]: v }]); } catch (e) { bad.push(`${k}=${v}: ${String(e.message).split('\n')[0]}`); continue; } if (!(s.std >= 0)) bad.push(`${k}=${v}: NaN output`); }
   }
   rec(id, 'all param options render', bad.length ? 'FAIL' : 'PASS', bad.slice(0, 3).join('; '));

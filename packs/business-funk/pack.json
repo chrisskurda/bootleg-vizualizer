@@ -1,71 +1,81 @@
 {
- "name": "Business Funk",
- "page": "index.html",
- "type": "native",
- "width": 1920,
- "height": 1080,
- "loopSeconds": 90,
- "description": "Ten infographic-style 64-band analyzers (bars, donut, pyramid, candles, dot matrix, gauges, bubbles, area, funnel, spiral). Shows song title/artist/BPM/key/section from metadata; scenes can follow the song's sections or beats.",
- "params": {
-  "palette": {
-   "type": "select",
-   "label": "Palette",
-   "options": [
-    "Report",
-    "Boardroom",
-    "Shag"
-   ],
-   "default": "Report"
-  },
-  "gain": {
-   "type": "number",
-   "label": "Gain",
-   "default": 1,
-   "min": 0.5,
-   "max": 1.6,
-   "step": 0.05
-  },
-  "cycle": {
-   "type": "select",
-   "label": "Scene changes",
-   "options": [
-    "auto",
-    "fixed",
-    "beats",
-    "sections"
-   ],
-   "default": "auto"
-  },
-  "sceneBeats": {
-   "type": "number",
-   "label": "Beats per scene",
-   "default": 16,
-   "min": 4,
-   "max": 64,
-   "step": 4
-  },
-  "scene": {
-   "type": "select",
-   "label": "Hold one scene",
-   "options": [
-    "(cycle)",
-    "Bars",
-    "Donut",
-    "Pyramid",
-    "Candles",
-    "Dots",
-    "Gauges",
-    "Bubbles",
-    "Area",
-    "Funnel",
-    "Spiral"
-   ],
-   "default": "(cycle)"
-  },
-  "showMeta": {
-   "type": "bool",
-   "label": "Show song info",
-   "default": true
+  "name": "Business Funk",
+  "page": "index.html",
+  "type": "native",
+  "width": 1920,
+  "height": 1080,
+  "loopSeconds": 90,
+  "description": "Ten infographic-style 64-band analyzers (bars, donut, pyramid, candles, dot matrix, gauges, bubbles, area, funnel, spiral). Shows song title/artist/BPM/key/section from metadata; scenes can follow the song's sections or beats.",
+  "params": {
+    "palette": {
+      "type": "select",
+      "label": "Palette",
+      "options": [
+        "Report",
+        "Boardroom",
+        "Shag"
+      ],
+      "default": "Report"
+    },
+    "gain": {
+      "type": "number",
+      "label": "Gain",
+      "default": 1,
+      "min": 0.5,
+      "max": 1.6,
+      "step": 0.05
+    },
+    "cycle": {
+      "type": "select",
+      "label": "Scene changes",
+      "options": [
+        "auto",
+        "fixed",
+        "beats",
+        "sections"
+      ],
+      "default": "auto"
+    },
+    "sceneBeats": {
+      "type": "number",
+      "label": "Beats per scene",
+      "default": 16,
+      "min": 4,
+      "max": 64,
+      "step": 4
+    },
+    "scenes": {
+      "type": "multi",
+      "label": "Scenes (pick one to hold it)",
+      "options": [
+        "Bars",
+        "Donut",
+        "Pyramid",
+        "Candles",
+        "Dots",
+        "Gauges",
+        "Bubbles",
+        "Area",
+        "Funnel",
+        "Spiral"
+      ],
+      "default": [
+        "Bars",
+        "Donut",
+        "Pyramid",
+        "Candles",
+        "Dots",
+        "Gauges",
+        "Bubbles",
+        "Area",
+        "Funnel",
+        "Spiral"
+      ]
+    },
+    "showMeta": {
+      "type": "bool",
+      "label": "Show song info",
+      "default": true
+    }
   }
- }
 }

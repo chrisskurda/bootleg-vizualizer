@@ -6,10 +6,61 @@
   "height": 1080,
   "loopSeconds": 60,
   "params": {
-    "palette": { "type": "select", "label": "Palette", "options": ["aurora", "sunset", "neon", "ember", "ocean", "mono", "candy"], "default": "ember" },
-    "bg": { "type": "color", "label": "Background", "default": "#0a0505" },
-    "cycle": { "type": "select", "label": "Scene changes", "options": ["auto", "fixed", "beats", "sections"], "default": "auto" },
-    "sceneBeats": { "type": "number", "label": "Beats per scene", "default": 8, "min": 2, "max": 32, "step": 2 },
-    "scene": { "type": "select", "label": "Hold scene", "options": ["(cycle)", "Tunnel", "Grid", "Bloom", "Bars", "Orbit"], "default": "(cycle)" }
+    "palette": {
+      "type": "select",
+      "label": "Palette",
+      "options": [
+        "aurora",
+        "sunset",
+        "neon",
+        "ember",
+        "ocean",
+        "mono",
+        "candy"
+      ],
+      "default": "ember"
+    },
+    "bg": {
+      "type": "color",
+      "label": "Background",
+      "default": "#0a0505"
+    },
+    "cycle": {
+      "type": "select",
+      "label": "Scene changes",
+      "options": [
+        "auto",
+        "fixed",
+        "beats",
+        "sections"
+      ],
+      "default": "auto"
+    },
+    "sceneBeats": {
+      "type": "number",
+      "label": "Beats per scene",
+      "default": 8,
+      "min": 2,
+      "max": 32,
+      "step": 2
+    },
+    "scenes": {
+      "type": "multi",
+      "label": "Scenes (pick one to hold it)",
+      "options": [
+        "Tunnel",
+        "Grid",
+        "Bloom",
+        "Bars",
+        "Orbit"
+      ],
+      "default": [
+        "Tunnel",
+        "Grid",
+        "Bloom",
+        "Bars",
+        "Orbit"
+      ]
+    }
   }
 }

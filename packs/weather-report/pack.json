@@ -17,11 +17,10 @@
       ],
       "default": "Broadcast"
     },
-    "scene": {
-      "type": "select",
-      "label": "Scene",
+    "scenes": {
+      "type": "multi",
+      "label": "Scenes (pick one to hold it)",
       "options": [
-        "Cycle",
         "Outlook",
         "Radar",
         "Wind",
@@ -33,7 +32,18 @@
         "Thermometers",
         "Hurricane"
       ],
-      "default": "Cycle"
+      "default": [
+        "Outlook",
+        "Radar",
+        "Wind",
+        "Isobars",
+        "Rain",
+        "HeatMap",
+        "Sunrise",
+        "Fronts",
+        "Thermometers",
+        "Hurricane"
+      ]
     },
     "cycle": {
       "type": "select",

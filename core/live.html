@@ -21,6 +21,10 @@ audio{height:32px;max-width:320px}
 #panel input[type=range]{width:100%}
 #panel input[type=color]{width:100%;height:26px;border:0;background:none;padding:0}
 #panel select{width:100%}
+#panel .chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+#panel .chip{padding:2px 8px;font-size:11px;border-radius:99px;background:#151a3a;border:1px solid #2d3470;color:#8b93b0;cursor:pointer}
+#panel .chip.on{background:#2b3580;border-color:#7c8cff;color:#fff}
+#panel .multi .all{font-size:10.5px;margin-left:6px;color:#7c8cff}
 </style></head><body>
 <iframe id="pack" allow="autoplay"></iframe>
 <script src="/core/look.js"></script>
@@ -53,7 +57,7 @@ $('packSel').innerHTML = packs.map(p => `<option value="${p.id}">${p.name}</opti
 let cur = null, params = {}; const look = { ...LOOK_DEFAULTS, ...JSON.parse(q.get('look') || '{}') };
 let urlParams = JSON.parse(q.get('params') || '{}'), firstLoad = true;
 function syncUrl() { const u = new URLSearchParams(location.search); u.set('pack', cur.id);
-  const defs = Object.fromEntries(Object.entries(cur.params || {}).map(([k, d]) => [k, d.default])), diff = Object.fromEntries(Object.entries(params).filter(([k, v]) => v !== defs[k]));
+  const defs = Object.fromEntries(Object.entries(cur.params || {}).map(([k, d]) => [k, d.default])), diff = Object.fromEntries(Object.entries(params).filter(([k, v]) => JSON.stringify(v) !== JSON.stringify(defs[k])));
   Object.keys(diff).length ? u.set('params', JSON.stringify(diff)) : u.delete('params');
   const ld = Object.fromEntries(Object.entries(look).filter(([k, v]) => v !== LOOK_DEFAULTS[k])); Object.keys(ld).length ? u.set('look', JSON.stringify(ld)) : u.delete('look');
   history.replaceState(null, '', '?' + u); }
@@ -70,6 +74,10 @@ function buildPanel() {
     if (def.type === 'number') add(`<label><span>${lab}<b>${v}</b></span><input type="range" min="${def.min}" max="${def.max}" step="${def.step}" value="${v}"></label>`, el => el.querySelector('input').oninput = e => { obj[key] = +e.target.value; el.querySelector('b').textContent = obj[key]; onch(); });
     else if (def.type === 'color') add(`<label><span>${lab}</span><input type="color" value="${v}"></label>`, el => el.querySelector('input').oninput = e => { obj[key] = e.target.value; onch(); });
     else if (def.type === 'select') add(`<label><span>${lab}</span><select>${def.options.map(o => `<option ${o === v ? 'selected' : ''}>${o}</option>`).join('')}</select></label>`, el => el.querySelector('select').onchange = e => { obj[key] = e.target.value; onch(); });
+    else if (def.type === 'multi') add(`<label class="multi"><span>${lab} <a href="#" class="all">all</a></span><div class="chips">${def.options.map(o => `<button type="button" class="chip" data-o="${o}">${o}</button>`).join('')}</div></label>`, el => {
+      const paint = () => el.querySelectorAll('.chip').forEach(c => c.classList.toggle('on', obj[key].includes(c.dataset.o)));
+      el.querySelectorAll('.chip').forEach(c => c.onclick = e => { e.preventDefault(); const o = c.dataset.o, set = new Set(obj[key]); set.has(o) ? set.delete(o) : set.add(o); obj[key] = def.options.filter(x => set.has(x)); paint(); onch(); });
+      el.querySelector('.all').onclick = e => { e.preventDefault(); obj[key] = def.options.slice(); paint(); onch(); }; paint(); });
     else if (def.type === 'bool') add(`<label><span>${lab}<input type="checkbox" ${v ? 'checked' : ''}></span></label>`, el => el.querySelector('input').onchange = e => { obj[key] = e.target.checked; onch(); });
   };
   for (const [k, d] of Object.entries(cur.params || {})) row(params, k, d, syncUrl);
@@ -77,7 +85,7 @@ function buildPanel() {
   for (const [k, mn, mx, st, lb] of LOOKS) row(look, k, { type: 'number', min: mn, max: mx, step: st, label: lb }, syncUrl);
   P.insertAdjacentHTML('beforeend', '<h4>Preset</h4><button id="bCopy">Copy render command</button> <button id="bReset">Reset</button>');
   $('bCopy').onclick = () => { const defs = Object.fromEntries(Object.entries(cur.params || {}).map(([k, d]) => [k, d.default]));
-    const ps = Object.entries(params).filter(([k, v]) => v !== defs[k]).map(([k, v]) => `--param ${k}='${v}'`).join(' '), ld = Object.fromEntries(Object.entries(look).filter(([k, v]) => v !== LOOK_DEFAULTS[k]));
+    const ps = Object.entries(params).filter(([k, v]) => JSON.stringify(v) !== JSON.stringify(defs[k])).map(([k, v]) => `--param ${k}='${v}'`).join(' '), ld = Object.fromEntries(Object.entries(look).filter(([k, v]) => v !== LOOK_DEFAULTS[k]));
     const cmd = `node bin/render.mjs --pack ${cur.id} --audio <song> ${ps} ${Object.keys(ld).length ? `--look '${JSON.stringify(ld)}'` : ''}`.replace(/\s+/g, ' ').trim();
     navigator.clipboard?.writeText(cmd); say('Copied: ' + cmd); setTimeout(() => say(''), 4000); };
   $('bReset').onclick = () => { Object.assign(look, LOOK_DEFAULTS); loadPack(cur.id); };

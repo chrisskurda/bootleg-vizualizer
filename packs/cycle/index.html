@@ -55,18 +55,17 @@ const SC = [
 ];
 definePack({
   draw(ctx, T, A, P, K) {
-    const hold = NAMES.indexOf(P.scene);
-    let { idx, local, len } = K.scenes(T, A, { count: 5, mode: P.cycle, beats: P.sceneBeats, loop: 60, durs: [12, 12, 12, 12, 12] });
-    if (hold >= 0) idx = hold;
+    let { idx, local, len, held } = K.scenes(T, A, { count: 5, mode: P.cycle, beats: P.sceneBeats, loop: 60, durs: [12, 12, 12, 12, 12], only: K.sceneIndices(P.scenes ?? P.scene, NAMES) });
+    if (held) { local = T % 12; len = 12; }   // one scene chosen: hold it (no wipes)
     ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H);
     SC[idx](ctx, local, A, P, K);
     const wl = .45;
-    if (hold < 0 && local < wl) {
+    if (!held && local < wl) {
       const p = local / wl, x = W * p, prev = (idx + 4) % 5;
       ctx.save(); ctx.beginPath(); ctx.rect(x, 0, W - x, H); ctx.clip(); ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H); SC[prev](ctx, local + len, A, P, K); ctx.restore();
       ctx.fillStyle = K.css(P.palette, .9); ctx.fillRect(x - 10, 0, 20, H);
     }
-    if (hold < 0 && local > len - wl) {
+    if (!held && local > len - wl) {
       const x = W * (1 - (local - (len - wl)) / wl) * 0 + W * ((local - (len - wl)) / wl) * 0; // pre-cut: thin bar waiting at the left edge
       ctx.fillStyle = K.css(P.palette, .9, (local - (len - wl)) / wl); ctx.fillRect(x, 0, 6, H);
     }

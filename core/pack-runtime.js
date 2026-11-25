@@ -48,41 +48,30 @@
       if (maxW) { const w = ctx.measureText(str).width; if (w > maxW) { const m = /(\d+)px/.exec(font); ctx.font = font.replace(/\d+px/, Math.max(8, Math.floor(m[1] * maxW / w)) + 'px'); } }
       ctx.fillText(str, x, y); ctx.restore();
     },
-    // Scene scheduler for multi-scene packs. Returns {idx, local, len}: which scene (0..count-1), seconds into it, its length.
-    //   o = { count, mode:'auto'|'fixed'|'beats'|'sections', beats:16, bpm:112 (fallback), loop, durs:[...] (fixed schedule) }
+    // Scene scheduler for multi-scene packs. Returns {idx, local, len, held}: which scene (0..count-1), seconds into it, its length,
+    // and whether a single scene is being held (no cuts).
+    //   o = { count, mode:'auto'|'fixed'|'beats'|'sections', beats:16, bpm:112 (fallback), loop, durs:[...] (fixed schedule), only:[idx...] }
+    //   only:     play just these scenes (indices, ascending). Several: the scheduler cycles through them; one: held (no wipes); none/all: every scene.
     //   sections: a scene change at every song section start (long sections are split into ~`beats`-beat chunks)
     //   beats:    a change every `beats` beats at the track's BPM (A.meta.bpm)
-    //   fixed:    fixed schedule from loop time T (durs, or loop/count each)
-    //   auto:     sections if the track has them, else beats if it has a BPM, else fixed
+    //   fixed:    fixed schedule from loop time T (durs per scene, or loop/count each), stretched so the chosen scenes exactly fill `loop` (keeps the seam seamless)
+    //   auto:     sections if the track has sections, else beats if it has a BPM, else fixed
     scenes(T, A, o) {
-      const n = o.count, bpm = (A.meta && A.meta.bpm) || o.bpm || 112, chunk = (o.beats || 16) * 60 / bpm;
+      const all = o.count, only = o.only && o.only.length && o.only.length < all ? o.only : null, n = only ? only.length : all, pick = i => (only ? only[i] : i);
+      const bpm = (A.meta && A.meta.bpm) || o.bpm || 112, chunk = (o.beats || 16) * 60 / bpm;
+      if (n === 1) return { idx: pick(0), local: T, len: o.loop || 60, held: true };
       let mode = o.mode || 'auto'; if (mode === 'auto') mode = A.section ? 'sections' : (A.meta && A.meta.bpm) ? 'beats' : 'fixed';
       if (mode === 'sections' && A.section) {
         const sec = A.section, span = Math.max(0.001, sec.end - sec.start), k = Math.max(1, Math.round(span / chunk)), cl = span / k, within = Math.max(0, A.t - sec.start), c = Math.min(k - 1, Math.floor(within / cl));
-        return { idx: (sec.index * 3 + c) % n, local: within - c * cl, len: cl };
+        return { idx: pick((sec.index * 3 + c) % n), local: within - c * cl, len: cl, held: false };
       }
-      if (mode === 'beats') { const c = Math.floor(A.t / chunk); return { idx: c % n, local: A.t - c * chunk, len: chunk }; }
-      const durs = o.durs || Array(n).fill(o.loop / n), loop = durs.reduce((a, b) => a + b, 0), t = ((T % loop) + loop) % loop; let acc = 0;
-      for (let i = 0; i < n; i++) { if (t < acc + durs[i] || i === n - 1) return { idx: i, local: t - acc, len: durs[i] }; acc += durs[i]; }
+      if (mode === 'beats') { const c = Math.floor(A.t / chunk); return { idx: pick(c % n), local: A.t - c * chunk, len: chunk, held: false }; }
+      const base = o.durs || Array(all).fill((o.loop || 60) / all), sel = only ? only.map(i => base[i]) : base.slice(), sum = sel.reduce((a, b) => a + b, 0), loop = o.loop || sum, durs = sel.map(d => d * loop / sum);
+      const t = ((T % loop) + loop) % loop; let acc = 0;
+      for (let i = 0; i < n; i++) { if (t < acc + durs[i] || i === n - 1) return { idx: pick(i), local: t - acc, len: durs[i], held: false }; acc += durs[i]; }
     },
-    // ---- loop-safe motion (SPEC §4a): anything that moves with T must return to where it started after `loop` seconds.
-    //   phase(T, loop, cycles)  0..1 sawtooth that repeats `cycles` (whole number, >=1) times per loop   -> angles, blinks, wraps
-    //   drift(T, loop, laps, span)  0..span, advancing exactly `laps` full spans per loop               -> scrolling/falling things that wrap at `span`
-    //   tri(T, loop)  0..1..0 over one loop (ping-pong, no jump)                                         -> idle versions of "progress"
-    phase: (T, loop, cycles = 1) => (((T / loop) * Math.max(1, Math.round(cycles))) % 1 + 1) % 1,
-    drift: (T, loop, laps, span) => (((T / loop) * Math.max(1, Math.round(laps))) % 1 + 1) % 1 * span,
-    tri: (T, loop) => { const u = (((T / loop) % 1) + 1) % 1; return 1 - Math.abs(1 - 2 * u); },
-    // song progress 0..1 while a track plays; with no track, a seamless ping-pong over the loop (so idle has no seam)
-    progress: (A, T, loop) => A.duration ? Math.min(1, Math.max(0, A.t / A.duration)) : kit.tri(T, loop),
-    // "stateful" smoothing without state: exponential average of f(spectrum) over the recent past (VU needles, easing).
-    //   f(spectrum, k) -> number; weights decay with time constant tau (s) over `taps` samples spaced `step` (s) apart
-    ema(A, f, { tau = 0.1, step = 1 / 30, taps = 8 } = {}) { let sum = 0, w = 0; for (let k = 0; k < taps; k++) { const wk = Math.exp(-k * step / tau); sum += wk * f(A.past(k * step), k); w += wk; } return sum / w; },
-    // soft drop shadow for a rounded rect with no shadowBlur (portable): layered translucent rounded rects
-    softShadow(ctx, x, y, w, h, r, { blur = 40, dy = 0, alpha = 0.5, color = '0,0,0' } = {}) {
-      const n = 14; ctx.save();
-      for (let i = n; i >= 1; i--) { const g = blur * i / n; ctx.fillStyle = `rgba(${color},${(alpha * 1.6 / n * (1 - (i - 1) / n)).toFixed(4)})`; ctx.beginPath(); ctx.roundRect(x - g, y - g + dy, w + 2 * g, h + 2 * g, r + g); ctx.fill(); }
-      ctx.restore();
-    },
+    // a multi-select param (names) -> scene indices for K.scenes `only`. Also accepts one name (the older `scene` param). Nothing / everything selected -> undefined (all scenes).
+    sceneIndices(sel, names) { const list = Array.isArray(sel) ? sel : sel ? [sel] : []; const idx = list.map(x => names.indexOf(x)).filter(i => i >= 0).sort((a, b) => a - b); return idx.length && idx.length < names.length ? idx : undefined; },
     peak(A, i, hold = 0.6, fall = 0.7, step = 0.04) { let m = 0; for (let t = 0; t <= hold; t += step) m = Math.max(m, A.past(t)[i] - fall * t); return Math.max(0, m); },
   };
   // cover art: kit.cover(A) -> HTMLImageElement once loaded (else null). Loaded lazily; the offline harness awaits it before frame 0.

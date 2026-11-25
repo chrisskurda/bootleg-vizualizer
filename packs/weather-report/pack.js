@@ -196,8 +196,8 @@
     const k0 = c.canvas.width / W;
     c.setTransform(k0, 0, 0, k0, 0, 0);
     const th = PAL[P.palette] || PAL.Broadcast, C = th.c, gain = P.gain == null ? 1 : P.gain;
-    const lockedIdx = SCENES.findIndex((d) => d[0] === P.scene), locked = lockedIdx >= 0;
-    const pl = locked ? { idx: lockedIdx, local: T, len: LOOP / SCENES.length } : K.scenes(T, A, { count: SCENES.length, mode: P.cycle, beats: P.sceneBeats, loop: LOOP });
+    const pl0 = K.scenes(T, A, { count: SCENES.length, mode: P.cycle, beats: P.sceneBeats, loop: LOOP, only: K.sceneIndices(P.scenes ?? P.scene, SCENES.map((d) => d[0])) });
+    const locked = pl0.held, pl = locked ? { idx: pl0.idx, local: T, len: LOOP / SCENES.length } : pl0;   // one scene chosen: hold it
     const idx = pl.idx, local = pl.local, len = pl.len;
     const def = SCENES[idx], fg = def[3] ? th.paper : th.ink, bg = def[3] ? th.ink : th.paper;
     const at = (dt) => {

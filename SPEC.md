@@ -1,6 +1,6 @@
-# Reactive Animation Pack Spec — v0.8 (draft)
+# Reactive Animation Pack Spec — v0.9 (draft)
 
-*v0.8: every frame starts from a fresh default 2D context (§2, §4 rule 6); pack-defined palettes via `K.addPalette` (§3). v0.7: stems (§2c): `A.stems`, `A.stem(nameOrRole)`, per-stem level/onsets/spectrum/clip text, estimates when there are no stems. v0.6: pixel passes `roto`/`glitch`/`screen` with a Rust reference, goldens and a portable hash (§5a); hi-res backing store (§2: draw in design units). v0.5: loop-safe motion helpers and rules (§4a: `K.phase/drift/tri/progress/ema`); `K.softShadow`; user image (`K.image`); portable canvas subset (§9). v0.4: `K.scenes()` music-synced scene scheduler (§2a); multi-scene convention (§3).*
+*v0.9: scene subsets — the `multi` param type (a checklist) and `K.scenes({only})`: cycle a chosen subset of scenes, or hold one (§2a, §3). v0.8: every frame starts from a fresh default 2D context (§2, §4 rule 6); pack-defined palettes via `K.addPalette` (§3). v0.7: stems (§2c): `A.stems`, `A.stem(nameOrRole)`, per-stem level/onsets/spectrum/clip text, estimates when there are no stems. v0.6: pixel passes `roto`/`glitch`/`screen` with a Rust reference, goldens and a portable hash (§5a); hi-res backing store (§2: draw in design units). v0.5: loop-safe motion helpers and rules (§4a: `K.phase/drift/tri/progress/ema`); `K.softShadow`; user image (`K.image`); portable canvas subset (§9). v0.4: `K.scenes()` music-synced scene scheduler (§2a); multi-scene convention (§3).*
 
 A **pack** is one self-contained animation that runs identically in two places:
 **live** (`core/live.html`, real-time audio) and **offline** (`bin/render.mjs`, frame-by-frame to MP4).
@@ -63,7 +63,7 @@ With no audio (`A.live` false) the numbers are 0, `spectrum`/`wave` are zero-fil
 Packs with several scenes (Business Funk, Weather Report) should not hard-code a schedule. `K.scenes(T, A, opts)` returns `{idx, local, len}` — which scene (0…count−1), seconds into it, and its length:
 
 ```js
-const { idx, local, len } = K.scenes(T, A, { count: 10, mode: P.cycle, beats: P.sceneBeats, loop: 90 /*, durs:[…], bpm: 112 */ });
+const { idx, local, len, held } = K.scenes(T, A, { count: 10, mode: P.cycle, beats: P.sceneBeats, loop: 90, only: K.sceneIndices(P.scenes, NAMES) /*, durs:[…], bpm: 112 */ });
 ```
 | `mode` | scene changes |
 |---|---|
@@ -71,6 +71,10 @@ const { idx, local, len } = K.scenes(T, A, { count: 10, mode: P.cycle, beats: P.
 | `beats` | every `beats` beats at the track's BPM (`A.meta.bpm`, else `opts.bpm`) |
 | `fixed` | on a fixed schedule from loop time `T` (`durs` per scene, or `loop/count` each) — the idle/no-audio behavior |
 | `auto` | `sections` if the track has sections, else `beats` if it has a BPM, else `fixed` |
+
+**Choosing scenes.** Multi-scene packs let the user pick which scenes play: `only` is a list of scene indices (ascending), and `K.sceneIndices(P.scenes, NAMES)` makes it from the pack's `scenes` param.
+Several chosen → the scheduler cycles through just those (in `fixed` mode their durations are stretched to exactly fill `loop`, so the loop seam stays seamless; in `beats` / `sections` mode they simply take turns).
+**One chosen → the scene is *held*: `held` is `true`, `local` is loop time, and the pack should skip cuts and wipes** (a pack may also skip the scene's entrance animation). Nothing or everything chosen → all scenes.
 
 Section *i* starts at scene `3·i` (so consecutive sections are visually distinct), advancing one scene per chunk. It is deterministic: it depends only on `A.t`, `A.meta` and `A.section`. Draw cut transitions (wipes) from `local` (just after a cut) **and** `local − len` (just before the next one) so the animation stays continuous.
 
@@ -117,7 +121,7 @@ Resolved values: `pack.json` defaults overridden by the user (live panel / `--pa
 
 ### K — kit (helpers; optional)
 `K.palettes` / `K.pal(name,u)` / `K.css(name,u,alpha)` palette lookup (`u` 0..1) · `K.mix` `K.clamp` · `K.rng(seed)` seeded random ·
-`K.scenes(T, A, opts)` scene scheduler (§2a) · loop-safe motion `K.phase` `K.drift` `K.tri` `K.progress` (§4a) · `K.ema(A, f)` smoothing from history · `K.softShadow(ctx, x, y, w, h, r, {blur,dy,alpha})` portable drop shadow · `K.image()` user image or null (§2b) · `K.addPalette(name, colors)` pack-defined palette · `K.smooth(ctx, pts)` Catmull-Rom path · `K.text(ctx, str, x, y, {font,color,align,alpha,maxW,upper})` shrink-to-fit text · `K.fmtTime(sec)` · `K.cover(A)` cover-art image or null · `K.peak(A, i, hold, fall)` peak-hold from history · `K.TAU`.
+`K.scenes(T, A, opts)` scene scheduler, `K.sceneIndices(sel, names)` (§2a) · loop-safe motion `K.phase` `K.drift` `K.tri` `K.progress` (§4a) · `K.ema(A, f)` smoothing from history · `K.softShadow(ctx, x, y, w, h, r, {blur,dy,alpha})` portable drop shadow · `K.image()` user image or null (§2b) · `K.addPalette(name, colors)` pack-defined palette · `K.smooth(ctx, pts)` Catmull-Rom path · `K.text(ctx, str, x, y, {font,color,align,alpha,maxW,upper})` shrink-to-fit text · `K.fmtTime(sec)` · `K.cover(A)` cover-art image or null · `K.peak(A, i, hold, fall)` peak-hold from history · `K.TAU`.
 Built-in palettes: aurora, sunset, neon, ember, ocean, mono, candy.
 
 ## 3. Params (what the live panel and `--param` expose)
@@ -130,8 +134,8 @@ Built-in palettes: aurora, sunset, neon, ember, ocean, mono, candy.
   "peaks":   { "type": "bool",   "label": "Peak caps", "default": true }
 }
 ```
-Types: `number` (slider), `color` (#rrggbb), `select`, `bool`. The UI is generated from this — no pack UI code.
-Multi-scene packs also declare `cycle` (select: `auto`/`fixed`/`beats`/`sections`), `sceneBeats` (number, default 16) and `scene` (select: `(cycle)` or a scene name to hold one — handy live).
+Types: `number` (slider), `color` (#rrggbb), `select`, `bool`, `multi` (a checklist: `options` are the choices, `default` and the value are arrays of chosen option names — usually all of them). The UI is generated from this — no pack UI code.
+Multi-scene packs also declare `cycle` (select: `auto`/`fixed`/`beats`/`sections`), `sceneBeats` (number, default 16) and **`scenes`** (`multi`, default all scene names: pick a subset to cycle just those, pick one to hold it, empty = all; the older single-choice `scene` param is still honoured, `K.sceneIndices(P.scenes ?? P.scene, NAMES)`).
 **Custom palettes:** a pack that wants its own theme registers it in `init` with `K.addPalette('vapor', ['#2a1b6b', '#b967ff', '#ff71ce', '#01cdfe', '#fffb96'])` (hex strings or `[r,g,b]`) and lists the name in the `palette` param's `options`; `K.pal` / `K.css` then resolve it like a built-in. (`K.palettes.name = [[r,g,b],…]` also works, for older packs.) An unknown palette name silently falls back to `aurora`.
 Convention: packs declare `palette` and `bg` so a theme can be swapped uniformly. Palette names are pack-defined (the kit's seven, or a pack's own like Business Funk's Report/Boardroom/Shag); omit `bg` if the pack's background comes from its palette.
 
@@ -297,7 +301,7 @@ Avoid: `shadowBlur`/`shadowColor` (use `K.softShadow`), `ctx.filter`, `createPat
 - [ ] `node bin/measure.mjs --packs ID` ≥ 60 fps
 - [ ] Looks right under `--look '{"hue":90}'` (no hard-coded colors outside palette/params)
 - [ ] Renders sensibly with empty metadata (`A.meta` = `{}`, `A.section` = null) and with long titles (`K.text` maxW)
-- [ ] Multi-scene packs use `K.scenes()` and expose `cycle`, `sceneBeats`, `scene` (§2a); verify scene changes land on section boundaries with a sidecar manifest
+- [ ] Multi-scene packs use `K.scenes()` and expose `cycle`, `sceneBeats` and a `scenes` multi param (§2a); verify scene changes land on section boundaries with a sidecar manifest
 - [ ] Stem-aware packs read `A.stem(role)` and look right on estimates (§2c); stem text is optional (param)
 - [ ] Loop motion follows §4a (checker: *loop seam*); song-driven elements have a periodic idle fallback
 - [ ] Stays inside the portable canvas subset (§9); uses `K.image()` only with a fallback when it is `null`
