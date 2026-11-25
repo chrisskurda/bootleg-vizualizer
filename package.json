@@ -10,7 +10,7 @@
   },
   "scripts": {
     "live": "node bin/server.mjs",
-    "test": "node tests/fx.test.mjs && node tests/fx-gl.test.mjs && node tests/stems.test.mjs && node tests/scenes.test.mjs",
+    "test": "node tests/fx.test.mjs && node tests/fx-gl.test.mjs && node tests/stems.test.mjs && node tests/scenes.test.mjs && node tests/kit.test.mjs",
     "check": "node bin/check.mjs",
     "goldens": "cd tests/fx-reference && cargo run --release"
   },
