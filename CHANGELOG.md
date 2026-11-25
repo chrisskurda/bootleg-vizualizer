@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Changed
+- Docs list bootleg-bridge-thing (a Car Thing remote that runs packs) among the consumers.
+
 ## [0.9.4] - 2026-11-25
 ### Changed
 - The stems layout is now named the **bootleg stem format** (documented in the bootleg player repo); docs, tool comments and the test fixture say so. No behaviour change.

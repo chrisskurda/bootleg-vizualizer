@@ -1,7 +1,7 @@
 # Vendoring bootleg-vizualizer into another app
 
 bootleg-vizualizer (spec + runtime + packs + FX + tests) is meant to be **vendored**: copied into a consumer at a pinned version, never
-edited in place there. Consumers: [bootleg](https://github.com/chrisskurda/bootleg) (the player), [bootleg-vizualizer-videocreator](https://git.skurda.org/chris/bootleg-vizualizer-videocreator.git), other apps that show visualizers (stem players, music makers).
+edited in place there. Consumers: [bootleg](https://github.com/chrisskurda/bootleg) (the player), [bootleg-bridge-thing](https://github.com/chrisskurda/bootleg-bridge-thing) (a Car Thing remote), other apps that show visualizers (stem players, music makers).
 
 ## What a consumer gets
 | path | what | consumer uses it for |

@@ -12,7 +12,7 @@ It is designed to be **vendored** ([VENDORING.md](VENDORING.md)) into whatever s
 | project | role |
 |---|---|
 | [bootleg](https://github.com/chrisskurda/bootleg) | the audio player (web + Tauri desktop); hosts packs live |
-| [bootleg-vizualizer-videocreator](https://git.skurda.org/chris/bootleg-vizualizer-videocreator.git) | renders packs to video (YouTube, trailers) |
+| [bootleg-bridge-thing](https://github.com/chrisskurda/bootleg-bridge-thing) | a Spotify Car Thing remote for bootleg: controls playback and runs packs on the device |
 | stem players, music makers | a stem player page; a music maker with a visualizer lane |
 
 ## Start
@@ -40,7 +40,7 @@ Spectrum (64 log bands) and waveform; bass/mid/high/beat; `A.past(sec)` history;
 a user-supplied image (`K.image()`); loop-safe motion helpers; custom palettes. Look/FX applied by the host: `roto`, `glitch`, `screen` (scanlines / CRT / curved) plus hue, saturation, brightness, blur, …
 
 ## Live host
-`core/live.html` is the reference host: pick a pack, then a source (file, `--media` library, mic, tab/system audio). **Tweak** edits params and look; *Copy render command* prints the matching videocreator command.
+`core/live.html` is the reference host: pick a pack, then a source (file, `--media` library, mic, tab/system audio). **Tweak** edits params and look; *Copy render command* prints the matching offline-render command.
 URL params: `?pack=ID&audio=URL&params={json}&look={json}&meta={json}&image=URL&ui=0&hud=0`. Keys: `f` fullscreen, `h` HUD.
 Embed it in an iframe and drive it with `postMessage`: `viz-features` (push your own analysis), `viz-meta`, `viz-image`, `viz-pack`.
 

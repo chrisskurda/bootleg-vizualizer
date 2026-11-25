@@ -272,7 +272,7 @@ Live sources: file, library (`--media`), mic/line-in, tab/system audio, or featu
 
 | interface | surface |
 |---|---|
-| CLI `render` (bootleg-vizualizer-videocreator) | `--pack a,b` `--audio f` `--image f` `--stems auto\|off\|DIR` `--scale` `--fps` `--start/--end` `--crf` `--out` `--param k=v` (repeat) `--look '{json}'` `--meta k=v` (repeat) `--list` |
+| offline renderer CLI `render` | `--pack a,b` `--audio f` `--image f` `--stems auto\|off\|DIR` `--scale` `--fps` `--start/--end` `--crf` `--out` `--param k=v` (repeat) `--look '{json}'` `--meta k=v` (repeat) `--list` |
 | CLI `bin/analyze.mjs`, `bin/meta.mjs`, `bin/measure.mjs`, `bin/check.mjs` | analysis JSON · print resolved metadata · live fps probe · pack acceptance check |
 | Live URL (`core/live.html`) | `?pack=ID` `&audio=URL` `&params={json}` `&look={json}` `&meta={json}` `&image=URL` `&ui=0` `&hud=0` (drop an image on the preview, or the Image… button) |
 | `postMessage` into live | `{type:'viz-features', bass,mid,high,beat,level}` · `{type:'viz-meta', meta:{…}}` · `{type:'viz-image', url}` · `{type:'viz-pack', id}` |
