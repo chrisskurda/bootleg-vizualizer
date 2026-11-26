@@ -15,6 +15,16 @@ It is designed to be **vendored** ([VENDORING.md](VENDORING.md)) into whatever s
 | [bootleg-bridge-thing](https://github.com/chrisskurda/bootleg-bridge-thing) | a Spotify Car Thing remote for bootleg: controls playback and runs packs on the device |
 | stem players, music makers | a stem player page; a music maker with a visualizer lane |
 
+## Gallery
+
+41 packs ship in `packs/`; a few of them, drawn live from a synthetic signal (`node bin/screenshots.mjs`):
+
+<table>
+<tr><td align="center"><img src="docs/screenshots/horizon.png" width="240" alt="Horizon"><br><sub><b>Horizon</b> — synthwave sun and grid</sub></td><td align="center"><img src="docs/screenshots/city.png" width="240" alt="City"><br><sub><b>City</b> — neon skyline</sub></td><td align="center"><img src="docs/screenshots/plaza.png" width="240" alt="Plaza"><br><sub><b>Plaza</b> — vaporwave columns</sub></td><td align="center"><img src="docs/screenshots/plasma.png" width="240" alt="Plasma"><br><sub><b>Plasma</b> — a plasma ball that follows the bass</sub></td></tr>
+<tr><td align="center"><img src="docs/screenshots/cassette.png" width="240" alt="Cassette"><br><sub><b>Cassette</b> — a tape deck with a live level meter</sub></td><td align="center"><img src="docs/screenshots/reel.png" width="240" alt="Reel"><br><sub><b>Reel</b> — reel-to-reel with VU meters</sub></td><td align="center"><img src="docs/screenshots/vinyl.png" width="240" alt="Vinyl"><br><sub><b>Vinyl</b> — a record that spins with the song</sub></td><td align="center"><img src="docs/screenshots/disc.png" width="240" alt="Disc"><br><sub><b>Disc</b> — a CD with a spectrum ring</sub></td></tr>
+<tr><td align="center"><img src="docs/screenshots/spec-aurora.png" width="240" alt="Aurora"><br><sub><b>Aurora</b> — spectrum as northern lights</sub></td><td align="center"><img src="docs/screenshots/spec-led.png" width="240" alt="LED"><br><sub><b>LED</b> — a segmented LED analyzer</sub></td><td align="center"><img src="docs/screenshots/stem-rack.png" width="240" alt="Stem rack"><br><sub><b>Stem rack</b> — one lane per stem, with the sample playing on it</sub></td><td align="center"><img src="docs/screenshots/desktop.png" width="240" alt="Desktop"><br><sub><b>Desktop</b> — a retro desktop of windows</sub></td></tr>
+</table>
+
 ## Start
     npm i                                      # once (needs Chrome and ffmpeg)
     node bin/server.mjs --media ~/Music        # live host: http://localhost:8080/core/live.html  (--port N)
