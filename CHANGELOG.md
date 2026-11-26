@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `bin/screenshots.mjs`: stills of packs from a synthetic audio signal (no audio file needed), with an optional contact sheet. A gallery of 12 packs in the README.
 
 ### Changed
+- `stem-rack`: tall lanes stack name / role · gain · kit / sample label without overlapping; the kit name moves onto the role line.
 - Docs list bootleg-bridge-thing (a Car Thing remote that runs packs) among the consumers.
 
 ## [0.9.4] - 2026-11-25
