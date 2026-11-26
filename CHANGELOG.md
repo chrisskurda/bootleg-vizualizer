@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ## [Unreleased]
 
 ### Added
+- `jazz` pack (Jazz Cup): 90s paper-cup pattern with a spectrum-driven brush swoosh, squiggles and confetti; optional cup silhouette. The cup is masked by repainting the background outside it, so it also renders correctly on hosts whose canvas has no `clip()` (bootleg-pod).
 - `bin/screenshots.mjs`: stills of packs from a synthetic audio signal (no audio file needed), with an optional contact sheet. A gallery of 12 packs in the README.
 
 ### Changed

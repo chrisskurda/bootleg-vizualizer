@@ -18,6 +18,7 @@ Generated from each pack's `pack.json` (`node bin/check.mjs` must pass for every
 | `glass` | Glass Player | 1920x1080 | 20s | Frutiger Aero: frosted glass player card with glossy equalizer pills. |
 | `halo` | Halo | 1920x1080 | 16s | Radial spectrum ring with beat pulse and orbiting dots. |
 | `horizon` | Neon Horizon | 1920x1080 | 20s | Synthwave: striped sun, spectrum mountains, endless grid road. |
+| `jazz` | Jazz Cup | 1920x1080 | 20s | 90s paper-cup pattern: teal brush swoosh and purple squiggle that dance with the spectrum, confetti drifting through. Optional cup silhouette. |
 | `kaleido` | Kaleidoscope | 1920x1080 | 20s | Mirrored wedge kaleidoscope of drifting glass shapes; spectrum scales the pieces. |
 | `leaves` | Leaves | 1920x1080 | 24s | Leaves tumbling across a dusk sky; loudness becomes wind gusts. |
 | `orb` | Aqua Orb | 1920x1080 | 20s | Frutiger Aero: glass sphere whose water level rises with the music. |

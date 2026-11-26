@@ -1,0 +1,53 @@
+<!doctype html><meta charset="utf-8"><title>Jazz Cup</title>
+<script src="../../core/pack-runtime.js"></script>
+<script>
+const L = 20, W = 1920, H = 1080;
+let CF;
+definePack({
+  init(ctx, K) {
+    K.addPalette('jazz', [[0, 165, 181], [0, 130, 160], [107, 47, 160], [150, 90, 200]]);
+    const r = K.rng(90); CF = Array.from({ length: 60 }, () => ({ x: r() * 1920, y: r() * 1080, laps: 1 + (r() * 2 | 0), sw: 1 + (r() * 3 | 0), ph: r() * 6.28, s: 10 + r() * 22, k: r() * 3 | 0, c: r() < .5 ? .1 : .85, rot: (r() < .5 ? -1 : 1) * (1 + (r() * 2 | 0)) }));
+  },
+  draw(ctx, T, A, P, K) {
+    const TAU = K.TAU, u = T / L, jz = P.palette === 'jazz', teal = K.css(P.palette, jz ? 0 : .2), teal2 = K.css(P.palette, .5, .35), purple = K.css(P.palette, jz ? .9 : .85);
+    ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H);
+    const cx = 960, topY = 120, botY = 990, tw = 700, bw = 470;
+    const pattern = (ox, oy, w, h) => {
+      ctx.fillStyle = '#fbf9f4'; ctx.fillRect(ox, oy, w, h);
+      // teal brush swoosh: filled tapered ribbon with bristle streaks
+      const sw = f => oy + h * (.28 + .5 * f) + Math.sin(TAU * (f * 1.1 - 2 * u)) * 36 + A.bass * 30 * Math.sin(f * 3.1), thick = f => (60 + A.mid * 40 + A.beat * 14) * Math.pow(Math.sin(Math.PI * f), .55) + 4;
+      ctx.fillStyle = teal; ctx.beginPath(); const N = 60;
+      for (let i = 0; i <= N; i++) { const f = i / N, x = ox - 40 + (w + 80) * f, y = sw(f) - thick(f) / 2; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); }
+      for (let i = N; i >= 0; i--) { const f = i / N, x = ox - 40 + (w + 80) * f, y = sw(f) + thick(f) / 2 + Math.sin(f * 40) * 3; ctx.lineTo(x, y); } ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 2; for (let b = -2; b <= 2; b++) { ctx.beginPath(); for (let i = 6; i <= N - 6; i++) { const f = i / N, x = ox - 40 + (w + 80) * f, y = sw(f) + b * thick(f) * .16; i > 6 ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.stroke(); }
+      // purple squiggle: amplitude per segment from spectrum
+      ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = purple; ctx.lineWidth = 14; ctx.beginPath();
+      for (let i = 0; i <= 160; i++) { const f = i / 160, x = ox - 20 + (w + 40) * f, v = A.spectrum[Math.min(63, Math.floor(f * 40) + 2)], amp = 26 + v * 80, y = oy + h * .72 - f * h * .25 + Math.sin(f * TAU * 5.5 - TAU * 2 * u) * amp; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.stroke();
+      ctx.lineWidth = 8; ctx.strokeStyle = teal; ctx.beginPath();
+      for (let i = 0; i <= 120; i++) { const f = i / 120, x = ox - 20 + (w + 40) * f, y = oy + h * .14 + f * h * .12 + Math.sin(f * TAU * 7 + TAU * u) * (14 + A.high * 30); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.stroke();
+      ctx.strokeStyle = teal2; ctx.lineWidth = 5; ctx.beginPath(); for (let i = 0; i <= 100; i++) { const f = i / 100, x = ox - 20 + (w + 40) * f, y = oy + h * .9 + Math.sin(f * TAU * 4 - TAU * u) * (10 + A.mid * 24); i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.stroke();
+      const cfn = Math.min(P.confetti, 60), span = h + 200;
+      for (let i = 0; i < cfn; i++) {
+        const c = CF[i], x = ox + (c.x % w) + Math.sin(TAU * c.sw * u + c.ph) * 24, y = oy + h + 100 - ((K.drift(T, L, c.laps, span) + (c.y / H) * span) % span), s = c.s * (1 + A.beat * .2 + A.spectrum[(i * 3) % 64] * .3);
+        ctx.fillStyle = K.css(P.palette, c.c); ctx.save(); ctx.translate(x, y); ctx.rotate(TAU * c.rot * u + c.ph);
+        ctx.beginPath(); if (c.k === 0) ctx.arc(0, 0, s * .4, 0, TAU); else if (c.k === 1) { ctx.moveTo(0, -s * .6); ctx.lineTo(s * .6, s * .5); ctx.lineTo(-s * .6, s * .5); ctx.closePath(); } else ctx.roundRect(-s * .6, -s * .12, s * 1.2, s * .24, s * .12); ctx.fill(); ctx.restore();
+      }
+    };
+    if (!P.cup) { pattern(0, 0, W, H); }
+    else {
+      const path = () => { ctx.beginPath(); ctx.moveTo(cx - tw / 2, topY); ctx.lineTo(cx + tw / 2, topY); ctx.lineTo(cx + bw / 2, botY); ctx.lineTo(cx - bw / 2, botY); ctx.closePath(); };
+      ctx.save(); path(); ctx.clip(); pattern(cx - tw / 2, topY, tw, botY - topY);
+      const sh = ctx.createLinearGradient(cx - tw / 2, 0, cx + tw / 2, 0); sh.addColorStop(0, 'rgba(0,0,0,.18)'); sh.addColorStop(.18, 'rgba(255,255,255,.18)'); sh.addColorStop(.3, 'rgba(255,255,255,0)'); sh.addColorStop(.75, 'rgba(0,0,0,0)'); sh.addColorStop(1, 'rgba(0,0,0,.22)'); ctx.fillStyle = sh; ctx.fillRect(cx - tw / 2, topY, tw, botY - topY); ctx.restore();
+      // mask without clip: repaint the background outside the cup (hosts whose canvas lacks clip still get a clean cup)
+      ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, topY); ctx.fillRect(0, botY, W, H - botY);
+      ctx.beginPath(); ctx.moveTo(0, topY - 1); ctx.lineTo(cx - tw / 2, topY - 1); ctx.lineTo(cx - bw / 2, botY + 1); ctx.lineTo(0, botY + 1); ctx.closePath(); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(W, topY - 1); ctx.lineTo(cx + tw / 2, topY - 1); ctx.lineTo(cx + bw / 2, botY + 1); ctx.lineTo(W, botY + 1); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = 'rgba(40,30,20,.14)'; ctx.beginPath(); ctx.ellipse(cx, botY, bw / 2 + 50, 32, 0, 0, Math.PI); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = '#ece6da'; ctx.strokeStyle = 'rgba(0,0,0,.12)'; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(cx, topY, tw / 2 + 8, 26, 0, 0, TAU); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#d9d1c3'; ctx.beginPath(); ctx.ellipse(cx, topY + 4, tw / 2 - 14, 19, 0, 0, TAU); ctx.fill();
+      ctx.fillStyle = '#fbf9f4'; ctx.beginPath(); ctx.ellipse(cx, topY + 10, tw / 2 - 40, 11, 0, 0, TAU); ctx.fill();
+      K.text(ctx, A.meta.title, 90, 110, { font: '700 40px system-ui', color: '#2a2230', maxW: 480 }); K.text(ctx, A.meta.artist, 90, 152, { font: '400 26px system-ui', color: '#2a2230', alpha: .65, maxW: 480 });
+    }
+  }
+});
+</script>

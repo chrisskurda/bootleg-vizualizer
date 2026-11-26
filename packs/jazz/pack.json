@@ -1,0 +1,43 @@
+{
+  "name": "Jazz Cup",
+  "description": "90s paper-cup pattern: teal brush swoosh and purple squiggle that dance with the spectrum, confetti drifting through. Optional cup silhouette.",
+  "type": "native",
+  "width": 1920,
+  "height": 1080,
+  "loopSeconds": 20,
+  "params": {
+    "palette": {
+      "type": "select",
+      "label": "Palette",
+      "options": [
+        "jazz",
+        "aurora",
+        "sunset",
+        "neon",
+        "ember",
+        "ocean",
+        "mono",
+        "candy"
+      ],
+      "default": "jazz"
+    },
+    "bg": {
+      "type": "color",
+      "label": "Background",
+      "default": "#f1ece2"
+    },
+    "cup": {
+      "type": "bool",
+      "label": "Cup silhouette",
+      "default": true
+    },
+    "confetti": {
+      "type": "number",
+      "label": "Confetti",
+      "default": 26,
+      "min": 0,
+      "max": 60,
+      "step": 2
+    }
+  }
+}
