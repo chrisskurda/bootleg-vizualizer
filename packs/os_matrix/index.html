@@ -1,0 +1,21 @@
+<!doctype html><meta charset="utf-8"><title>Matrix</title>
+<script src="../../core/pack-runtime.js"></script>
+<script>
+const W=1920,H=1080,hh=n=>{const x=Math.sin(n*127.1)*43758.5453;return x-Math.floor(x)};
+let GS,CS;
+definePack({
+  bg:'#000',
+  init(ctx,K){const kana=[];for(let c=0xFF66;c<=0xFF9D;c++)kana.push(String.fromCharCode(c));for(let d=0;d<10;d++)kana.push(String(d));GS={katakana:kana,binary:['0','1'],hex:'0123456789ABCDEF'.split('')};const r=K.rng(3);CS=Array.from({length:68},()=>({sp:1+(r()*3|0),off:r(),len:10+(r()*16|0)}));},
+  draw(ctx,T,A,P,K){
+    const TAU=K.TAU,G=GS[P.glyphs]||GS.katakana,t=P.tint,rgb=[1,3,5].map(i=>parseInt(t.slice(i,i+2),16)),R=28,clock=A.live?A.t:T;
+    ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);ctx.font='700 30px "MS Gothic","Courier New",monospace';ctx.textAlign='center';
+    for(let i=0;i<68;i++){const c=CS[i],e=Math.min(1,A.spectrum[Math.min(63,Math.floor(i/68*48))]*1.6),head=((K.phase(T,24,c.sp)+c.off)%1)*(R+c.len);
+      for(let k=0;k<c.len;k++){const row=Math.floor(head)-k;if(row<0||row>=R)continue;const flick=hh(i*3+row)<.15?Math.floor(T*8):0,gi=Math.floor(hh(i*131+row*17+flick)*G.length),f=1-k/c.len;
+        if(k===0){ctx.fillStyle='rgba(225,255,235,'+(.7+e*.3)+')';}else ctx.fillStyle=K.rgba(rgb,Math.pow(f,1.4)*(.3+e*.9));
+        ctx.fillText(G[gi],14+i*28,row*38+34);}}
+    if(P.title){const s=(A.meta.title||'Untitled').toUpperCase(),tw=62,x0=W/2-s.length*tw/2+tw/2,st=Math.floor(T*12);ctx.fillStyle='rgba(0,0,0,.72)';ctx.fillRect(0,430,W,190);ctx.font='700 96px "MS Gothic","Courier New",monospace';
+      for(let i=0;i<s.length;i++){const real=hh(i*7+st)<.78+(1-A.beat)*.0;const ch=s[i]===' '?' ':(real?s[i]:G[Math.floor(hh(i+st*3)*G.length)]);ctx.fillStyle=real?'#e6fff0':K.rgba(rgb,.9);ctx.fillText(ch,x0+i*tw,540);}
+      K.text(ctx,((A.section&&A.section.name)||'')+'   '+K.fmtTime(clock),W/2,590,{font:'600 30px "Courier New",monospace',color:t,align:'center',alpha:.9});}
+  }
+});
+</script>

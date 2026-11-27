@@ -100,6 +100,31 @@
   window.__whenCover = () => { const u = window.__META && window.__META.cover; if (!u) return; const e = loadCover(u); return e.ok ? 0 : new Promise(r => { e.img.addEventListener('load', r); e.img.addEventListener('error', r); }); };
   // user image (the host supplies it: drop on the preview, ?image=URL, --image FILE): kit.image() -> HTMLImageElement or null.
   kit.image = () => { const u = window.__IMAGE_URL; if (!u) return null; const e = loadCover(u); return e.ok ? e.img : null; };
+  // cover art with analysis (cover-art packs): kit.coverArt(A) -> null, or { img, w, h, aspect, avg:[r,g,b], lum 0..1,
+  //   colors: 5 distinct dominant [r,g,b] (most prominent first, saturation-weighted), px(n): n×n RGBA of the centre-cropped square }.
+  // Source: the track's cover (A.meta.cover), else the user image (K.image()). Analysed once per image; the art can change mid-track,
+  // so packs must not cache by pack lifetime (cache on the returned object instead). Pixel access happens here, not in packs;
+  // art that is not same-origin/CORS-clean reads as flat grey.
+  const ART = new WeakMap();
+  const analyse = img => {
+    const w = img.naturalWidth || img.width, h = img.naturalHeight || img.height, cache = {};
+    const o = { img, w, h, aspect: w / h, px(n) { if (cache[n]) return cache[n]; const c = document.createElement('canvas'); c.width = c.height = n; const x = c.getContext('2d'), s = Math.min(w, h); x.imageSmoothingQuality = 'high'; x.drawImage(img, (w - s) / 2, (h - s) / 2, s, s, 0, 0, n, n); try { return cache[n] = x.getImageData(0, 0, n, n).data; } catch (e) { return cache[n] = new Uint8ClampedArray(n * n * 4).fill(128); } } };
+    const d = o.px(48), bk = {}; let r = 0, g = 0, b = 0;
+    for (let i = 0; i < d.length; i += 4) { r += d[i]; g += d[i + 1]; b += d[i + 2]; const k = (d[i] >> 5) << 6 | (d[i + 1] >> 5) << 3 | d[i + 2] >> 5, e = bk[k] || (bk[k] = { n: 0, r: 0, g: 0, b: 0 }); e.n++; e.r += d[i]; e.g += d[i + 1]; e.b += d[i + 2]; }
+    const N = d.length / 4; o.avg = [r / N, g / N, b / N].map(Math.round); o.lum = (.299 * o.avg[0] + .587 * o.avg[1] + .114 * o.avg[2]) / 255;
+    const list = Object.values(bk).map(e => { const c = [e.r / e.n, e.g / e.n, e.b / e.n], sat = Math.max(...c) - Math.min(...c); return { c, w: e.n * (1 + sat / 100) }; }).sort((a, b) => b.w - a.w), cols = [];
+    for (const e of list) { if (cols.every(c => Math.hypot(c[0] - e.c[0], c[1] - e.c[1], c[2] - e.c[2]) > 70)) cols.push(e.c.map(Math.round)); if (cols.length >= 5) break; }
+    while (cols.length < 5) cols.push(cols[cols.length - 1] || o.avg);
+    o.colors = cols; return o;
+  };
+  kit.coverArt = A => { const img = kit.cover(A) || kit.image(); if (!img) return null; let o = ART.get(img); if (!o) ART.set(img, o = analyse(img)); return o; };
+  // draw a normalised sub-rect (u, v, uw, vh in 0..1) of the art's centre-cropped square into dx, dy, dw, dh
+  kit.coverDraw = (ctx, c, u, v, uw, vh, dx, dy, dw, dh) => { const s = Math.min(c.w, c.h); ctx.drawImage(c.img, (c.w - s) / 2 + u * s, (c.h - s) / 2 + v * s, uw * s, vh * s, dx, dy, dw, dh); };
+  // cheap blurred backdrop (downscaled to n×n, drawn smoothed to cover x, y, w, h); no ctx.filter / shadowBlur
+  kit.coverBlur = (ctx, c, x, y, w, h, n = 32) => {
+    if (!c._b || c._bn !== n) { const s0 = Math.min(c.w, c.h); let o = document.createElement('canvas'); o.width = o.height = 256; let q = o.getContext('2d'); q.imageSmoothingQuality = 'high'; q.drawImage(c.img, (c.w - s0) / 2, (c.h - s0) / 2, s0, s0, 0, 0, 256, 256); for (const m of [64, n]) { const p = document.createElement('canvas'); p.width = p.height = m; const pq = p.getContext('2d'); pq.imageSmoothingQuality = 'high'; pq.drawImage(o, 0, 0, m, m); o = p; } c._b = o; c._bn = n; }
+    const s = Math.max(w, h); ctx.save(); ctx.imageSmoothingQuality = 'high'; ctx.drawImage(c._b, x + (w - s) / 2, y + (h - s) / 2, s, s); ctx.restore();
+  };
   window.__whenImage = () => { const u = window.__IMAGE_URL; if (!u) return; const e = loadCover(u); return e.ok ? 0 : new Promise(r => { e.img.addEventListener('load', r); e.img.addEventListener('error', r); }); };
   window.kit = kit;
 

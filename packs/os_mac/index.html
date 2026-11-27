@@ -1,0 +1,47 @@
+<!doctype html><meta charset="utf-8"><title>Mono Mac</title>
+<script src="../../core/pack-runtime.js"></script>
+<script>
+const W=1920,H=1080,hh=n=>{const x=Math.sin(n*127.1)*43758.5453;return x-Math.floor(x)};
+let PAT;
+definePack({
+  bg:'#fff',
+  init(ctx){PAT=['#000','#fff'].map(c=>{const o=document.createElement('canvas');o.width=o.height=4;const q=o.getContext('2d');q.fillStyle=c;q.fillRect(0,0,2,2);q.fillRect(2,2,2,2);return ctx.createPattern(o,'repeat');});},
+  draw(ctx,T,A,P,K){
+    const TAU=K.TAU,inv=!!P.invert,ink=inv?'#fff':'#000',paper=inv?'#000':'#fff',pt=PAT[inv?1:0],clock=A.live?A.t:T,ph=K.phase(T,24,1);
+    const F=(s,w)=>(w||700)+' '+s+'px Chicago,Geneva,"Courier New",monospace';
+    ctx.fillStyle=paper;ctx.fillRect(0,0,W,H);ctx.save();ctx.scale(2,2);ctx.fillStyle=pt;ctx.fillRect(0,0,W/2,H/2);ctx.restore();
+    const act=A.section?A.section.index%4:Math.floor(T/6)%4;
+    const win=(i,x,y,w,h,title)=>{
+      ctx.fillStyle=ink;ctx.fillRect(x+6,y+6,w,h);ctx.fillStyle=paper;ctx.fillRect(x,y,w,h);ctx.strokeStyle=ink;ctx.lineWidth=3;ctx.strokeRect(x,y,w,h);
+      if(i===act){ctx.fillStyle=ink;for(let k=0;k<6;k++)ctx.fillRect(x+3,y+8+k*5,w-6,2);}
+      ctx.font=F(24);const tw=ctx.measureText(title).width+28;ctx.fillStyle=paper;ctx.fillRect(x+w/2-tw/2,y+4,tw,33);K.text(ctx,title,x+w/2,y+30,{font:F(24),color:ink,align:'center'});
+      if(i===act){ctx.fillStyle=paper;ctx.fillRect(x+14,y+9,22,22);ctx.strokeStyle=ink;ctx.lineWidth=3;ctx.strokeRect(x+14,y+9,22,22);}
+      ctx.fillStyle=ink;ctx.fillRect(x,y+40,w,3);return [x+3,y+43,w-6,h-46];
+    };
+    ctx.fillStyle=paper;ctx.fillRect(0,0,W,40);ctx.fillStyle=ink;ctx.fillRect(0,40,W,3);ctx.beginPath();ctx.arc(30,20,8,0,TAU);ctx.fill();
+    K.text(ctx,'File    Edit    View    Special',60,29,{font:F(24),color:ink});K.text(ctx,K.fmtTime(clock),W-30,29,{font:F(24),color:ink,align:'right'});
+    let [x,y,w,h]=win(0,90,100,900,520,'Spectrum');
+    ctx.fillStyle=ink;ctx.fillRect(x+20,y+h-40,w-40,3);
+    const n=32,bw=(w-40)/n;
+    for(let i=0;i<n;i++){const b=Math.min(63,1+Math.round(i*1.8)),v=Math.min(1,A.spectrum[b]*1.15),bh=v*(h-90),bx=x+20+i*bw,by=y+h-43-bh;ctx.fillStyle=i%2?pt:ink;ctx.fillRect(bx+3,by,bw-6,bh);ctx.strokeStyle=ink;ctx.lineWidth=3;ctx.strokeRect(bx+3,by,bw-6,bh);const p=Math.min(1,K.peak(A,b,1,.5))*(h-90);ctx.fillStyle=ink;ctx.fillRect(bx+3,y+h-52-p,bw-6,5);}
+    [x,y,w,h]=win(1,1060,140,760,360,'Scope');
+    ctx.strokeStyle=ink;ctx.lineWidth=3;ctx.setLineDash([4,8]);ctx.beginPath();ctx.moveTo(x+10,y+h/2);ctx.lineTo(x+w-10,y+h/2);ctx.stroke();ctx.setLineDash([]);
+    ctx.lineWidth=4;ctx.lineJoin='round';ctx.beginPath();for(let i=0;i<96;i++){const px=x+14+i/95*(w-28),py=y+h/2+A.wave[Math.min(127,i)]*(h*.38);i?ctx.lineTo(px,py):ctx.moveTo(px,py);}ctx.stroke();
+    [x,y,w,h]=win(2,90,700,1100,300,'Now Playing');
+    K.text(ctx,A.meta.title||'Untitled',x+30,y+70,{font:F(52),color:ink,maxW:w-60});
+    K.text(ctx,[A.meta.artist,A.section&&A.section.name].filter(Boolean).join('  -  '),x+30,y+112,{font:F(30,400),color:ink,maxW:w-60});
+    const pr=K.progress(A,T,24),sx=x+30,sw=w-190,sy=y+h-60;
+    ctx.strokeStyle=ink;ctx.lineWidth=3;ctx.strokeRect(sx,sy,sw,32);ctx.fillStyle=pt;ctx.fillRect(sx+3,sy+3,(sw-6)*pr,26);ctx.fillStyle=ink;ctx.fillRect(sx+(sw-20)*pr,sy-6,20,44);
+    K.text(ctx,K.fmtTime(clock),sx+sw+24,sy+28,{font:F(32),color:ink});
+    [x,y,w,h]=win(3,1260,560,560,440,'Music');
+    const dx=x+w/2-80,dy=y+50-A.beat*14;
+    ctx.fillStyle=paper;ctx.fillRect(dx,dy,160,160);ctx.strokeStyle=ink;ctx.lineWidth=5;ctx.strokeRect(dx,dy,160,160);
+    ctx.fillStyle=ink;ctx.fillRect(dx+36,dy,80,56);ctx.fillStyle=paper;ctx.fillRect(dx+86,dy+10,16,36);ctx.fillRect(dx+24,dy+84,112,68);ctx.strokeRect(dx+24,dy+84,112,68);
+    ctx.fillStyle=ink;for(let k=0;k<3;k++)ctx.fillRect(dx+36,dy+100+k*16,88,3);
+    const sel=A.beat>.4;ctx.font=F(28);const lw=Math.min(w-40,ctx.measureText(A.meta.title||'Untitled').width)+20;if(sel){ctx.fillStyle=ink;ctx.fillRect(x+w/2-lw/2,y+h-150,lw,40);}
+    K.text(ctx,A.meta.title||'Untitled',x+w/2,y+h-120,{font:F(28),color:sel?paper:ink,align:'center',maxW:w-60});
+    const mx=960+Math.cos(TAU*ph)*700,my=540+Math.sin(TAU*2*ph)*380;
+    ctx.fillStyle=ink;ctx.strokeStyle=paper;ctx.lineWidth=3;ctx.beginPath();[[0,0],[0,30],[8,23],[14,36],[20,33],[14,21],[24,21]].forEach((q,k)=>k?ctx.lineTo(mx+q[0]*1.4,my+q[1]*1.4):ctx.moveTo(mx,my));ctx.closePath();ctx.fill();ctx.stroke();
+  }
+});
+</script>

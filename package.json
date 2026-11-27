@@ -1,6 +1,6 @@
 {
   "name": "bootleg-vizualizer",
-  "version": "0.9.4",
+  "version": "0.10.0",
   "description": "Music-visualizer pack format, runtime, FX passes and packs: runs live in a browser/Tauri player and renders offline to video.",
   "license": "MIT",
   "type": "module",

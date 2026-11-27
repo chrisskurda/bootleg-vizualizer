@@ -1,14 +1,15 @@
 #!/usr/bin/env node
 // Stills of packs, driven by a synthetic (deterministic-ish) audio signal — no audio file needed.
-//   node bin/screenshots.mjs [--packs a,b,c | all] [--out docs/screenshots] [--size 1280x720] [--sheet sheet.png] [--wait 2600]
+//   node bin/screenshots.mjs [--packs a,b,c | all] [--out docs/screenshots] [--size 1280x720] [--sheet sheet.png] [--wait 2600] [--image cover.jpg]
+// --image: art for cover-art packs (served as the user image, so K.coverArt / K.image see it)
 // With --sheet, also writes a numbered contact sheet (needs ImageMagick) so you can pick which packs to feature.
 import { chromium } from 'playwright-core'; import http from 'node:http'; import fs from 'node:fs'; import path from 'node:path'; import { fileURLToPath } from 'node:url'; import { spawnSync } from 'node:child_process';
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'), arg = (k, d) => { const i = process.argv.indexOf('--' + k); return i > 0 ? process.argv[i + 1] : d; };
-const out = path.resolve(arg('out', 'docs/screenshots')), [W, H] = arg('size', '1280x720').split('x').map(Number), wait = +arg('wait', 2600), sheet = arg('sheet', '');
+const out = path.resolve(arg('out', 'docs/screenshots')), [W, H] = arg('size', '1280x720').split('x').map(Number), wait = +arg('wait', 2600), sheet = arg('sheet', ''), image = arg('image', '') && path.resolve(arg('image'));
 const all = fs.readdirSync(path.join(root, 'packs')).filter(n => !n.startsWith('_') && fs.existsSync(path.join(root, 'packs', n, 'pack.json'))), want = arg('packs', 'all') === 'all' ? all : arg('packs').split(',');
 fs.mkdirSync(out, { recursive: true });
 const MIME = { '.html': 'text/html', '.js': 'text/javascript', '.json': 'application/json', '.css': 'text/css', '.png': 'image/png', '.jpg': 'image/jpeg', '.svg': 'image/svg+xml' };
-const srv = http.createServer((q, r) => { const f = path.join(root, decodeURIComponent(q.url.split('?')[0])); if (!f.startsWith(root) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) { r.writeHead(404); return r.end(); } r.writeHead(200, { 'content-type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(r); });
+const srv = http.createServer((q, r) => { if (image && q.url === '/__image') { r.writeHead(200, { 'content-type': MIME[path.extname(image).toLowerCase()] || 'application/octet-stream' }); return fs.createReadStream(image).pipe(r); } const f = path.join(root, decodeURIComponent(q.url.split('?')[0])); if (!f.startsWith(root) || !fs.existsSync(f) || fs.statSync(f).isDirectory()) { r.writeHead(404); return r.end(); } r.writeHead(200, { 'content-type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(r); });
 await new Promise(ok => srv.listen(0, '127.0.0.1', ok)); const port = srv.address().port;
 
 // A synthetic track: 118 bpm, kick on the beat, a bass line, moving mid formants, bright hats on the off-beat.
@@ -25,7 +26,7 @@ const synth = () => {
     requestAnimationFrame(tick); })();
 };
 const browser = await chromium.launch({ channel: 'chrome', args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] }), page = await (await browser.newContext({ viewport: { width: W, height: H } })).newPage(), shots = [];
-await page.addInitScript(synth);
+await page.addInitScript(synth); if (image) await page.addInitScript(() => { window.__IMAGE_URL = '/__image'; });
 for (const id of want) {
   const m = JSON.parse(fs.readFileSync(path.join(root, 'packs', id, 'pack.json'), 'utf8')); await page.goto(`http://127.0.0.1:${port}/packs/${id}/${m.page || 'index.html'}`); await page.waitForTimeout(wait);
   const f = path.join(out, id + '.png'); await page.screenshot({ path: f }); shots.push(f); console.log('shot', id);

@@ -1,0 +1,19 @@
+{
+  "name": "Amiga",
+  "description": "Four-colour 640x360 workbench at 3x: white title bars with gadgets, orange spectrum, a rotating red and white checkered ball bouncing across a grid, and drawer icons that flash on the beat.",
+  "type": "native",
+  "width": 1920,
+  "height": 1080,
+  "loopSeconds": 24,
+  "params": {
+    "scheme": {
+      "type": "select",
+      "label": "Scheme",
+      "options": [
+        "classic",
+        "grey"
+      ],
+      "default": "classic"
+    }
+  }
+}

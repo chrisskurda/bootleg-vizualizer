@@ -1,0 +1,31 @@
+{
+  "name": "Cover Glitch",
+  "description": "Cover split into RGB channels that separate on the beat, with torn scanline bands, a tracking bar and CRT lines.",
+  "type": "native",
+  "width": 1920,
+  "height": 1080,
+  "loopSeconds": 24,
+  "params": {
+    "split": {
+      "type": "number",
+      "label": "RGB split",
+      "default": 1,
+      "min": 0,
+      "max": 2,
+      "step": 0.1
+    },
+    "glitch": {
+      "type": "number",
+      "label": "Tearing",
+      "default": 1,
+      "min": 0,
+      "max": 2,
+      "step": 0.1
+    },
+    "lines": {
+      "type": "bool",
+      "label": "Scanlines",
+      "default": true
+    }
+  }
+}

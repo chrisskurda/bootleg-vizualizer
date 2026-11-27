@@ -1,0 +1,31 @@
+{
+  "name": "Cover Ambient",
+  "description": "Cover as a floating card over its own blurred, colour-matched backdrop. Spectrum bars use the colours extracted from the art.",
+  "type": "native",
+  "width": 1920,
+  "height": 1080,
+  "loopSeconds": 24,
+  "params": {
+    "bars": {
+      "type": "bool",
+      "label": "Bars",
+      "default": true
+    },
+    "dim": {
+      "type": "number",
+      "label": "Backdrop dim",
+      "default": 0.55,
+      "min": 0,
+      "max": 0.9,
+      "step": 0.05
+    },
+    "pulse": {
+      "type": "number",
+      "label": "Card pulse",
+      "default": 1,
+      "min": 0,
+      "max": 2,
+      "step": 0.1
+    }
+  }
+}

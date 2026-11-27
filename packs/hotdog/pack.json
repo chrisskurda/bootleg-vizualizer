@@ -1,0 +1,40 @@
+{
+  "name": "Hot Dog Stand",
+  "description": "Windows 3.1 'Hot Dog Stand' colour scheme: red and yellow chrome, chunky spectrum meters, a bouncing hot dog, hourglass cursor and a section dialog.",
+  "type": "native",
+  "width": 1920,
+  "height": 1080,
+  "loopSeconds": 20,
+  "params": {
+    "palette": {
+      "type": "select",
+      "label": "Palette",
+      "options": [
+        "hotdog",
+        "aurora",
+        "sunset",
+        "neon",
+        "ember",
+        "ocean",
+        "mono",
+        "candy"
+      ],
+      "default": "hotdog"
+    },
+    "bg": {
+      "type": "color",
+      "label": "Desktop",
+      "default": "#ff0000"
+    },
+    "dither": {
+      "type": "bool",
+      "label": "Desktop pattern",
+      "default": true
+    },
+    "dialog": {
+      "type": "bool",
+      "label": "Section dialog",
+      "default": true
+    }
+  }
+}

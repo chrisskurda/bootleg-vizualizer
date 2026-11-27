@@ -1,0 +1,25 @@
+{
+  "name": "Apple II",
+  "description": "40-column text screen with a lo-res block-graphics spectrum, scanlines, a RUN prompt and blinking inverse cursor. Colour lo-res or green/amber phosphor.",
+  "type": "native",
+  "width": 1920,
+  "height": 1080,
+  "loopSeconds": 24,
+  "params": {
+    "mode": {
+      "type": "select",
+      "label": "Display",
+      "options": [
+        "color",
+        "green",
+        "amber"
+      ],
+      "default": "color"
+    },
+    "scan": {
+      "type": "bool",
+      "label": "Scanlines",
+      "default": true
+    }
+  }
+}

@@ -1,0 +1,35 @@
+<!doctype html><meta charset="utf-8"><title>Palm</title>
+<script src="../../core/pack-runtime.js"></script>
+<script>
+const W=1920,H=1080,hh=n=>{const x=Math.sin(n*127.1)*43758.5453;return x-Math.floor(x)};
+definePack({
+  bg:'#1a1c20',
+  draw(ctx,T,A,P,K){
+    const TAU=K.TAU,clock=A.live?A.t:T,mono=P.lcd==='mono',BGc=mono?'#b9c59c':'#f4f6f2',INK=mono?'#1d2a1a':'#101418',DIM=mono?'#70805a':'#8a909a',ACC=mono?'#1d2a1a':'#2a54c8';
+    ctx.fillStyle='#1a1c20';ctx.fillRect(0,0,W,H);
+    const F=(s,w)=>(w||700)+' '+s+'px Helvetica,Arial,sans-serif';
+    const dev=(i,title,app)=>{
+      const bx=75+i*615,by=100;K.softShadow(ctx,bx,by,540,880,44,{blur:50,dy:24,alpha:.7});
+      const g=ctx.createLinearGradient(bx,by,bx+540,by+880);g.addColorStop(0,'#d6d7d2');g.addColorStop(1,'#a3a59f');ctx.fillStyle=g;ctx.beginPath();ctx.roundRect(bx,by,540,880,44);ctx.fill();
+      ctx.fillStyle='#2a2c29';ctx.beginPath();ctx.roundRect(bx+24,by+70,492,492,14);ctx.fill();
+      ctx.save();ctx.translate(bx+30,by+76);ctx.scale(3,3);ctx.beginPath();ctx.rect(0,0,160,160);ctx.clip();ctx.fillStyle=BGc;ctx.fillRect(0,0,160,160);
+      ctx.fillStyle=INK;ctx.fillRect(0,0,160,14);K.text(ctx,title,6,11,{font:F(9),color:BGc});ctx.fillStyle=BGc;ctx.fillRect(146,4,8,1);ctx.fillRect(146,7,8,1);ctx.fillRect(146,10,8,1);
+      app();ctx.restore();
+      ctx.fillStyle=mono?'rgba(0,0,0,.07)':'rgba(0,0,0,.05)';for(let k=0;k<=160;k++){ctx.fillRect(bx+30+k*3,by+76,1,480);ctx.fillRect(bx+30,by+76+k*3,480,1);}
+      ctx.fillStyle='#8f918b';ctx.beginPath();ctx.roundRect(bx+60,by+585,420,150,18);ctx.fill();ctx.strokeStyle='#6c6e69';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(bx+270,by+595);ctx.lineTo(bx+270,by+725);ctx.stroke();
+      ctx.fillStyle='#55574f';ctx.font=F(26,700);ctx.textAlign='center';ctx.fillText('abc',bx+165,by+690);ctx.fillText('123',bx+375,by+690);ctx.textAlign='left';
+      ctx.strokeStyle='#55574f';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(bx+80,by+620);ctx.lineTo(bx+100,by+604);ctx.lineTo(bx+120,by+620);ctx.lineTo(bx+120,by+640);ctx.lineTo(bx+80,by+640);ctx.closePath();ctx.stroke();ctx.strokeRect(bx+420,by+606,34,26);
+      [120,215].forEach(o=>[0,1].forEach(s=>{ctx.fillStyle='#7d7f79';ctx.beginPath();ctx.arc(bx+(s?540-o:o),by+800,34,0,TAU);ctx.fill();ctx.fillStyle='#b9bbb5';ctx.beginPath();ctx.arc(bx+(s?540-o:o),by+798,31,0,TAU);ctx.fill();}));
+      ctx.fillStyle='#7d7f79';ctx.beginPath();ctx.roundRect(bx+240,by+770,60,64,10);ctx.fill();ctx.fillStyle='#b9bbb5';ctx.fillRect(bx+248,by+780,44,18);ctx.fillRect(bx+248,by+806,44,18);
+    };
+    dev(0,'Spectrum',()=>{const n=32;for(let i=0;i<n;i++){const b=Math.min(63,Math.round(i*1.8)),v=Math.min(1,A.spectrum[b]*1.15),bh=Math.round(v*104);ctx.fillStyle=mono?INK:'hsl('+(210-i*5)+',70%,45%)';ctx.fillRect(16+i*4,134-bh,3,bh);const p=Math.round(Math.min(1,K.peak(A,b,1,.5))*104);ctx.fillStyle=mono?DIM:INK;ctx.fillRect(16+i*4,131-p,3,1);}
+      const tap=A.beat>.4;ctx.strokeStyle=INK;ctx.lineWidth=1;ctx.fillStyle=tap?INK:BGc;ctx.beginPath();ctx.roundRect(62,141,36,14,3);ctx.fill();ctx.stroke();K.text(ctx,'Done',80,151,{font:F(8),color:tap?BGc:INK,align:'center'});});
+    dev(1,'Scope',()=>{ctx.fillStyle=DIM;for(let gx=10;gx<160;gx+=10)for(let gy=24;gy<140;gy+=10)ctx.fillRect(gx,gy,1,1);ctx.strokeStyle=ACC;ctx.lineWidth=1.2;ctx.beginPath();for(let i=0;i<80;i++){const px=8+i/79*144,py=80+A.wave[Math.min(127,Math.round(i*1.6))]*48;i?ctx.lineTo(px,py):ctx.moveTo(px,py);}ctx.stroke();
+      K.text(ctx,'Level',8,152,{font:F(8),color:INK});ctx.strokeStyle=INK;ctx.strokeRect(36.5,145.5,116,7);ctx.fillStyle=ACC;ctx.fillRect(38,147,113*Math.min(1,A.level*1.5),4);});
+    dev(2,'Player',()=>{K.text(ctx,A.meta.title||'Untitled',8,36,{font:F(12),color:INK,maxW:144});K.text(ctx,A.meta.artist||'',8,50,{font:F(9,400),color:DIM,maxW:144});K.text(ctx,A.section?A.section.name:'',8,64,{font:F(9,400),color:INK,maxW:144});
+      const pr=K.progress(A,T,24);ctx.strokeStyle=INK;ctx.lineWidth=1;ctx.strokeRect(8.5,92.5,143,5);ctx.fillStyle=INK;ctx.fillRect(10,94,140*pr,2);ctx.fillStyle=ACC;ctx.fillRect(8+138*pr,89,4,12);
+      K.text(ctx,K.fmtTime(clock),8,116,{font:F(14),color:INK});K.text(ctx,K.fmtTime(A.duration||0),152,116,{font:F(9,400),color:DIM,align:'right'});
+      const tap=A.beat>.4;ctx.fillStyle=tap?INK:BGc;ctx.strokeStyle=INK;ctx.beginPath();ctx.roundRect(60,124,40,26,4);ctx.fill();ctx.stroke();ctx.fillStyle=tap?BGc:INK;ctx.beginPath();ctx.moveTo(74,130);ctx.lineTo(88,137);ctx.lineTo(74,144);ctx.fill();});
+  }
+});
+</script>

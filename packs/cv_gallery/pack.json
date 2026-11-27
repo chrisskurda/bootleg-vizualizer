@@ -1,0 +1,31 @@
+{
+  "name": "Cover Gallery",
+  "description": "Cover hung as a framed print in a dim gallery: picture light with dust, glossy floor reflection, and wall uplights that follow the spectrum in the cover's colours.",
+  "type": "native",
+  "width": 1920,
+  "height": 1080,
+  "loopSeconds": 24,
+  "params": {
+    "uplight": {
+      "type": "number",
+      "label": "Uplight",
+      "default": 1,
+      "min": 0,
+      "max": 2,
+      "step": 0.1
+    },
+    "dust": {
+      "type": "bool",
+      "label": "Dust",
+      "default": true
+    },
+    "reflect": {
+      "type": "number",
+      "label": "Floor reflection",
+      "default": 0.35,
+      "min": 0,
+      "max": 0.7,
+      "step": 0.05
+    }
+  }
+}

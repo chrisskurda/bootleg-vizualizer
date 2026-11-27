@@ -1,0 +1,37 @@
+{
+  "name": "Cover Strips",
+  "description": "Cover sliced into narrow strips that ride the spectrum like a fader bank. Columns slide vertically, rows slide horizontally.",
+  "type": "native",
+  "width": 1920,
+  "height": 1080,
+  "loopSeconds": 24,
+  "params": {
+    "mode": {
+      "type": "select",
+      "label": "Slices",
+      "options": [
+        "columns",
+        "rows"
+      ],
+      "default": "columns"
+    },
+    "amp": {
+      "type": "number",
+      "label": "Amplitude",
+      "default": 1,
+      "min": 0,
+      "max": 2,
+      "step": 0.1
+    },
+    "count": {
+      "type": "select",
+      "label": "Strip count",
+      "options": [
+        "48",
+        "96",
+        "144"
+      ],
+      "default": "96"
+    }
+  }
+}

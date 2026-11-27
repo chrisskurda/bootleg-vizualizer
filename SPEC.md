@@ -84,6 +84,14 @@ A pack may layer its animation over an image **the user supplies**: `K.image()` 
 The host provides it — drop an image on the live preview, the **Image…** button, `?image=URL`, `postMessage {type:'viz-image', url}`, or `--image FILE` when rendering.
 The pack ships no art (§7); the image is the user's. Cover art from tags is separate: `K.cover(A)`.
 
+### 2d. Cover-art packs
+Packs built from the track's artwork use **`K.coverArt(A)`**: `null` (no art: draw a fallback) or `{img, w, h, aspect, avg:[r,g,b], lum, colors, px(n)}` —
+`colors` are 5 distinct dominant colours, most prominent first (saturation-weighted); `px(n)` is the centre-cropped square as `n×n` RGBA bytes (cached per `n`).
+The art is the track cover (`A.meta.cover`), else the user image (§2b). It is analysed once per image in the runtime, so packs get pixels without calling `getImageData` themselves;
+art that is not same-origin/CORS-clean reads as flat grey. The art can change mid-track: cache derived data on the returned object, never for the pack's lifetime.
+Helpers: `K.coverDraw(ctx, art, u, v, uw, vh, dx, dy, dw, dh)` draws a normalised sub-rect of the centre square; `K.coverBlur(ctx, art, x, y, w, h, n)` draws a cheap blurred backdrop (downscale, no `filter`/`shadowBlur`).
+Cover-art and OS-theme packs take their colours from the art or the theme, so they have no `palette`/`bg` params (the checker warns; that is expected).
+
 ### 2c. Stems — per-stem visuals and text
 When a track comes with stems — a **bootleg stem set** (`stems/<name>.flac`, gains in `manifest.json`, placements in `clips.json`; a folder, or one `.bstem`/`.bsong` file — the format is `contracts/song_format.md` in bootleg-stemserver, which also keeps the version-1 folder layout valid) or a stem player's live audio nodes —
 packs get one more feature set. `A.stems` is the list; **`A.stem(nameOrRole)` always returns a stem** (never `undefined`):
@@ -122,7 +130,7 @@ Resolved values: `pack.json` defaults overridden by the user (live panel / `--pa
 
 ### K — kit (helpers; optional)
 `K.palettes` / `K.pal(name,u)` / `K.css(name,u,alpha)` palette lookup (`u` 0..1) · `K.mix` `K.clamp` · `K.rng(seed)` seeded random ·
-`K.scenes(T, A, opts)` scene scheduler, `K.sceneIndices(sel, names)` (§2a) · loop-safe motion `K.phase` `K.drift` `K.tri` `K.progress` (§4a) · `K.ema(A, f)` smoothing from history · `K.softShadow(ctx, x, y, w, h, r, {blur,dy,alpha})` portable drop shadow · `K.image()` user image or null (§2b) · `K.addPalette(name, colors)` pack-defined palette · `K.smooth(ctx, pts)` Catmull-Rom path · `K.text(ctx, str, x, y, {font,color,align,alpha,maxW,upper})` shrink-to-fit text · `K.fmtTime(sec)` · `K.cover(A)` cover-art image or null · `K.peak(A, i, hold, fall)` peak-hold from history · `K.TAU`.
+`K.scenes(T, A, opts)` scene scheduler, `K.sceneIndices(sel, names)` (§2a) · loop-safe motion `K.phase` `K.drift` `K.tri` `K.progress` (§4a) · `K.ema(A, f)` smoothing from history · `K.softShadow(ctx, x, y, w, h, r, {blur,dy,alpha})` portable drop shadow · `K.image()` user image or null (§2b) · `K.addPalette(name, colors)` pack-defined palette · `K.smooth(ctx, pts)` Catmull-Rom path · `K.text(ctx, str, x, y, {font,color,align,alpha,maxW,upper})` shrink-to-fit text · `K.fmtTime(sec)` · `K.cover(A)` cover-art image or null · `K.coverArt(A)` `K.coverDraw` `K.coverBlur` analysed cover art (§2d) · `K.peak(A, i, hold, fall)` peak-hold from history · `K.TAU`.
 Built-in palettes: aurora, sunset, neon, ember, ocean, mono, candy.
 
 ## 3. Params (what the live panel and `--param` expose)

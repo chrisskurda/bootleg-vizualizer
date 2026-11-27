@@ -1,0 +1,15 @@
+{
+  "name": "Mono Mac",
+  "description": "1-bit desktop: dithered grey backdrop, striped title bars, spectrum in solid and checkerboard bars, floppy disk icon and an orbiting arrow cursor. Active window rotates with the song section.",
+  "type": "native",
+  "width": 1920,
+  "height": 1080,
+  "loopSeconds": 24,
+  "params": {
+    "invert": {
+      "type": "bool",
+      "label": "Inverted (white on black)",
+      "default": false
+    }
+  }
+}

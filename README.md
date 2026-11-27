@@ -17,7 +17,7 @@ It is designed to be **vendored** ([VENDORING.md](VENDORING.md)) into whatever s
 
 ## Gallery
 
-41 packs ship in `packs/`; a few of them, drawn live from a synthetic signal (`node bin/screenshots.mjs`):
+60 packs ship in `packs/`; a few of them, drawn live from a synthetic signal (`node bin/screenshots.mjs`):
 
 <table>
 <tr><td align="center"><img src="docs/screenshots/horizon.png" width="240" alt="Horizon"><br><sub><b>Horizon</b> — synthwave sun and grid</sub></td><td align="center"><img src="docs/screenshots/city.png" width="240" alt="City"><br><sub><b>City</b> — neon skyline</sub></td><td align="center"><img src="docs/screenshots/plaza.png" width="240" alt="Plaza"><br><sub><b>Plaza</b> — vaporwave columns</sub></td><td align="center"><img src="docs/screenshots/plasma.png" width="240" alt="Plasma"><br><sub><b>Plasma</b> — a plasma ball that follows the bass</sub></td></tr>

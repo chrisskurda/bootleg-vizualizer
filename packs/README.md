@@ -10,6 +10,13 @@ Generated from each pack's `pack.json` (`node bin/check.mjs` must pass for every
 | `business-funk` | Business Funk | 1920x1080 | 90s | Ten infographic-style 64-band analyzers (bars, donut, pyramid, candles, dot matrix, gauges, bubbles, area, funnel, spiral). Shows song title/artist/BPM/key/section from metadata; scenes can follow the song's sections or beats. |
 | `cassette` | Cassette | 1920x1080 | 20s | Cassette deck: tape moves from supply to take-up reel, LED level bars follow the music. |
 | `city` | Neon City | 1920x1080 | 20s | Synthwave: night skyline whose rooftops rise with the spectrum, blinking windows, rain. |
+| `cv_ambient` | Cover Ambient | 1920x1080 | 24s | Cover as a floating card over its own blurred, colour-matched backdrop. Spectrum bars use the colours extracted from the art. |
+| `cv_gallery` | Cover Gallery | 1920x1080 | 24s | Cover hung as a framed print in a dim gallery: picture light with dust, glossy floor reflection, and wall uplights that follow the spectrum in the cover's colours. |
+| `cv_glitch` | Cover Glitch | 1920x1080 | 24s | Cover split into RGB channels that separate on the beat, with torn scanline bands, a tracking bar and CRT lines. |
+| `cv_mirror` | Cover Mirror | 1920x1080 | 24s | Kaleidoscope cut from the cover. The art slowly rotates and orbits inside mirrored wedges, ringed by a colour-matched spectrum. |
+| `cv_mosaic` | Cover Mosaic | 1920x1080 | 24s | Cover rebuilt from tiles sampled from its pixels. Tiles swell with the spectrum, radiating from the centre. Square, circle or halftone dots. |
+| `cv_shards` | Cover Shards | 1920x1080 | 24s | Cover cut into triangular shards that burst outward and tumble with each band of the spectrum, then settle back into the picture. |
+| `cv_strips` | Cover Strips | 1920x1080 | 24s | Cover sliced into narrow strips that ride the spectrum like a fader bank. Columns slide vertically, rows slide horizontally. |
 | `cycle` | Cycle | 1920x1080 | 60s | Five abstract scenes (tunnel, grid, bloom, bars, orbit) cut on song sections via K.scenes. |
 | `desktop` | Desktop | 1920x1080 | 20s | Vaporwave: retro OS windows with block spectrum, scope and now-playing. |
 | `disc` | Compact Disc | 1920x1080 | 20s | Iridescent CD with spectrum halo and LCD time readout. |
@@ -18,10 +25,21 @@ Generated from each pack's `pack.json` (`node bin/check.mjs` must pass for every
 | `glass` | Glass Player | 1920x1080 | 20s | Frutiger Aero: frosted glass player card with glossy equalizer pills. |
 | `halo` | Halo | 1920x1080 | 16s | Radial spectrum ring with beat pulse and orbiting dots. |
 | `horizon` | Neon Horizon | 1920x1080 | 20s | Synthwave: striped sun, spectrum mountains, endless grid road. |
+| `hotdog` | Hot Dog Stand | 1920x1080 | 20s | Windows 3.1 'Hot Dog Stand' colour scheme: red and yellow chrome, chunky spectrum meters, a bouncing hot dog, hourglass cursor and a section dialog. |
 | `jazz` | Jazz Cup | 1920x1080 | 20s | 90s paper-cup pattern: teal brush swoosh and purple squiggle that dance with the spectrum, confetti drifting through. Optional cup silhouette. |
 | `kaleido` | Kaleidoscope | 1920x1080 | 20s | Mirrored wedge kaleidoscope of drifting glass shapes; spectrum scales the pieces. |
 | `leaves` | Leaves | 1920x1080 | 24s | Leaves tumbling across a dusk sky; loudness becomes wind gusts. |
 | `orb` | Aqua Orb | 1920x1080 | 20s | Frutiger Aero: glass sphere whose water level rises with the music. |
+| `os_amiga` | Amiga | 1920x1080 | 24s | Four-colour 640x360 workbench at 3x: white title bars with gadgets, orange spectrum, a rotating red and white checkered ball bouncing across a grid, and drawer icons that flash on the beat. |
+| `os_apple2` | Apple II | 1920x1080 | 24s | 40-column text screen with a lo-res block-graphics spectrum, scanlines, a RUN prompt and blinking inverse cursor. Colour lo-res or green/amber phosphor. |
+| `os_beos` | BeOS | 1920x1080 | 24s | Yellow-tabbed windows on a blue-grey desktop: gradient spectrum, segmented CPU-style meters, a spinning wireframe globe, LCD media player with slider and transport buttons, and a deskbar clock. |
+| `os_dos` | DOS Shell | 1920x1080 | 24s | 80x25 text mode on a 24x43.2 cell grid: twin-panel file-manager layout with eighth-block spectrum bars, ASCII scope, status lines, blinking prompt and function-key bar. VGA, green or amber. |
+| `os_hacker` | Hackerman | 1920x1080 | 24s | Movie-style intrusion console: scrolling hex dump, terminal log, rotating globe with link arcs, radar sweep, spectrum histogram, CPU-style meters and an access banner that follows the song section. |
+| `os_mac` | Mono Mac | 1920x1080 | 24s | 1-bit desktop: dithered grey backdrop, striped title bars, spectrum in solid and checkerboard bars, floppy disk icon and an orbiting arrow cursor. Active window rotates with the song section. |
+| `os_matrix` | Matrix | 1920x1080 | 24s | Falling glyph rain: column brightness follows the spectrum, white heads, glyphs that flicker in place, and the track title decoding in a centre band. |
+| `os_metro` | Metro | 1920x1080 | 24s | Flat live-tile start screen: eight-column tile grid with now playing, scope, bass/mid/high fill tiles, beat flash, section and clock tiles that slide between two faces, spectrum, progress ring and BPM. |
+| `os_palm` | Palm | 1920x1080 | 24s | Three handheld devices with 160x160 LCDs (3x): spectrum app, scope app and a player with slider and stylus-tap play button. Pixel grid overlay, silkscreen graffiti area and hardware buttons. |
+| `os_temple` | Temple | 1920x1080 | 24s | 16-colour VGA 640x480 screen, scaled 2.25x: blue desktop, cyan-titled windows, stacked colour-segment spectrum, spinning wireframe cube and a word oracle that changes every 3 seconds. |
 | `overlay` | Overlay | 1920x1080 | 20s | Animation layered over a still image: twinkling stars, floating motes, drifting mist, flying birds, water glints. Drop any image on the preview. |
 | `phosphor` | Phosphor | 1920x1080 | 10s | Oscilloscope waveform with fading phosphor trails from audio history. |
 | `plasma` | Plasma Globe | 1920x1080 | 20s | Glass plasma ball: filaments arc from a glowing core to the glass, reaching toward a wandering touch point; spectrum drives filament count and brightness. |

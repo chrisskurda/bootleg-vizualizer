@@ -1,0 +1,38 @@
+{
+  "name": "Cover Mosaic",
+  "description": "Cover rebuilt from tiles sampled from its pixels. Tiles swell with the spectrum, radiating from the centre. Square, circle or halftone dots.",
+  "type": "native",
+  "width": 1920,
+  "height": 1080,
+  "loopSeconds": 24,
+  "params": {
+    "shape": {
+      "type": "select",
+      "label": "Tile",
+      "options": [
+        "square",
+        "circle",
+        "halftone"
+      ],
+      "default": "circle"
+    },
+    "res": {
+      "type": "select",
+      "label": "Resolution",
+      "options": [
+        "24",
+        "32",
+        "48"
+      ],
+      "default": "32"
+    },
+    "react": {
+      "type": "number",
+      "label": "Reactivity",
+      "default": 1,
+      "min": 0,
+      "max": 2,
+      "step": 0.1
+    }
+  }
+}

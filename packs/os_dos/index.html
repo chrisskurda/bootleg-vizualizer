@@ -1,0 +1,27 @@
+<!doctype html><meta charset="utf-8"><title>DOS Shell</title>
+<script src="../../core/pack-runtime.js"></script>
+<script>
+const W=1920,H=1080,hh=n=>{const x=Math.sin(n*127.1)*43758.5453;return x-Math.floor(x)};
+const PL={vga:{bg:'#0000aa',tx:'#55ffff',hb:'#00aaaa',ht:'#000000',ac:'#ffff55',br:'#55ff55',pk:'#ffffff',hi:'#ff5555',dm:'#aaaaaa'},green:{bg:'#000',tx:'#33ff33',hb:'#33ff33',ht:'#000',ac:'#b6ffb6',br:'#33ff33',pk:'#fff',hi:'#33ff33',dm:'#1f9a1f'},amber:{bg:'#000',tx:'#ffb000',hb:'#ffb000',ht:'#000',ac:'#ffe29a',br:'#ffb000',pk:'#fff0c8',hi:'#ffb000',dm:'#9a6a00'}};
+definePack({
+  bg:'#0000aa',
+  draw(ctx,T,A,P,K){
+    const C=PL[P.tint]||PL.vga,cw=24,ch=43.2,clock=A.live?A.t:T;
+    ctx.fillStyle=C.bg;ctx.fillRect(0,0,W,H);ctx.font='700 38px "Courier New",monospace';ctx.textAlign='center';
+    const put=(c,r,s,fg,bg)=>{for(let i=0;i<s.length;i++){const x=(c+i)*cw,y=r*ch;if(bg){ctx.fillStyle=bg;ctx.fillRect(x,y,cw+.5,ch+.5);}if(s[i]!==' '){ctx.fillStyle=fg;ctx.fillText(s[i],x+cw/2,y+ch*.76);}}};
+    const frame=(c0,r0,c1,r1,t)=>{const x=c0*cw+cw/2,y=r0*ch+ch/2,w=(c1-c0)*cw,h=(r1-r0)*ch;ctx.strokeStyle=C.tx;ctx.lineWidth=2;ctx.strokeRect(x,y,w,h);ctx.strokeRect(x+6,y+6,w-12,h-12);const s=' '+t+' ';put(Math.round((c0+c1)/2-s.length/2),r0,s,C.ac,C.bg);};
+    put(0,0,' '.repeat(80),C.ht,C.hb);put(1,0,'Left    Files    Commands    Options    Right',C.ht,C.hb);put(70,0,K.fmtTime(clock).padStart(8),C.ht,C.hb);
+    frame(0,1,39,20,'Spectrum');frame(40,1,79,20,'Waveform');
+    for(let i=0;i<38;i++){const b=Math.min(63,Math.round(i*1.5)),e=Math.round(Math.min(1,A.spectrum[b]*1.2)*18*8),pe=Math.round(Math.min(1,K.peak(A,b,1,.5))*18*8);
+      for(let k=0;k<18;k++){const rem=e-k*8;if(rem<=0)break;const f=Math.min(8,rem),x=(1+i)*cw+2,y=(19-k)*ch;ctx.fillStyle=k<10?C.br:k<15?C.ac:C.hi;ctx.fillRect(x,y+ch*(1-f/8),cw-4,ch*f/8+.5);}
+      if(pe>e){const k=Math.min(17,Math.floor(pe/8));ctx.fillStyle=C.pk;ctx.fillRect((1+i)*cw+2,(19-k)*ch+2,cw-4,4);}}
+    for(let i=0;i<38;i++){const v=A.wave[Math.min(127,i*3)],r=Math.round(10.5+v*7.5);put(41+i,Math.max(2,Math.min(19,r)),'*',C.ac);}
+    put(41,10,'-'.repeat(38),C.dm);
+    const ti=(A.meta.title||'untitled'),sc=A.section?A.section.name:'-';
+    put(0,21,' Now playing: '+ti.slice(0,40),C.tx);put(0,22,' Section: '+sc.padEnd(10).slice(0,10)+'  Elapsed: '+K.fmtTime(clock)+' / '+K.fmtTime(A.duration||0)+'  BPM '+(A.meta.bpm||'--'),C.tx);
+    put(0,23,'C:\\MUSIC>play '+ti.toLowerCase().replace(/[^a-z0-9]+/g,'').slice(0,8)+'.mod',C.dm);
+    if(Math.floor(T*2)%2===0)put(14+Math.min(8,ti.toLowerCase().replace(/[^a-z0-9]+/g,'').length)+4,23,' ',C.bg,C.dm);
+    const FK=['Help','Menu','View','Edit','Copy','Move','MkDir','Delete','PullDn','Quit'];FK.forEach((k,i)=>{const c=i*8;put(c,24,String(i+1).padStart(2),C.dm,C.bg);put(c+2,24,k.padEnd(6).slice(0,6),C.ht,C.hb);});
+  }
+});
+</script>

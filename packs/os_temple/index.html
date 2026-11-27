@@ -1,0 +1,34 @@
+<!doctype html><meta charset="utf-8"><title>Temple</title>
+<script src="../../core/pack-runtime.js"></script>
+<script>
+const W=1920,H=1080,hh=n=>{const x=Math.sin(n*127.1)*43758.5453;return x-Math.floor(x)};
+const VG=['#000000','#0000aa','#00aa00','#00aaaa','#aa0000','#aa00aa','#aa5500','#aaaaaa','#555555','#5555ff','#55ff55','#55ffff','#ff5555','#ff55ff','#ffff55','#ffffff'];
+const WORDS=['light','mercy','harvest','river','stone','garden','hymn','morning','bread','mountain','song','water','shepherd','lamp','valley','dove'];
+const CV=[],CE=[[0,1],[2,3],[4,5],[6,7],[0,2],[1,3],[4,6],[5,7],[0,4],[1,5],[2,6],[3,7]];for(let i=0;i<8;i++)CV.push([i&1?1:-1,i&2?1:-1,i&4?1:-1]);
+definePack({
+  bg:'#000',
+  draw(ctx,T,A,P,K){
+    const TAU=K.TAU,clock=A.live?A.t:T,S=2.25;ctx.fillStyle='#000';ctx.fillRect(0,0,W,H);
+    ctx.save();ctx.translate((W-640*S)/2,0);ctx.scale(S,S);ctx.beginPath();ctx.rect(0,0,640,480);ctx.clip();
+    ctx.fillStyle=VG[1];ctx.fillRect(0,0,640,480);ctx.font='700 12px "Courier New",monospace';ctx.textBaseline='top';
+    const tx=(s,x,y,c)=>{ctx.fillStyle=VG[c];ctx.fillText(s,x,y);};
+    const win=(x,y,w,h,t)=>{ctx.fillStyle=VG[0];ctx.fillRect(x,y,w,h);ctx.strokeStyle=VG[11];ctx.lineWidth=2;ctx.strokeRect(x,y,w,h);ctx.fillStyle=VG[11];ctx.fillRect(x,y,w,15);tx(t,x+6,y+2,0);};
+    ctx.fillStyle=VG[15];ctx.fillRect(0,0,640,16);tx('File   Edit   Window   Help',8,2,0);tx(K.fmtTime(clock),600,2,1);
+    win(16,32,376,264,'Spectrum');
+    for(let i=0;i<40;i++){const b=Math.min(63,Math.round(i*1.5)),v=Math.min(1,A.spectrum[b]*1.2),n=Math.round(v*34),pk=Math.round(Math.min(1,K.peak(A,b,1,.5))*34);for(let k=0;k<n;k++){const c=[2,10,14,12,13][Math.min(4,Math.floor(k/7))];ctx.fillStyle=VG[c];ctx.fillRect(24+i*9,288-(k+1)*7,8,6);}if(pk>n){ctx.fillStyle=VG[15];ctx.fillRect(24+i*9,288-pk*7,8,6);}}
+    win(408,32,216,168,'Cube');
+    const a=K.phase(T,24,1)*TAU,b=K.phase(T,24,2)*TAU,s=48*(1+A.bass*.25),ca=Math.cos(a),sa=Math.sin(a),cb=Math.cos(b),sb=Math.sin(b);
+    const pj=CV.map(v=>{const x1=v[0]*ca+v[2]*sa,z1=-v[0]*sa+v[2]*ca,y2=v[1]*cb-z1*sb,z2=v[1]*sb+z1*cb,f=4/(4+z2);return [516+x1*s*f,120+y2*s*f];});
+    ctx.strokeStyle=VG[14];ctx.lineWidth=2;ctx.beginPath();CE.forEach(e=>{ctx.moveTo(pj[e[0]][0],pj[e[0]][1]);ctx.lineTo(pj[e[1]][0],pj[e[1]][1]);});ctx.stroke();
+    win(408,216,216,80,'Level');
+    [[A.bass,2],[A.mid,14],[A.high,12]].forEach((m,i)=>{const n=Math.round(Math.min(1,m[0])*20);for(let k=0;k<20;k++){ctx.fillStyle=k<n?VG[m[1]]:VG[8];ctx.fillRect(416+k*10,238+i*16,8,10);}});
+    win(16,312,608,152,'Oracle');
+    const st=Math.floor(T/3),w=i=>WORDS[Math.floor(hh(st*13+i)*16)].toUpperCase();
+    tx('ORACLE SAYS:',28,336,11);tx(w(0)+' '+w(1)+' '+w(2),28,356,14);tx(w(3)+' '+w(4)+' '+w(5),28,376,14);
+    tx((A.meta.title||'Untitled')+' - '+(A.meta.artist||''),28,408,15);tx('Section: '+((A.section&&A.section.name)||'-'),28,428,7);
+    if(Math.floor(T*2)%2===0)tx('_',28+7.2*14,428,15);
+    ctx.restore();
+    if(P.scan){ctx.fillStyle='rgba(0,0,0,.22)';for(let y=0;y<H;y+=4)ctx.fillRect((W-1440)/2,y,1440,1.5);}
+  }
+});
+</script>

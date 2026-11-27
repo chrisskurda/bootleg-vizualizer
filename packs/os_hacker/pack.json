@@ -1,0 +1,25 @@
+{
+  "name": "Hackerman",
+  "description": "Movie-style intrusion console: scrolling hex dump, terminal log, rotating globe with link arcs, radar sweep, spectrum histogram, CPU-style meters and an access banner that follows the song section.",
+  "type": "native",
+  "width": 1920,
+  "height": 1080,
+  "loopSeconds": 24,
+  "params": {
+    "tint": {
+      "type": "select",
+      "label": "Colour",
+      "options": [
+        "green",
+        "cyan",
+        "amber"
+      ],
+      "default": "green"
+    },
+    "alert": {
+      "type": "bool",
+      "label": "Access banner",
+      "default": true
+    }
+  }
+}

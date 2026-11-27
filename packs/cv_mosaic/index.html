@@ -1,0 +1,20 @@
+<!doctype html><meta charset="utf-8"><title>Cover Mosaic</title>
+<script src="../../core/pack-runtime.js"></script>
+<script>
+definePack({
+  bg:'#07080c',
+  draw(ctx,T,A,P,K){
+    const W=1920,H=1080,TAU=K.TAU,cov=K.coverArt(A);ctx.fillStyle='#07080c';ctx.fillRect(0,0,W,H);if(!cov){K.text(ctx,'No cover',960,540,{align:'center',font:'500 32px system-ui',alpha:.5});return}
+    K.coverBlur(ctx,cov,0,0,W,H,24);ctx.fillStyle='rgba(5,6,10,.85)';ctx.fillRect(0,0,W,H);
+    const n=+P.res,d=cov.px(n),C=960/n,x0=(W-960)/2,y0=(H-960)/2,ph=K.phase(T,24,2)*TAU,sh=P.shape;
+    for(let j=0;j<n;j++)for(let i=0;i<n;i++){
+      const k=(j*n+i)*4,r=d[k],g=d[k+1],b=d[k+2],dx=(i+.5)/n-.5,dy=(j+.5)/n-.5,dist=Math.hypot(dx,dy),bin=Math.min(63,Math.floor(dist*1.41*44));
+      const e=Math.min(1,A.spectrum[bin]*1.4*P.react+(.5+.5*Math.sin(dist*16-ph))*.3),cx=x0+(i+.5)*C,cy=y0+(j+.5)*C;
+      ctx.fillStyle='rgb('+r+','+g+','+b+')';
+      if(sh==='square'){const s=C*(.4+.6*e);ctx.fillRect(cx-s/2,cy-s/2,s,s);}
+      else if(sh==='circle'){ctx.beginPath();ctx.arc(cx,cy,C*.5*(.4+.6*e),0,TAU);ctx.fill();}
+      else{const l=(.3*r+.59*g+.11*b)/255;ctx.beginPath();ctx.arc(cx,cy,C*.66*Math.sqrt(.12+.88*l)*(.55+.55*e),0,TAU);ctx.fill();}
+    }
+  }
+});
+</script>

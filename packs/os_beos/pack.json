@@ -1,0 +1,20 @@
+{
+  "name": "BeOS",
+  "description": "Yellow-tabbed windows on a blue-grey desktop: gradient spectrum, segmented CPU-style meters, a spinning wireframe globe, LCD media player with slider and transport buttons, and a deskbar clock.",
+  "type": "native",
+  "width": 1920,
+  "height": 1080,
+  "loopSeconds": 24,
+  "params": {
+    "tab": {
+      "type": "color",
+      "label": "Window tab",
+      "default": "#ffcb00"
+    },
+    "desk": {
+      "type": "color",
+      "label": "Desktop",
+      "default": "#336698"
+    }
+  }
+}

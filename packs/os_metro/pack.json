@@ -1,0 +1,19 @@
+{
+  "name": "Metro",
+  "description": "Flat live-tile start screen: eight-column tile grid with now playing, scope, bass/mid/high fill tiles, beat flash, section and clock tiles that slide between two faces, spectrum, progress ring and BPM.",
+  "type": "native",
+  "width": 1920,
+  "height": 1080,
+  "loopSeconds": 24,
+  "params": {
+    "theme": {
+      "type": "select",
+      "label": "Theme",
+      "options": [
+        "dark",
+        "light"
+      ],
+      "default": "dark"
+    }
+  }
+}

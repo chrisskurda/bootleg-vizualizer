@@ -1,0 +1,19 @@
+{
+  "name": "Palm",
+  "description": "Three handheld devices with 160x160 LCDs (3x): spectrum app, scope app and a player with slider and stylus-tap play button. Pixel grid overlay, silkscreen graffiti area and hardware buttons.",
+  "type": "native",
+  "width": 1920,
+  "height": 1080,
+  "loopSeconds": 24,
+  "params": {
+    "lcd": {
+      "type": "select",
+      "label": "Screen",
+      "options": [
+        "mono",
+        "color"
+      ],
+      "default": "mono"
+    }
+  }
+}

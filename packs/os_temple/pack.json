@@ -1,0 +1,15 @@
+{
+  "name": "Temple",
+  "description": "16-colour VGA 640x480 screen, scaled 2.25x: blue desktop, cyan-titled windows, stacked colour-segment spectrum, spinning wireframe cube and a word oracle that changes every 3 seconds.",
+  "type": "native",
+  "width": 1920,
+  "height": 1080,
+  "loopSeconds": 24,
+  "params": {
+    "scan": {
+      "type": "bool",
+      "label": "Scanlines",
+      "default": true
+    }
+  }
+}

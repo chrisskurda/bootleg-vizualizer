@@ -6,7 +6,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-11-27
+
 ### Added
+- Cover-art kit (SPEC §2d): `K.coverArt(A)` returns the track cover (else the user image) analysed once in the runtime — `avg`, `lum`, 5 dominant `colors`, `px(n)` pixels of the centre square — or `null`; `K.coverDraw` draws a sub-rect of the centre square; `K.coverBlur` draws a blurred backdrop without `filter`/`shadowBlur`. `K.cover(A)` is unchanged.
+- Seven cover-art packs built on it: `cv_ambient` (Cover Ambient), `cv_gallery` (Cover Gallery), `cv_glitch` (Cover Glitch), `cv_mirror` (Cover Mirror), `cv_mosaic` (Cover Mosaic), `cv_shards` (Cover Shards), `cv_strips` (Cover Strips). With no art they show a "No cover" card.
+- Ten OS-theme packs: `os_amiga`, `os_apple2`, `os_beos`, `os_dos`, `os_hacker` (Hackerman), `os_mac` (Mono Mac), `os_matrix`, `os_metro`, `os_palm`, `os_temple`. Their colours come from the theme (theme/tint params), not `palette`/`bg`.
+- `hotdog` pack (Hot Dog Stand): Windows 3.1 red-and-yellow scheme with spectrum meters, falling peak caps and a scope.
+- `bin/screenshots.mjs --image FILE`: art for cover-art packs.
 - `jazz` pack (Jazz Cup): 90s paper-cup pattern with a spectrum-driven brush swoosh, squiggles and confetti; optional cup silhouette. The cup is masked by repainting the background outside it, so it also renders correctly on hosts whose canvas has no `clip()` (bootleg-pod).
 - `bin/screenshots.mjs`: stills of packs from a synthetic audio signal (no audio file needed), with an optional contact sheet. A gallery of 12 packs in the README.
 

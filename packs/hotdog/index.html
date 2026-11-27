@@ -1,0 +1,51 @@
+<!doctype html><meta charset="utf-8"><title>Hot Dog Stand</title>
+<script src="../../core/pack-runtime.js"></script>
+<script>
+const L = 20, W = 1920, H = 1080, R = '#ff0000', Y = '#ffff00', B = '#000', WH = '#fff';
+const F = (s, w = 700) => w + ' ' + s + 'px "MS Sans Serif","Segoe UI",Arial,sans-serif';
+definePack({
+  init(ctx, K) { K.addPalette('hotdog', [[255, 0, 0], [255, 255, 0], [0, 0, 0], [255, 255, 255]]); },
+  draw(ctx, T, A, P, K) {
+    const TAU = K.TAU, u = T / L, clock = A.live ? A.t : T, hot = P.palette === 'hotdog', c1 = hot ? R : K.css(P.palette, .1), c2 = hot ? Y : K.css(P.palette, .9);
+    ctx.fillStyle = P.bg; ctx.fillRect(0, 0, W, H);
+    if (P.dither) { ctx.fillStyle = 'rgba(0,0,0,.18)'; const o = K.drift(T, L, 1, 16); for (let y = -16; y < H; y += 16) for (let x = -16; x < W; x += 16) { ctx.fillRect(x + o + 8, y + o, 8, 8); ctx.fillRect(x + o, y + o + 8, 8, 8); } }
+    const bevel = (x, y, w, h, fill, down) => { ctx.fillStyle = B; ctx.fillRect(x - 3, y - 3, w + 6, h + 6); ctx.fillStyle = fill; ctx.fillRect(x, y, w, h); ctx.fillStyle = down ? B : WH; ctx.fillRect(x, y, w, 4); ctx.fillRect(x, y, 4, h); ctx.fillStyle = down ? WH : B; ctx.fillRect(x, y + h - 4, w, 4); ctx.fillRect(x + w - 4, y, 4, h); };
+    const win = (x, y, w, h, title, active) => {
+      ctx.fillStyle = B; ctx.fillRect(x + 12, y + 12, w, h); bevel(x, y, w, h, c2);
+      ctx.fillStyle = active ? c1 : B; ctx.fillRect(x + 6, y + 6, w - 12, 44); bevel(x + 6, y + 6, 44, 44, c2); ctx.fillStyle = B; ctx.fillRect(x + 16, y + 26, 24, 6);
+      K.text(ctx, title, x + w / 2, y + 38, { font: F(26), color: active ? WH : c2, align: 'center', maxW: w - 220 });
+      bevel(x + w - 100, y + 6, 44, 44, c2); ctx.fillStyle = B; ctx.beginPath(); ctx.moveTo(x + w - 90, y + 38); ctx.lineTo(x + w - 78, y + 18); ctx.lineTo(x + w - 66, y + 38); ctx.fill();
+      bevel(x + w - 52, y + 6, 44, 44, c2); ctx.beginPath(); ctx.moveTo(x + w - 42, y + 18); ctx.lineTo(x + w - 30, y + 38); ctx.lineTo(x + w - 18, y + 18); ctx.fill();
+      ctx.fillStyle = c2; ctx.fillRect(x + 6, y + 56, w - 12, 40); K.text(ctx, 'File   Options   Window   Help', x + 22, y + 86, { font: F(24, 400), color: B });
+      ctx.fillStyle = B; ctx.fillRect(x + 6, y + 96, w - 12, 3);
+      return [x + 10, y + 102, w - 20, h - 112];
+    };
+    let [ax, ay, aw, ah] = win(100, 90, 1020, 590, 'Hot Dog Stand - ' + (A.meta.title || 'untitled'), true);
+    ctx.fillStyle = B; ctx.fillRect(ax, ay, aw, ah); const nb = 28, cw = (aw - 40) / nb;
+    for (let b = 0; b < nb; b++) { const v = A.spectrum[Math.min(63, 1 + Math.round(b * 1.9))] * 1.1, n = Math.min(14, Math.round(v * 14)), pk = Math.min(14, Math.round(K.peak(A, Math.min(63, 1 + Math.round(b * 1.9)), 1, .5) * 14)); for (let k = 0; k < 14; k++) { const x = ax + 20 + b * cw, y = ay + ah - 30 - (k + 1) * 30; ctx.fillStyle = k < n ? (k % 2 ? c2 : c1) : '#2a2a2a'; if (k === pk - 1 && pk > n) ctx.fillStyle = WH; ctx.fillRect(x, y, cw - 6, 26); } }
+    [ax, ay, aw, ah] = win(1180, 150, 640, 360, 'Mustard Scope', false);
+    ctx.fillStyle = B; ctx.fillRect(ax, ay, aw, ah); ctx.strokeStyle = c1; ctx.lineWidth = 4; ctx.beginPath(); for (let i = 0; i < 64; i++) { const x = ax + 16 + i / 63 * (aw - 32), y = ay + ah / 2 + Math.round(A.wave[i * 2] * (ah * .38) / 12) * 12; i ? (ctx.lineTo(x, ctx.__y), ctx.lineTo(x, y)) : ctx.moveTo(x, y); ctx.__y = y; } ctx.stroke();
+    ctx.strokeStyle = '#333'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(ax, ay + ah / 2); ctx.lineTo(ax + aw, ay + ah / 2); ctx.stroke();
+    [ax, ay, aw, ah] = win(100, 760, 1180, 250, 'Media Player', false);
+    K.text(ctx, A.meta.title || 'No file loaded', ax + 24, ay + 60, { font: F(40), color: B, maxW: aw - 300 }); K.text(ctx, [A.meta.artist, A.section && A.section.name].filter(Boolean).join(' - '), ax + 24, ay + 100, { font: F(28, 400), color: B, maxW: aw - 300 });
+    K.text(ctx, K.fmtTime(clock), ax + aw - 24, ay + 66, { font: '700 54px "Courier New",monospace', color: B, align: 'right' });
+    const pr = K.progress(A, T, L), sx = ax + 24, sw = aw - 48, sy = ay + ah - 62; ctx.fillStyle = B; ctx.fillRect(sx, sy, sw, 34); ctx.fillStyle = c1; ctx.fillRect(sx + 4, sy + 4, (sw - 8) * pr, 26); bevel(sx + (sw - 56) * pr, sy - 6, 56, 46, c2);
+    ctx.fillStyle = B; ctx.fillRect(sx + (sw - 56) * pr + 24, sy + 4, 8, 28);
+    [ax, ay, aw, ah] = win(1340, 590, 480, 420, 'Order Up!', false);
+    const hx = ax + aw / 2, hy = ay + ah / 2 + 20 - Math.abs(Math.sin(TAU * 2 * clock * (A.live ? 1 : 1) * (A.live ? .5 : .5))) * 0 - A.beat * 22 - A.bass * 14, sq = 1 + A.beat * .06;
+    ctx.save(); ctx.translate(hx, hy); ctx.scale(sq, 1 / sq);
+    ctx.fillStyle = B; ctx.beginPath(); ctx.roundRect(-176, -50, 352, 124, 62); ctx.fill(); ctx.fillStyle = '#f2b45a'; ctx.beginPath(); ctx.roundRect(-168, -42, 336, 108, 54); ctx.fill();
+    ctx.fillStyle = B; ctx.beginPath(); ctx.roundRect(-190, -34, 380, 70, 35); ctx.fill(); ctx.fillStyle = '#c0391b'; ctx.beginPath(); ctx.roundRect(-182, -26, 364, 54, 27); ctx.fill();
+    ctx.strokeStyle = B; ctx.lineWidth = 12; ctx.lineCap = 'round'; ctx.beginPath(); for (let i = 0; i <= 28; i++) { const x = -150 + i * 300 / 28, y = -6 + (i % 2 ? 16 : -16) + Math.sin(TAU * u * 2) * 3; i ? ctx.lineTo(x, y) : ctx.moveTo(x, y); } ctx.stroke();
+    ctx.strokeStyle = c2; ctx.lineWidth = 6; ctx.stroke();
+    ctx.fillStyle = '#f2b45a'; ctx.strokeStyle = B; ctx.lineWidth = 8; ctx.beginPath(); ctx.roundRect(-168, 6, 336, 62, [8, 8, 32, 32]); ctx.fill(); ctx.stroke(); ctx.restore();
+    K.text(ctx, ['1 DOG', 'HOT!', 'MUSTARD?', 'RELISH?'][Math.floor(clock / 2) % 4], hx, ay + 60, { font: F(44), color: B, align: 'center' });
+    if (P.dialog && A.section) {
+      const k = A.section.progress, show = k < .22 || (A.t < 0.1); if (show) { const [dx, dy, dw, dh] = win(620, 340, 680, 300, 'Hot Dog Stand', true); ctx.fillStyle = c2; ctx.fillRect(dx, dy, dw, dh); K.text(ctx, 'Now entering section:', dx + 30, dy + 70, { font: F(30, 400), color: B }); K.text(ctx, A.section.name, dx + 30, dy + 130, { font: F(56), color: B, maxW: dw - 60 }); bevel(dx + dw / 2 - 70, dy + dh - 70, 140, 56, c2); K.text(ctx, 'OK', dx + dw / 2, dy + dh - 30, { font: F(32), color: B, align: 'center' }); }
+    }
+    const mx = 700 + Math.cos(TAU * u) * 560, my = 500 + Math.sin(TAU * 2 * u) * 300;
+    ctx.fillStyle = WH; ctx.strokeStyle = B; ctx.lineWidth = 4; ctx.beginPath(); ctx.moveTo(mx - 20, my - 28); ctx.lineTo(mx + 20, my - 28); ctx.lineTo(mx + 4, my); ctx.lineTo(mx + 20, my + 28); ctx.lineTo(mx - 20, my + 28); ctx.lineTo(mx - 4, my); ctx.closePath(); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = B; ctx.fillRect(mx - 14, my + 10, 28, 12);
+  }
+});
+</script>

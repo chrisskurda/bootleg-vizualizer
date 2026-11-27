@@ -1,0 +1,30 @@
+{
+  "name": "Matrix",
+  "description": "Falling glyph rain: column brightness follows the spectrum, white heads, glyphs that flicker in place, and the track title decoding in a centre band.",
+  "type": "native",
+  "width": 1920,
+  "height": 1080,
+  "loopSeconds": 24,
+  "params": {
+    "glyphs": {
+      "type": "select",
+      "label": "Glyphs",
+      "options": [
+        "katakana",
+        "binary",
+        "hex"
+      ],
+      "default": "katakana"
+    },
+    "tint": {
+      "type": "color",
+      "label": "Tint",
+      "default": "#00ff41"
+    },
+    "title": {
+      "type": "bool",
+      "label": "Decoding title",
+      "default": true
+    }
+  }
+}
