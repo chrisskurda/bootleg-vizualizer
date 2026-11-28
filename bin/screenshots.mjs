@@ -22,7 +22,7 @@ const synth = () => {
   window.__synth = true; window.__PARAMS = {}; window.__META = { title: 'Night Garden', artist: 'Static Orchard', album: 'Slow Currents', bpm: BPM, key: 'Am', duration: 214, sections: [] };
   const t0 = performance.now(); (function tick() {
     const t = 12 + (performance.now() - t0) / 1000, s = spec(t), e = env(t), bass = clamp(s.slice(0, 8).reduce((a, b) => a + b, 0) / 8 * 1.15), mid = clamp(s.slice(10, 34).reduce((a, b) => a + b, 0) / 24 * 1.5), high = clamp(s.slice(44).reduce((a, b) => a + b, 0) / 20 * 2);
-    window.__AUDIO = { live: true, t, duration: 214, spectrum: s, wave: wave(t), bass, mid, high, beat: e > 0.85 ? 1 : e * 0.6, level: (bass + mid + high) / 3, past: sec => spec(t - sec), meta: window.__META, section: { name: 'chorus', index: 1, progress: 0.4 }, text: 'Night Garden — Static Orchard' };
+    window.__AUDIO = { live: true, t, duration: 214, spectrum: s, wave: wave(t), bass, mid, high, beat: e > 0.85 ? 1 : e * 0.6, level: (bass + mid + high) / 3, past: sec => spec(t - sec), meta: window.__META, section: { name: 'chorus', index: 1, count: 4, start: 0, end: 40, progress: t / 40 }, text: 'Night Garden — Static Orchard' };
     requestAnimationFrame(tick); })();
 };
 const browser = await chromium.launch({ channel: 'chrome', args: ['--use-angle=swiftshader', '--enable-unsafe-swiftshader'] }), page = await (await browser.newContext({ viewport: { width: W, height: H } })).newPage(), shots = [];

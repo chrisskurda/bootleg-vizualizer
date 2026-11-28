@@ -6,6 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+### Fixed
+- `bin/screenshots.mjs`: the synthetic `A.section` now has `start`, `end` and `count`, as real hosts give it. Without them `K.scenes` worked out a scene index of `NaN` and `business-funk` and the three packs above came out blank (seen 2026-11-28).
+
 ### Added
 - `bin/sync-consumers.mjs` (`npm run sync:consumers`): reports whether each app that vendors this repository carries exactly this version and pack library, compared file by file against the release tag, and with `--apply` updates the ones that differ through their own vendoring scripts (VENDORING.md).
 - `bin/release-build.sh` (`npm run release:build`): runs the tests and the pack check, then writes `release/bootleg-vizualizer-<version>.tar.gz` with a manifest (version, commit, sha256).
