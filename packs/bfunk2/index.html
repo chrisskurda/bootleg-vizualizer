@@ -1,0 +1,135 @@
+<!doctype html><meta charset="utf-8"><title>Business Funk II: Overtime</title>
+<script src="../../core/pack-runtime.js"></script>
+<script>
+const N = 64, TAU = Math.PI * 2, LOOP = 90, BPM0 = 112;
+const MONO = 'ui-monospace, Menlo, Consolas, "DejaVu Sans Mono", monospace';
+const DISPLAY = 'system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif';
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const E = { out: p => 1 - Math.pow(1 - clamp(p), 3), inOut: p => { p = clamp(p); return p < .5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2; } };
+const hash = n => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+const avg = (s, a, b) => { let x = 0; for (let i = a; i < b; i++) x += s[i]; return x / (b - a); };
+const tier = i => Math.floor(i / 13);
+const sector = (cx, cy, r1, r2, a0, a1) => { const p = (r, a) => (cx + r * Math.cos(a)).toFixed(1) + ' ' + (cy + r * Math.sin(a)).toFixed(1);
+  return `M${p(r2, a0)}A${r2} ${r2} 0 0 1 ${p(r2, a1)}L${p(r1, a1)}A${r1} ${r1} 0 0 0 ${p(r1, a0)}Z`; };
+const PALETTES = {
+  'Memphis': { paper: '#FFF3DC', ink: '#1B1033', c: ['#FF3E9A', '#00C2B8', '#FFD23F', '#7A3CFF', '#FF7A3D'], up: '#2DE0A8', dn: '#FF5C9E' },
+  'Wall Street': { paper: '#E9E4D8', ink: '#0E1A2B', c: ['#C8102E', '#D9A441', '#2E6F57', '#1F4E8C', '#8A8D91'], up: '#3DDC97', dn: '#FF4D5E' },
+  'Miami': { paper: '#FDE8F3', ink: '#120A2B', c: ['#FF2E93', '#00B8D9', '#FFC400', '#9B5DE5', '#00C27A'], up: '#2DFF9A', dn: '#FF2E93' },
+};
+const R = (c, x, y, w, h, fill, a = 1) => { c.globalAlpha = a; c.fillStyle = fill; c.fillRect(x, y, w, h); c.globalAlpha = 1; };
+const L = (c, x1, y1, x2, y2, stroke, w, a = 1, cap = 'butt', dash = []) => { c.globalAlpha = a; c.strokeStyle = stroke; c.lineWidth = w; c.lineCap = cap; c.setLineDash(dash); c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke(); c.setLineDash([]); c.globalAlpha = 1; };
+const O = (c, x, y, r, fill, a = 1) => { c.globalAlpha = a; c.fillStyle = fill; c.beginPath(); c.arc(x, y, Math.max(0, r), 0, TAU); c.fill(); c.globalAlpha = 1; };
+const TX = (c, s, x, y, size, fill, { font = 'mono', align = 'left', a = 1 } = {}) => { c.globalAlpha = a; c.fillStyle = fill; c.textAlign = align; c.textBaseline = 'alphabetic';
+  c.font = font === 'mono' ? `400 ${size}px ${MONO}` : `900 ${size}px ${DISPLAY}`; c.fillText(s, x, y); c.globalAlpha = 1; };
+const Grid = (c, fg, lbl) => [0, .25, .5, .75, 1].forEach(g => { L(c, 140, 950 - g * 640, 1780, 950 - g * 640, fg, g ? 2 : 4, g ? .16 : .7); if (lbl !== false) TX(c, String(g * 100), 120, 958 - g * 640, 24, fg, { align: 'right', a: .7 }); });
+
+function drawSlope(c, { s, local, T, fg, P }) {
+  const sm = i => (s[Math.max(0, i - 1)] + s[i] * 2 + s[Math.min(63, i + 1)]) / 4;
+  const pts = Array.from({ length: N }, (_, i) => [140 + i * 25.6, 950 - (0.3 + 0.7 * sm(i)) * (0.45 + 0.55 * Math.sin(Math.PI * i / 63)) * 640]);
+  for (let k = 0; k < 90; k++) O(c, hash(k) * 1920, (hash(k + 9) * 1100 + T * (40 + hash(k + 3) * 60)) % 1100 - 10, 2 + hash(k + 5) * 4, fg, .75);
+  c.fillStyle = P[3]; c.beginPath(); c.moveTo(140, 950); pts.forEach(p => c.lineTo(p[0], p[1])); c.lineTo(1780, 950); c.fill();
+  c.strokeStyle = fg; c.lineWidth = 20; c.lineJoin = 'round'; c.beginPath(); pts.forEach((p, i) => i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1])); c.stroke();
+  const u = ((local * 0.1) % 1) * 62, i = Math.floor(u), f = u - i, a = pts[i], b = pts[i + 1], x = a[0] + (b[0] - a[0]) * f, y = a[1] + (b[1] - a[1]) * f, ang = Math.atan2(b[1] - a[1], b[0] - a[0]);
+  c.save(); c.translate(x, y - 14); c.rotate(ang); L(c, -34, 10, 34, 10, P[2], 8, 1, 'round'); L(c, 0, 10, 0, -26, P[0], 14, 1, 'round'); O(c, 0, -42, 14, fg); L(c, 8, -16, 40, -2, fg, 4, 1, 'round'); c.restore();
+  const v = avg(s, 0, N), lv = ['BUNNY HILL', 'BLUE RUN', 'BLACK DIAMOND', 'DOUBLE BLACK DIAMOND'][Math.min(3, Math.floor(v * 6))];
+  TX(c, 'SNOWPACK', 140, 290, 24, fg, { a: .75 }); TX(c, (avg(s, 0, 16) * 60 + 4).toFixed(1) + ' IN', 140, 360, 64, fg, { font: 'display' });
+  TX(c, 'SLOPE CONDITIONS', 1780, 290, 24, fg, { align: 'right', a: .75 }); TX(c, lv, 1780, 360, 64, P[2], { font: 'display', align: 'right' });
+}
+function drawSnow(c, { at, fg, bg, P }) {
+  Grid(c, fg); const n = 40, sn = [], pr = [];
+  for (let k = 0; k < n; k++) { const a = at((n - 1 - k) * 0.075); sn.push(clamp(avg(a, 0, 12) * 1.6)); pr.push(clamp(avg(a, 13, 41) * 2)); }
+  [[sn, P[1]], [pr, P[0]]].forEach(([d, col]) => { c.strokeStyle = col; c.lineWidth = 12; c.lineJoin = 'round'; c.lineCap = 'round'; c.beginPath(); d.forEach((v, k) => k ? c.lineTo(160 + k * 40.3, 950 - v * 600) : c.moveTo(160, 950 - v * 600)); c.stroke(); O(c, 160 + (n - 1) * 40.3, 950 - d[n - 1] * 600, 20, col); });
+  R(c, 1000, 258, 28, 28, P[1]); TX(c, 'SNOW (LBS)', 1044, 282, 26, fg); R(c, 1280, 258, 28, 28, P[0]); TX(c, 'PRODUCTIVITY (UNITS)', 1324, 282, 26, fg);
+  TX(c, 'r = ' + (0.9 + 0.099 * clamp(1 - Math.abs(sn[n - 1] - pr[n - 1]))).toFixed(3) + '  (n = 1)', 1780, 1000 - 40, 26, fg, { align: 'right', a: .75 });
+}
+const ZONES = ['MONDAY', 'CASUAL FRIDAY', 'OFFSITE', 'PARTY TIME', 'HR INVOLVED'];
+function drawParty(c, { s, fg, bg, P }) {
+  const cx = 960, cy = 860, v = clamp(avg(s, 0, N) * 1.9);
+  ZONES.forEach((z, k) => { c.fillStyle = P[k]; c.fill(new Path2D(sector(cx, cy, 380, 520, Math.PI + (k + 0.03) * Math.PI / 5, Math.PI + (k + 0.97) * Math.PI / 5)));
+    const a = Math.PI + (k + .5) * Math.PI / 5; TX(c, z, cx + 600 * Math.cos(a), cy + 590 * Math.sin(a) * 0.95 + 8, 26, fg, { align: 'center', a: .85 }); });
+  const a = Math.PI + v * Math.PI; L(c, cx, cy, cx + 460 * Math.cos(a), cy + 460 * Math.sin(a), fg, 16, 1, 'round'); O(c, cx, cy, 30, fg); O(c, cx, cy, 10, bg);
+  TX(c, ZONES[Math.min(4, Math.floor(v * 5))], cx, 975, 76, P[Math.min(4, Math.floor(v * 5))], { font: 'display', align: 'center' });
+}
+const DEPTS = ['SALES', 'MARKETING', 'ACCOUNTING', 'LEGAL', 'HR', 'MAILROOM', 'EXECUTIVE', 'INTERNS'];
+function drawProd(c, { s, fg, P }) {
+  const ty = 950 - 0.4545 * 620; L(c, 140, 950, 1780, 950, fg, 4, .7);
+  DEPTS.forEach((d, g) => { const v = avg(s, g * 8, g * 8 + 8), h = v * 620, x = 190 + g * 200; R(c, x, 950 - h, 150, h, P[g % 5]);
+    TX(c, Math.round(v * 220) + '%', x + 75, 950 - h - 16, 40, fg, { font: 'display', align: 'center' }); TX(c, d, x + 75, 984, 22, fg, { align: 'center', a: .8 }); });
+  L(c, 140, ty, 1780, ty, fg, 4, 1, 'butt', [18, 12]); TX(c, 'TARGET 100%', 1780, ty - 14, 24, fg, { align: 'right', a: .8 });
+}
+function drawShoulders(c, { s, fg, P }) {
+  for (let r = 0; r < 7; r++) { const v = avg(s, r * 9, r * 9 + 9), y = 270 + r * 100, w = 160 + v * 1250;
+    TX(c, String(1983 + r), 270, y + 50, 40, fg, { font: 'display', align: 'right' }); R(c, 300, y, w, 70, P[r % 5]); TX(c, (v * 28).toFixed(1) + ' IN', 300 + w + 24, y + 52, 40, fg, { font: 'display' }); }
+  L(c, 300, 250, 300, 970, fg, 4); TX(c, 'SHOULDER PAD DEPTH, INCHES', 1780, 250, 24, fg, { align: 'right', a: .75 });
+}
+const BOARD = [['SNOW', 'SNOW FUTURES'], ['SLPE', 'SLOPE CONDITIONS'], ['PRTY', 'PARTY TIME INC.'], ['SYNG', 'SYNERGY HOLDINGS'], ['HAIR', 'HAIR VOLUME'], ['LNCH', 'LONG LUNCH LP'], ['FAX', 'FAX MACHINE CORP'], ['CPHN', 'CAR PHONE & CO']];
+function drawBoard(c, { s, at, fg, th, P }) {
+  const p = at(0.2); BOARD.forEach((b, g) => { const v = avg(s, g * 8, g * 8 + 8), d = (v - avg(p, g * 8, g * 8 + 8)) * 100, y = 290 + g * 84, col = d >= 0 ? th.up : th.dn;
+    L(c, 140, y + 22, 1780, y + 22, fg, 2, .18); TX(c, b[0], 160, y + 6, 46, P[1], { font: 'display' }); TX(c, b[1], 400, y + 4, 26, fg, { a: .75 });
+    TX(c, (40 + v * 160).toFixed(2), 1280, y + 6, 46, fg, { font: 'display', align: 'right' }); TX(c, (d >= 0 ? '+' : '') + d.toFixed(2), 1520, y + 6, 36, col, { align: 'right' });
+    for (let k = 0; k < 6; k++) { const h = 8 + avg(at(k * 0.12), g * 8, g * 8 + 8) * 56; R(c, 1560 + k * 34, y + 24 - h, 24, h, col); } });
+  TX(c, 'TICKER', 160, 262, 24, fg, { a: .6 }); TX(c, 'LAST', 1280, 262, 24, fg, { align: 'right', a: .6 }); TX(c, 'CHG', 1520, 262, 24, fg, { align: 'right', a: .6 });
+}
+function drawHair(c, { s, fg, bg, P }) {
+  L(c, 140, 250, 140, 950, fg, 4); L(c, 140, 950, 1780, 950, fg, 4);
+  TX(c, 'LUNCH LENGTH (HRS) →', 160, 996, 24, fg, { a: .75 }); c.save(); c.translate(112, 940); c.rotate(-Math.PI / 2); TX(c, 'HAIR VOLUME (IN) →', 0, 0, 24, fg, { a: .75 }); c.restore();
+  L(c, 150, 940, 1770, 270, fg, 5, 1, 'butt', [18, 12]);
+  for (let i = 0; i < N; i++) { const x = 190 + s[i] * 1500, y = 920 - s[(i * 7) % 64] * 620, r = 10 + s[(i * 3) % 64] * 40; O(c, x, y, r, P[i % 5], .9); c.strokeStyle = bg; c.lineWidth = 2; c.beginPath(); c.arc(x, y, r, 0, TAU); c.stroke(); }
+  TX(c, 'R² = 1.00', 1770, 330, 40, fg, { font: 'display', align: 'right' });
+}
+function drawSynergy(c, { s, fg, th, P }) {
+  const r = [150 + avg(s, 0, 12) * 130, 150 + avg(s, 13, 41) * 130, 150 + avg(s, 41, 64) * 130], pos = [[790, 520], [1130, 520], [960, 730]], nm = ['FUN', 'MONEY', 'PLAUSIBLE DENIABILITY'], lp = [[670, 450], [1250, 450], [960, 880]];
+  c.globalCompositeOperation = 'lighter'; pos.forEach((p, k) => O(c, p[0], p[1], r[k], P[[0, 1, 3][k]], .55)); c.globalCompositeOperation = 'source-over';
+  nm.forEach((n, k) => TX(c, n, lp[k][0], lp[k][1], k === 2 ? 30 : 48, '#fff', { font: 'display', align: 'center' }));
+  TX(c, 'SYNERGY', 960, 600, 46, '#fff', { font: 'display', align: 'center' }); TX(c, (avg(s, 0, N) * 9000 | 0) + '%', 960, 650, 28, '#fff', { align: 'center' });
+}
+const SPOTS = ['LOBBY', 'ELEVATOR', 'CAR', 'YACHT', 'JET', 'LIMO', 'GARAGE', 'BATHROOM'];
+function drawSignal(c, { s, fg, P }) {
+  let best = 0; SPOTS.forEach((n, g) => { const v = clamp(avg(s, g * 8, g * 8 + 8) * 1.8), x = 170 + g * 190, lit = Math.round(v * 5); if (lit > best) best = lit;
+    for (let k = 0; k < 5; k++) R(c, x + k * 32, 800 - (50 + k * 62), 26, 50 + k * 62, P[g % 5], k < lit ? 1 : .15);
+    TX(c, n, x + 76, 870, 24, fg, { align: 'center' }); TX(c, '-' + Math.round(110 - v * 70) + ' dBm', x + 76, 910, 22, fg, { align: 'center', a: .6 }); });
+  TX(c, 'BEST SIGNAL: ' + best + ' / 5 BARS', 140, 290, 40, fg, { font: 'display' });
+}
+function drawClock(c, { s, T, local, fg, bg, P }) {
+  const cx = 960, cy = 620, m = 17 * 60 + (T % LOOP) / LOOP * 480, hh = Math.floor(m / 60) % 24, mm = Math.floor(m % 60);
+  for (let i = 0; i < N; i++) { const a = i / N * TAU - Math.PI / 2, co = Math.cos(a), sn = Math.sin(a), r0 = 290; L(c, cx + r0 * co, cy + r0 * sn, cx + (r0 + 24 + s[i] * 200) * co, cy + (r0 + 24 + s[i] * 200) * sn, P[tier(i)], 14, 1, 'round'); }
+  c.strokeStyle = fg; c.globalAlpha = .3; c.lineWidth = 4; c.beginPath(); c.arc(cx, cy, 268, 0, TAU); c.stroke(); c.globalAlpha = 1;
+  const a2 = local * 0.7 - Math.PI / 2; O(c, cx + 268 * Math.cos(a2), cy + 268 * Math.sin(a2), 12, P[2]);
+  TX(c, String(hh % 12 || 12) + ':' + String(mm).padStart(2, '0') + (hh >= 12 && hh < 24 ? ' PM' : ' AM'), cx, cy + 40, 120, fg, { font: 'display', align: 'center' });
+  TX(c, hh < 19 ? 'HAPPY HOUR' : hh < 21 ? 'OVERTIME' : hh < 23 ? 'AFTER PARTY' : hh < 25 && hh >= 23 || hh < 1 ? 'STILL HERE' : 'CUSTODIAL STAFF CONCERNED', cx, cy + 100, 30, P[2], { align: 'center' });
+}
+const SCENES = [
+  { name: 'Slope', title: 'Slope Conditions Report', draw: drawSlope, dark: true }, { name: 'Snow', title: 'Snowfall vs. Productivity', draw: drawSnow },
+  { name: 'Party', title: 'Party Time Index', draw: drawParty, dark: true }, { name: 'Productivity', title: 'Departmental Productivity', draw: drawProd },
+  { name: 'Shoulders', title: 'Shoulder Pad Index', draw: drawShoulders }, { name: 'Board', title: 'Trading Floor', draw: drawBoard, dark: true },
+  { name: 'Hair', title: 'Hair Volume vs. Lunch', draw: drawHair }, { name: 'Synergy', title: 'Synergy Matrix', draw: drawSynergy, dark: true },
+  { name: 'Signal', title: 'Car Phone Coverage', draw: drawSignal }, { name: 'Overtime', title: 'Overtime Clock', draw: drawClock, dark: true },
+];
+const TAPE = '   SNOWFALL UP 14.2%  ///  PRODUCTIVITY UP 300%  ///  SLOPES: FRESH POWDER  ///  PARTY TIME: IMMINENT  ///  SYNERGY UP 9000%  ///  SHOULDER PADS AT ALL-TIME HIGH  ///  HR: UNREACHABLE  ///  LUNCH: STILL GOING  ///  HAIR UP 2 IN  ///  NOBODY IS LEAVING  ///';
+function wipe(c, dt, k, win, color) {
+  const p = dt / win; if (p <= -1 || p >= 1) return; const a = p < 0 ? 0 : E.inOut(p), b = p < 0 ? E.inOut(1 + p) : 1; c.fillStyle = color;
+  if (k % 2 === 0) c.fillRect(a * 1920, 0, (b - a) * 1920 + 1, 1080); else c.fillRect(0, a * 1080, 1920, (b - a) * 1080 + 1);
+}
+definePack({
+  draw(c, T, A, P, K) {
+    const th = PALETTES[P.palette] || PALETTES.Memphis, gain = P.gain || 1;
+    const pl = K.scenes(T, A, { count: SCENES.length, mode: P.cycle, beats: P.sceneBeats, bpm: BPM0, durs: Array(10).fill(9), loop: LOOP, only: K.sceneIndices(P.scenes, SCENES.map(d => d.name), P.scene) });   // one scene chosen: held (no cuts)
+    const idx = pl.idx, local = pl.held ? 1.3 + (A.t % 6) : pl.local, len = pl.held ? 1e9 : pl.len, def = SCENES[idx];
+    const fg = def.dark ? th.paper : th.ink, bg = def.dark ? th.ink : th.paper;
+    c.fillStyle = bg; c.fillRect(0, 0, 1920, 1080);
+    if (P.palette === 'Wall Street') for (let x = 0; x < 1920; x += 24) R(c, x, 0, 2, 1080, fg, .05);
+    const raw = dt => A.live ? Float32Array.from(dt > 0 ? A.past(dt) : A.spectrum, v => clamp(v * gain)) : Float32Array.from({ length: N }, (_, i) => clamp((0.3 + 0.25 * Math.sin((T - dt) * 3 + i * 0.4)) * gain));
+    const at = dt => raw(dt), s = raw(0).map((v, i) => v * E.out((local - 0.2 - i * 0.006) / 0.45)), level = Math.round(avg(s, 0, N) * 100);
+    c.save(); const zoom = pl.held ? 1 : 1 + 0.04 * clamp(local / len) + 0.012 * A.beat; c.translate(960, 600); c.scale(zoom, zoom); c.translate(-960, -600);
+    def.draw(c, { s, at, local, T, fg, bg, th, P: th.c }); c.restore();
+    const tIn = E.out((local - 0.15) / 0.5); c.save(); c.globalAlpha = tIn; c.translate(0, (1 - tIn) * 28);
+    const m = A.meta || {}, name = m.title ? '  ·  ' + (m.artist ? m.artist + ' — ' : '') + m.title : '', sec = A.section && P.showMeta ? '  ·  ' + A.section.name.toUpperCase() : '';
+    K.text(c, 'FIG. ' + String(idx + 1).padStart(2, '0') + sec + (P.showMeta ? name : ''), 96, 84, { font: `400 26px ${MONO}`, color: fg, alpha: .75, upper: true, maxW: 1200 });
+    TX(c, def.title.toUpperCase(), 94, 158, 62, fg, { font: 'display' });
+    TX(c, 'PARTY LEVEL', 1824, 84, 26, fg, { align: 'right', a: .75 }); TX(c, String(level).padStart(2, '0') + '%', 1826, 158, 62, th.c[idx % 5], { font: 'display', align: 'right' });
+    c.restore();
+    R(c, 0, 1016, 1920, 64, fg); c.font = `400 30px ${MONO}`; const w = c.measureText(TAPE).width, o = -((T * 140) % w); TX(c, TAPE, o, 1058, 30, bg); TX(c, TAPE, o + w, 1058, 30, bg);
+    if (!pl.held) for (const [k, dt] of [[idx, local], [idx + 1, local - len]]) { const j = k % SCENES.length; wipe(c, dt, k, 0.42, th.c[(j + 1) % 5]); wipe(c, dt, k, 0.28, th.c[j % 5]); }
+  }
+});
+</script>

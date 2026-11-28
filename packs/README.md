@@ -6,6 +6,8 @@ Generated from each pack's `pack.json` (`node bin/check.mjs` must pass for every
 |---|---|---|---|---|
 | `_template` | Template: Pulse Rings | 1920x1080 | 60s | Copy this folder to start a new animation. |
 | `atom` | Atom | 1920x1080 | 20s | Nucleus with tilted electron orbits; electrons leave glowing trails and flare with the spectrum. |
+| `bfunk2` | Business Funk II: Overtime | 1920x1080 | 90s | Sequel to Business Funk. Ten 80s corporate charts with unreliable metrics: slope conditions, snowfall vs productivity, party time dial, shoulder pad index, a trading board, synergy Venn, car phone signal and an overtime clock. Scrolling tape along the bottom. |
+| `bfunk3` | Business Funk III: Black Monday | 1920x1080 | 90s | Glitched market-crash terminal. The index falls across the song while eight charts (index, candles, trading halt, order book, ticker wall, heat map, seismograph, heart rate) tear, split and flicker harder as it drops. Beats flash red. |
 | `bubbles` | Bubbles | 1920x1080 | 20s | Frutiger Aero: glossy bubbles rise over a sunny sky and green hills. |
 | `business-funk` | Business Funk | 1920x1080 | 90s | Ten infographic-style 64-band analyzers (bars, donut, pyramid, candles, dot matrix, gauges, bubbles, area, funnel, spiral). Shows song title/artist/BPM/key/section from metadata; scenes can follow the song's sections or beats. |
 | `cassette` | Cassette | 1920x1080 | 20s | Cassette deck: tape moves from supply to take-up reel, LED level bars follow the music. |
@@ -29,6 +31,7 @@ Generated from each pack's `pack.json` (`node bin/check.mjs` must pass for every
 | `jazz` | Jazz Cup | 1920x1080 | 20s | 90s paper-cup pattern: teal brush swoosh and purple squiggle that dance with the spectrum, confetti drifting through. Optional cup silhouette. |
 | `kaleido` | Kaleidoscope | 1920x1080 | 20s | Mirrored wedge kaleidoscope of drifting glass shapes; spectrum scales the pieces. |
 | `leaves` | Leaves | 1920x1080 | 24s | Leaves tumbling across a dusk sky; loudness becomes wind gusts. |
+| `onhold` | On Hold | 1920x1080 | 90s | A very long wait on a call-center line: queue position that barely moves, an IVR keypad menu, band-limited telephone line, hold timer clock, rolling apology marquee and a satisfaction survey. Spectrum drives the hold-music LEDs. |
 | `orb` | Aqua Orb | 1920x1080 | 20s | Frutiger Aero: glass sphere whose water level rises with the music. |
 | `os_amiga` | Amiga | 1920x1080 | 24s | Four-colour 640x360 workbench at 3x: white title bars with gadgets, orange spectrum, a rotating red and white checkered ball bouncing across a grid, and drawer icons that flash on the beat. |
 | `os_apple2` | Apple II | 1920x1080 | 24s | 40-column text screen with a lo-res block-graphics spectrum, scanlines, a RUN prompt and blinking inverse cursor. Colour lo-res or green/amber phosphor. |

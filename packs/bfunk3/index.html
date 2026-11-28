@@ -1,0 +1,103 @@
+<!doctype html><meta charset="utf-8"><title>Business Funk III: Black Monday</title>
+<script src="../../core/pack-runtime.js"></script>
+<script>
+const N = 64, TAU = Math.PI * 2, LOOP = 90, BPM0 = 112, NS = 8;
+const MONO = 'ui-monospace, Menlo, Consolas, "DejaVu Sans Mono", monospace';
+const DISPLAY = 'system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif';
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const E = { out: p => 1 - Math.pow(1 - clamp(p), 3), inOut: p => { p = clamp(p); return p < .5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2; } };
+const hash = n => { const x = Math.sin(n * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+const avg = (s, a, b) => { let x = 0; for (let i = a; i < b; i++) x += s[i]; return x / (b - a); };
+const TH = {
+  Terminal: { ink: '#04080A', fg: '#C9FFE2', up: '#2DFF8A', dn: '#FF2A3D', amb: '#FFB000', dark: true },
+  Amber: { ink: '#0B0600', fg: '#FFD9A0', up: '#FFB000', dn: '#FF4A1C', amb: '#FFE08A', dark: true },
+  Fax: { ink: '#ECE9E1', fg: '#15161A', up: '#1A7F4B', dn: '#C8102E', amb: '#B36B00', dark: false },
+};
+const R = (c, x, y, w, h, fill, a = 1) => { c.globalAlpha = a; c.fillStyle = fill; c.fillRect(x, y, w, h); c.globalAlpha = 1; };
+const L = (c, x1, y1, x2, y2, stroke, w, a = 1, cap = 'butt', dash = []) => { c.globalAlpha = a; c.strokeStyle = stroke; c.lineWidth = w; c.lineCap = cap; c.setLineDash(dash); c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke(); c.setLineDash([]); c.globalAlpha = 1; };
+const TX = (c, s, x, y, size, fill, { font = 'mono', align = 'left', a = 1 } = {}) => { c.globalAlpha = a; c.fillStyle = fill; c.textAlign = align; c.textBaseline = 'alphabetic';
+  c.font = font === 'mono' ? `400 ${size}px ${MONO}` : `900 ${size}px ${DISPLAY}`; c.fillText(s, x, y); c.globalAlpha = 1; };
+const poly = (c, pts, stroke, w) => { c.strokeStyle = stroke; c.lineWidth = w; c.lineJoin = 'round'; c.beginPath(); pts.forEach((p, i) => i ? c.lineTo(p[0], p[1]) : c.moveTo(p[0], p[1])); c.stroke(); };
+const price = p => 2246.74 - 508 * E.inOut((p - 0.1) / 0.5);
+
+function drawIndex(c, { at, th, p }) {
+  const v = price(p), pc = (v - 2246.74) / 2246.74 * 100, col = pc < -1 ? th.dn : th.up;
+  TX(c, 'FUNK-30', 140, 300, 28, th.fg, { a: .7 }); TX(c, v.toFixed(2), 140, 500, 220, col, { font: 'display' });
+  TX(c, (pc >= 0 ? '+' : '') + pc.toFixed(2) + '%', 1780, 300, 80, col, { font: 'display', align: 'right' });
+  const pts = Array.from({ length: 48 }, (_, k) => [140 + k * 34.9, 640 + (k / 47) * 180 * clamp(p * 1.6) - (avg(at((47 - k) * 0.06), 0, 16) - 0.4) * 260]);
+  c.fillStyle = col; c.globalAlpha = .14; c.beginPath(); c.moveTo(140, 960); pts.forEach(q => c.lineTo(q[0], q[1])); c.lineTo(1780, 960); c.fill(); c.globalAlpha = 1; poly(c, pts, col, 8);
+}
+function drawCandles(c, { s, th, p }) {
+  L(c, 140, 950, 1780, 950, th.fg, 4, .6);
+  for (let i = 0; i < N; i++) { const base = 0.8 - i / 63 * 0.55 * (0.5 + p), o = base + (s[i] - 0.3) * 0.25, cl = base - s[i] * 0.35 * (i / 63 + 0.3), w = s[(i + 9) % 64] * 0.12, hi = Math.max(o, cl) + w, lo = Math.min(o, cl) - w, x = 144 + i * 25.6, col = cl < o ? th.dn : th.up;
+    L(c, x + 9, 950 - hi * 640, x + 9, 950 - lo * 640, col, 3); R(c, x, 950 - Math.max(o, cl) * 640, 18, Math.max(5, Math.abs(o - cl) * 640), col); }
+}
+function drawHalt(c, { s, local, th, A, bg }) {
+  const on = Math.floor(local * 2) % 2 === 0 || A.beat > 0.5;
+  if (on) R(c, 140, 270, 1640, 300, th.dn); TX(c, 'TRADING HALTED', 960, 460, 150, on ? th.ink : th.dn, { font: 'display', align: 'center' });
+  const left = Math.max(0, 900 - local * 20) | 0; TX(c, 'CIRCUIT BREAKER LEVEL 1  ·  RESUMES IN ' + String(left / 60 | 0).padStart(2, '0') + ':' + String(left % 60).padStart(2, '0'), 960, 640, 40, th.fg, { align: 'center' });
+  for (let i = 0; i < N; i++) R(c, 144 + i * 25.6, 960 - s[i] * 260, 18, s[i] * 260, i % 8 === 0 ? th.amb : th.dn);
+}
+function drawBook(c, { s, th, p }) {
+  L(c, 960, 250, 960, 950, th.fg, 3, .6); TX(c, 'BIDS', 930, 262, 26, th.up, { align: 'right' }); TX(c, 'ASKS', 990, 262, 26, th.dn);
+  for (let r = 0; r < 32; r++) { const y = 280 + r * 21, bw = s[r] * 780 * (1 - p * 0.88), aw = s[32 + r] * 780 * (0.4 + p); R(c, 950 - bw, y, bw, 16, th.up); R(c, 970, y, aw, 16, th.dn); }
+  TX(c, 'DEPTH: ' + Math.round(avg(s, 0, 32) * 100 * (1 - p * 0.88)) + '% OF NORMAL', 140, 1000, 26, th.fg, { a: .7 });
+}
+const TICK = ['MEGLO', 'BLUSTR', 'SHRDCO', 'FAXMAX', 'PADCO', 'YUPCO', 'BRFCSE', 'LUNCHX', 'MEMOCO', 'CLIPCO', 'SYNRGX', 'LEVRGE', 'JUNKBD', 'BUBBLX', 'PANICO', 'MARGN', 'GREEDY', 'HOSTIL', 'PINKSL', 'BAILCO', 'ZERCO', 'SELLCO', 'GOLDPR', 'TKOVR'];
+function drawWall(c, { s, th, p }) {
+  TICK.forEach((n, g) => { const x = 140 + (g % 4) * 410, y = 270 + Math.floor(g / 4) * 112, v = s[g * 2] * 30 * (0.4 + p) - (g % 7 === 0 ? 18 : 4), col = v >= 0 ? th.up : th.dn;
+    R(c, x, y, 390, 96, col, .14); R(c, x, y, 8, 96, col); TX(c, n, x + 28, y + 40, 34, th.fg, { font: 'display' }); TX(c, (v >= 0 ? '+' : '') + v.toFixed(1) + '%', x + 372, y + 74, 40, col, { font: 'display', align: 'right' }); });
+}
+function drawHeat(c, { s, th }) {
+  for (let i = 0; i < N; i++) { const x = 140 + (i % 8) * 206, y = 270 + Math.floor(i / 8) * 85; R(c, x, y, 196, 77, th.dn, 0.15 + 0.85 * s[i]); TX(c, '-' + (s[i] * 20).toFixed(1) + '%', x + 98, y + 50, 30, s[i] > .45 ? th.ink : th.fg, { align: 'center' }); }
+}
+function drawSeismo(c, { A, T, th, s, p }) {
+  [-1, 0, 1].forEach(k => L(c, 140, 620 + k * 220, 1780, 620 + k * 220, th.fg, 2, .2, 'butt', [14, 12]));
+  const w = A.wave && A.live ? A.wave : Float32Array.from({ length: 128 }, (_, i) => Math.sin(i * 0.4 + T * 8) * 0.5), pts = Array.from(w, (v, i) => [140 + i * 12.9, 620 + v * 300 * (0.5 + p)]); poly(c, pts, th.dn, 6);
+  TX(c, 'MAGNITUDE', 140, 290, 26, th.fg, { a: .7 }); TX(c, (2 + avg(s, 0, N) * 7 * (0.6 + p * .4)).toFixed(1), 140, 380, 90, th.dn, { font: 'display' });
+}
+function drawPulse(c, { s, local, th, p }) {
+  const bpm = 70 + avg(s, 0, N) * 130 + p * 40, ecg = u => 0.1 * Math.exp(-(((u - .2) / .03) ** 2)) - 0.12 * Math.exp(-(((u - .3) / .012) ** 2)) + Math.exp(-(((u - .33) / .01) ** 2)) - 0.25 * Math.exp(-(((u - .36) / .012) ** 2)) + 0.25 * Math.exp(-(((u - .6) / .05) ** 2));
+  const pts = Array.from({ length: 330 }, (_, k) => { const x = 140 + k * 5, t = local - (1780 - x) / 400; return [x, 700 - ecg(((t * bpm / 60) % 1 + 1) % 1) * 300]; }); poly(c, pts, th.up, 6);
+  TX(c, 'TRADER HEART RATE', 140, 290, 26, th.fg, { a: .7 }); TX(c, String(Math.round(bpm)), 140, 400, 120, bpm > 150 ? th.dn : th.fg, { font: 'display' }); TX(c, 'BPM', 440, 400, 36, th.fg, { a: .7 });
+}
+const SCENES = [
+  { name: 'Index', title: 'Index Level', draw: drawIndex }, { name: 'Candles', title: 'Price Action', draw: drawCandles }, { name: 'Halt', title: 'Circuit Breaker', draw: drawHalt },
+  { name: 'Book', title: 'Order Book Depth', draw: drawBook }, { name: 'Wall', title: 'Ticker Wall', draw: drawWall }, { name: 'Heat', title: 'Sell Volume Heat Map', draw: drawHeat },
+  { name: 'Seismo', title: 'Panic Seismograph', draw: drawSeismo }, { name: 'Pulse', title: 'Floor Vitals', draw: drawPulse },
+];
+const TAPE = '   SELL  ///  TRADING HALTED  ///  CIRCUIT BREAKER  ///  ORDER BOOK EMPTY  ///  MARGIN CALL  ///  NOBODY IS BIDDING  ///  PLEASE REMAIN CALM  ///  SELL  ///  SELL  ///';
+function wipe(c, dt, k, win, color) {
+  const p = dt / win; if (p <= -1 || p >= 1) return; const a = p < 0 ? 0 : E.inOut(p), b = p < 0 ? E.inOut(1 + p) : 1; c.fillStyle = color;
+  if (k % 2 === 0) c.fillRect(a * 1920, 0, (b - a) * 1920 + 1, 1080); else c.fillRect(0, a * 1080, 1920, (b - a) * 1080 + 1);
+}
+function glitch(c, T, th, amt, beat) {
+  if (amt <= 0) return; const cv = c.canvas, k = Math.floor(T * 12), n = Math.floor(amt * 7 * (0.4 + beat));
+  for (let i = 0; i < n; i++) { const y = (hash(k * 7 + i) * 1080) | 0, h = 6 + ((hash(k * 3 + i) * 80) | 0), dx = (hash(k * 5 + i) - 0.5) * amt * 220; c.drawImage(cv, 0, y, 1920, h, dx, y, 1920, h); }
+  c.save(); c.globalCompositeOperation = th.dark ? 'lighter' : 'multiply'; c.globalAlpha = 0.28 * Math.min(1, amt); const o = 5 + 12 * amt * (0.3 + beat); c.drawImage(cv, -o, 0); c.drawImage(cv, o, 0); c.restore();
+  const sl = th.dark ? '#000' : '#fff'; for (let y = 0; y < 1080; y += 4) R(c, 0, y, 1920, 1, sl, 0.18 * Math.min(1, amt));
+  if (hash(k * 13) > 0.8 && amt > 0.2) R(c, 0, ((hash(k * 17) * 1000) | 0), 1920, 3 + ((hash(k * 19) * 14) | 0), th.dn, 0.35);
+  if (beat > 0.6) R(c, 0, 0, 1920, 1080, th.dn, 0.12 * amt);
+}
+definePack({
+  draw(c, T, A, P, K) {
+    const th = TH[P.palette] || TH.Terminal, gain = P.gain || 1, amt = P.glitch == null ? 1 : P.glitch;
+    const pl = K.scenes(T, A, { count: NS, mode: P.cycle, beats: P.sceneBeats, bpm: BPM0, durs: Array(NS).fill(LOOP / NS), loop: LOOP, only: K.sceneIndices(P.scenes, SCENES.map(d => d.name), P.scene) });   // one scene chosen: held (no cuts)
+    const idx = pl.idx, local = pl.held ? 1.3 + (A.t % 6) : pl.local, len = pl.held ? 1e9 : pl.len, def = SCENES[idx], p = K.progress(A, T, LOOP);
+    const raw = dt => A.live ? Float32Array.from(dt > 0 ? A.past(dt) : A.spectrum, v => clamp(v * gain)) : Float32Array.from({ length: N }, (_, i) => clamp((0.3 + 0.25 * Math.sin((T - dt) * 3 + i * 0.4)) * gain));
+    const s = raw(0).map((v, i) => v * E.out((local - 0.2 - i * 0.006) / 0.45)), at = raw, fg = th.fg, g = amt * (0.25 + 0.75 * p) + 0.1 * amt;
+    c.fillStyle = th.ink; c.fillRect(0, 0, 1920, 1080);
+    c.save(); const zoom = pl.held ? 1 : 1 + 0.04 * clamp(local / len) + 0.012 * A.beat; c.translate(960, 600); c.scale(zoom, zoom); c.translate(-960, -600);
+    def.draw(c, { s, at, local, T, A, th, p, bg: th.ink }); c.restore();
+    const tIn = E.out((local - 0.15) / 0.5), j = hash(Math.floor(T * 12) * 3) > 0.9 ? (hash(Math.floor(T * 12)) - 0.5) * 60 * amt : 0; c.save(); c.globalAlpha = tIn; c.translate(j, (1 - tIn) * 28);
+    const m = A.meta || {}, name = m.title ? '  ·  ' + (m.artist ? m.artist + ' — ' : '') + m.title : '', sec = A.section && P.showMeta ? '  ·  ' + A.section.name.toUpperCase() : '';
+    K.text(c, 'FIG. ' + String(idx + 1).padStart(2, '0') + sec + (P.showMeta ? name : ''), 96, 84, { font: `400 26px ${MONO}`, color: fg, alpha: .75, upper: true, maxW: 1200 });
+    TX(c, def.title.toUpperCase(), 94, 158, 62, fg, { font: 'display' });
+    const v = price(p), pc = (v - 2246.74) / 2246.74 * 100; TX(c, 'FUNK-30', 1824, 84, 26, fg, { align: 'right', a: .75 }); TX(c, (pc >= 0 ? '+' : '') + pc.toFixed(1) + '%', 1826, 158, 62, pc < -1 ? th.dn : th.up, { font: 'display', align: 'right' });
+    c.restore();
+    R(c, 0, 1016, 1920, 64, th.dn); c.font = `400 30px ${MONO}`; const w = c.measureText(TAPE).width, o = -((T * 160) % w); TX(c, TAPE, o, 1058, 30, th.dark ? th.ink : '#fff'); TX(c, TAPE, o + w, 1058, 30, th.dark ? th.ink : '#fff');
+    if (!pl.held) for (const [k, dt] of [[idx, local], [idx + 1, local - len]]) wipe(c, dt, k, 0.3, k % 2 ? th.dn : th.fg);
+    glitch(c, T, th, g, A.beat);
+  }
+});
+</script>

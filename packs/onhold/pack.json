@@ -1,0 +1,72 @@
+{
+  "name": "On Hold",
+  "page": "index.html",
+  "type": "native",
+  "width": 1920,
+  "height": 1080,
+  "loopSeconds": 90,
+  "description": "A very long wait on a call-center line: queue position that barely moves, an IVR keypad menu, band-limited telephone line, hold timer clock, rolling apology marquee and a satisfaction survey. Spectrum drives the hold-music LEDs.",
+  "params": {
+    "palette": {
+      "type": "select",
+      "label": "Palette",
+      "options": [
+        "Beige Phone",
+        "Night Shift"
+      ],
+      "default": "Beige Phone"
+    },
+    "gain": {
+      "type": "number",
+      "label": "Gain",
+      "default": 1,
+      "min": 0.5,
+      "max": 1.6,
+      "step": 0.05
+    },
+    "cycle": {
+      "type": "select",
+      "label": "Scene changes",
+      "options": [
+        "auto",
+        "fixed",
+        "beats",
+        "sections"
+      ],
+      "default": "auto"
+    },
+    "sceneBeats": {
+      "type": "number",
+      "label": "Beats per scene",
+      "default": 16,
+      "min": 4,
+      "max": 64,
+      "step": 4
+    },
+    "scenes": {
+      "type": "multi",
+      "label": "Scenes (pick one to hold it)",
+      "options": [
+        "Queue",
+        "Menu",
+        "Line",
+        "Clock",
+        "Notice",
+        "Survey"
+      ],
+      "default": [
+        "Queue",
+        "Menu",
+        "Line",
+        "Clock",
+        "Notice",
+        "Survey"
+      ]
+    },
+    "showMeta": {
+      "type": "bool",
+      "label": "Show song info",
+      "default": true
+    }
+  }
+}

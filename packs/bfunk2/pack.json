@@ -1,0 +1,81 @@
+{
+  "name": "Business Funk II: Overtime",
+  "page": "index.html",
+  "type": "native",
+  "width": 1920,
+  "height": 1080,
+  "loopSeconds": 90,
+  "description": "Sequel to Business Funk. Ten 80s corporate charts with unreliable metrics: slope conditions, snowfall vs productivity, party time dial, shoulder pad index, a trading board, synergy Venn, car phone signal and an overtime clock. Scrolling tape along the bottom.",
+  "params": {
+    "palette": {
+      "type": "select",
+      "label": "Palette",
+      "options": [
+        "Memphis",
+        "Wall Street",
+        "Miami"
+      ],
+      "default": "Memphis"
+    },
+    "gain": {
+      "type": "number",
+      "label": "Gain",
+      "default": 1,
+      "min": 0.5,
+      "max": 1.6,
+      "step": 0.05
+    },
+    "cycle": {
+      "type": "select",
+      "label": "Scene changes",
+      "options": [
+        "auto",
+        "fixed",
+        "beats",
+        "sections"
+      ],
+      "default": "auto"
+    },
+    "sceneBeats": {
+      "type": "number",
+      "label": "Beats per scene",
+      "default": 16,
+      "min": 4,
+      "max": 64,
+      "step": 4
+    },
+    "scenes": {
+      "type": "multi",
+      "label": "Scenes (pick one to hold it)",
+      "options": [
+        "Slope",
+        "Snow",
+        "Party",
+        "Productivity",
+        "Shoulders",
+        "Board",
+        "Hair",
+        "Synergy",
+        "Signal",
+        "Overtime"
+      ],
+      "default": [
+        "Slope",
+        "Snow",
+        "Party",
+        "Productivity",
+        "Shoulders",
+        "Board",
+        "Hair",
+        "Synergy",
+        "Signal",
+        "Overtime"
+      ]
+    },
+    "showMeta": {
+      "type": "bool",
+      "label": "Show song info",
+      "default": true
+    }
+  }
+}

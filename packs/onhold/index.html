@@ -1,0 +1,83 @@
+<!doctype html><meta charset="utf-8"><title>On Hold</title>
+<script src="../../core/pack-runtime.js"></script>
+<script>
+const N = 64, TAU = Math.PI * 2, LOOP = 90, BPM0 = 112, NS = 6;
+const MONO = 'ui-monospace, Menlo, Consolas, "DejaVu Sans Mono", monospace';
+const DISPLAY = 'system-ui, -apple-system, "Segoe UI", "Helvetica Neue", Arial, sans-serif';
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const E = { out: p => 1 - Math.pow(1 - clamp(p), 3), inOut: p => { p = clamp(p); return p < .5 ? 4 * p * p * p : 1 - Math.pow(-2 * p + 2, 3) / 2; } };
+const avg = (s, a, b) => { let x = 0; for (let i = a; i < b; i++) x += s[i]; return x / (b - a); };
+const TH = {
+  'Beige Phone': { body: '#D9D2BF', ink: '#2B2A26', lcd: '#B9C69B', lcdInk: '#26301E', acc: ['#C8402B', '#2F6F8F', '#E0A526', '#5C7A3A', '#6B4E8C'] },
+  'Night Shift': { body: '#1C2430', ink: '#DCE6F2', lcd: '#16301F', lcdInk: '#6CFF9A', acc: ['#FF5A4D', '#4DB8FF', '#FFC94D', '#6CFF9A', '#B48CFF'] },
+};
+const R = (c, x, y, w, h, fill, a = 1) => { c.globalAlpha = a; c.fillStyle = fill; c.fillRect(x, y, w, h); c.globalAlpha = 1; };
+const L = (c, x1, y1, x2, y2, stroke, w, a = 1, cap = 'butt', dash = []) => { c.globalAlpha = a; c.strokeStyle = stroke; c.lineWidth = w; c.lineCap = cap; c.setLineDash(dash); c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2, y2); c.stroke(); c.setLineDash([]); c.globalAlpha = 1; };
+const O = (c, x, y, r, fill, a = 1) => { c.globalAlpha = a; c.fillStyle = fill; c.beginPath(); c.arc(x, y, Math.max(0, r), 0, TAU); c.fill(); c.globalAlpha = 1; };
+const TX = (c, s, x, y, size, fill, { font = 'mono', align = 'left', a = 1 } = {}) => { c.globalAlpha = a; c.fillStyle = fill; c.textAlign = align; c.textBaseline = 'alphabetic';
+  c.font = font === 'mono' ? `400 ${size}px ${MONO}` : `900 ${size}px ${DISPLAY}`; c.fillText(s, x, y); c.globalAlpha = 1; };
+const hms = sec => { sec = Math.max(0, sec | 0); return String(sec / 3600 | 0).padStart(2, '0') + ':' + String((sec / 60 | 0) % 60).padStart(2, '0') + ':' + String(sec % 60).padStart(2, '0'); };
+const held = (A, T) => 13632 + (A.live ? A.t : T);
+const lcd = (c, x, y, w, h, th) => { R(c, x - 10, y - 10, w + 20, h + 20, th.ink, .9); R(c, x, y, w, h, th.lcd); for (let yy = y; yy < y + h; yy += 4) R(c, x, yy, w, 1, th.lcdInk, .06); };
+
+function drawQueue(c, { s, A, T, th }) {
+  lcd(c, 140, 260, 1640, 400, th); TX(c, 'YOUR POSITION IN QUEUE', 180, 330, 36, th.lcdInk, { a: .8 });
+  TX(c, String(47 - Math.floor((T % LOOP) / LOOP * 3)), 180, 560, 260, th.lcdInk, { font: 'display' });
+  TX(c, 'ESTIMATED WAIT', 1740, 330, 30, th.lcdInk, { align: 'right', a: .8 }); TX(c, '< 5 MINUTES', 1740, 400, 64, th.lcdInk, { font: 'display', align: 'right' });
+  TX(c, 'ON HOLD ' + hms(held(A, T)), 1740, 620, 44, th.lcdInk, { align: 'right' });
+  for (let i = 0; i < 32; i++) { const n = Math.round(s[i * 2] * 8); for (let k = 0; k < 8; k++) R(c, 140 + i * 51, 920 - k * 28, 40, 22, th.acc[k < 5 ? 3 : k < 7 ? 2 : 0], k < n ? 1 : .12); }
+}
+const MENU = ['BILLING AND PAYMENTS', 'ACCOUNT CHANGES', 'TECHNICAL SUPPORT', 'ORDER STATUS', 'CANCELLATIONS', 'ALL OTHER ENQUIRIES', 'REPEAT THESE OPTIONS'];
+function drawMenu(c, { s, local, th }) {
+  const sel = Math.floor(local / 1.2) % 7;
+  for (let k = 0; k < 12; k++) { const x = 160 + (k % 3) * 190, y = 270 + Math.floor(k / 3) * 160, d = k === 9 ? '*' : k === 10 ? '0' : k === 11 ? '#' : String(k + 1), v = s[k * 5];
+    R(c, x, y, 170, 140, th.ink, .1 + v * .5); R(c, x, y, 170, 140, th.ink, 0); c.strokeStyle = th.ink; c.lineWidth = 4; c.strokeRect(x + 2, y + 2, 166, 136); TX(c, d, x + 85, y + 96, 72, th.ink, { font: 'display', align: 'center' }); }
+  MENU.forEach((m, k) => { const y = 320 + k * 90, on = k === sel; if (on) R(c, 800, y - 50, 980, 74, th.acc[0]); TX(c, (k < 6 ? 'PRESS ' + (k + 1) : 'PRESS 9') + ' FOR ' + m.replace('REPEAT THESE OPTIONS', 'REPEAT'), 830, y, 40, on ? '#fff' : th.ink, { font: 'display' }); });
+}
+function drawLine(c, { s, th }) {
+  L(c, 140, 950, 1780, 950, th.ink, 4, .7);
+  for (let i = 0; i < N; i++) { const inb = i >= 8 && i <= 40, v = inb ? s[i] : s[i] * 0.1, h = v * 600; R(c, 144 + i * 25.6, 950 - h, 18, h, th.acc[inb ? 1 : 0], inb ? 1 : .4); }
+  [8, 41].forEach(i => L(c, 140 + i * 25.6, 300, 140 + i * 25.6, 950, th.ink, 3, .8, 'butt', [14, 10]));
+  TX(c, '300 Hz', 140 + 8 * 25.6, 290, 26, th.ink, { align: 'center' }); TX(c, '3400 Hz', 140 + 41 * 25.6, 290, 26, th.ink, { align: 'center' });
+  TX(c, 'HD VOICE: NO', 1780, 400, 56, th.acc[0], { font: 'display', align: 'right' });
+}
+function drawClock(c, { s, A, T, th }) {
+  const cx = 960, cy = 620; for (let i = 0; i < N; i++) { const a = i / N * TAU - Math.PI / 2, co = Math.cos(a), sn = Math.sin(a); L(c, cx + 290 * co, cy + 290 * sn, cx + (310 + s[i] * 200) * co, cy + (310 + s[i] * 200) * sn, th.acc[Math.floor(i / 13)], 14, 1, 'round'); }
+  O(c, cx, cy, 268, th.ink, .08); TX(c, hms(held(A, T)), cx, cy + 40, 110, th.ink, { font: 'display', align: 'center' }); TX(c, 'TOTAL TIME ON HOLD', cx, cy + 100, 30, th.ink, { align: 'center', a: .75 });
+  const a = (T % 60) / 60 * TAU - Math.PI / 2; L(c, cx, cy, cx + 250 * Math.cos(a), cy + 250 * Math.sin(a), th.acc[0], 6, 1, 'round');
+}
+const NOTE = ['YOUR CALL IS IMPORTANT TO US', 'HIGHER THAN NORMAL CALL VOLUMES', 'PLEASE CONTINUE TO HOLD', 'ALL OF OUR AGENTS ARE ASSISTING OTHER CUSTOMERS'];
+function drawNotice(c, { s, local, th }) {
+  c.font = `900 130px ${DISPLAY}`; NOTE.forEach((t, k) => { const y = 340 + k * 190, fs = 100 + s[k * 12] * 60; c.font = `900 ${fs}px ${DISPLAY}`; const w = c.measureText(t + '   ·   ').width, o = -((local * (60 + k * 25)) % w) * (k % 2 ? -1 : 1) - (k % 2 ? w : 0);
+    for (let r = -1; r < 3; r++) TX(c, t + '   ·   ', o + r * w, y, fs, th.acc[k % 5], { font: 'display' }); });
+}
+const SURVEY = ['EXCELLENT', 'GOOD', 'FAIR', 'POOR', 'STILL WAITING'];
+function drawSurvey(c, { s, th }) {
+  SURVEY.forEach((t, k) => { const v = avg(s, k * 12, k * 12 + 12) * (0.5 + k * 0.22), y = 290 + k * 130, w = 120 + clamp(v) * 1100; TX(c, t, 140, y + 62, 36, th.ink, { font: 'display' }); R(c, 520, y, w, 90, th.acc[k]); TX(c, Math.round(clamp(v) * 100) + '%', 520 + w + 24, y + 62, 40, th.ink, { font: 'display' }); });
+}
+const SCENES = [
+  { name: 'Queue', title: 'Queue Status', draw: drawQueue }, { name: 'Menu', title: 'Main Menu', draw: drawMenu }, { name: 'Line', title: 'Line Quality', draw: drawLine },
+  { name: 'Clock', title: 'Hold Time', draw: drawClock }, { name: 'Notice', title: 'Important Notice', draw: drawNotice }, { name: 'Survey', title: 'Satisfaction Survey', draw: drawSurvey },
+];
+const TAPE = '   PLEASE CONTINUE TO HOLD  ·  YOUR CALL WILL BE ANSWERED IN THE ORDER IT WAS RECEIVED  ·  THIS CALL MAY BE RECORDED FOR TRAINING PURPOSES  ·  ';
+function wipe(c, dt, win, color) { const p = dt / win; if (p <= -1 || p >= 1) return; const a = p < 0 ? 0 : E.inOut(p), b = p < 0 ? E.inOut(1 + p) : 1; c.fillStyle = color; c.fillRect(a * 1920, 0, (b - a) * 1920 + 1, 1080); }
+definePack({
+  draw(c, T, A, P, K) {
+    const th = TH[P.palette] || TH['Beige Phone'], gain = P.gain || 1;
+    const pl = K.scenes(T, A, { count: NS, mode: P.cycle, beats: P.sceneBeats, bpm: BPM0, durs: Array(NS).fill(LOOP / NS), loop: LOOP, only: K.sceneIndices(P.scenes, SCENES.map(d => d.name), P.scene) });   // one scene chosen: held (no cuts)
+    const idx = pl.idx, local = pl.held ? 1.3 + (A.t % 6) : pl.local, len = pl.held ? 1e9 : pl.len, def = SCENES[idx];
+    const raw = dt => A.live ? Float32Array.from(dt > 0 ? A.past(dt) : A.spectrum, v => clamp(v * gain)) : Float32Array.from({ length: N }, (_, i) => clamp((0.3 + 0.25 * Math.sin((T - dt) * 3 + i * 0.4)) * gain));
+    const s = raw(0).map((v, i) => v * E.out((local - 0.2 - i * 0.006) / 0.45));
+    c.fillStyle = th.body; c.fillRect(0, 0, 1920, 1080);
+    c.save(); const zoom = pl.held ? 1 : 1 + 0.03 * clamp(local / len); c.translate(960, 600); c.scale(zoom, zoom); c.translate(-960, -600);
+    def.draw(c, { s, local, T, A, th }); c.restore();
+    const tIn = E.out((local - 0.15) / 0.5); c.save(); c.globalAlpha = tIn; c.translate(0, (1 - tIn) * 28);
+    const m = A.meta || {}, name = m.title ? '  ·  ' + (m.artist ? m.artist + ' — ' : '') + m.title : '', sec = A.section && P.showMeta ? '  ·  ' + A.section.name.toUpperCase() : '';
+    K.text(c, 'EXT. ' + String(idx + 1).padStart(3, '0') + sec + (P.showMeta ? name : ''), 96, 84, { font: `400 26px ${MONO}`, color: th.ink, alpha: .75, upper: true, maxW: 1200 });
+    TX(c, def.title.toUpperCase(), 94, 158, 62, th.ink, { font: 'display' }); TX(c, 'ON HOLD', 1824, 84, 26, th.ink, { align: 'right', a: .75 }); TX(c, hms(held(A, T)), 1826, 158, 62, th.acc[0], { font: 'display', align: 'right' });
+    c.restore();
+    lcd(c, 0, 1026, 1920, 54, th); c.font = `400 30px ${MONO}`; const w = c.measureText(TAPE).width, o = -((T * 120) % w); TX(c, TAPE, o, 1062, 30, th.lcdInk); TX(c, TAPE, o + w, 1062, 30, th.lcdInk);
+    if (!pl.held) for (const [k, dt] of [[idx, local], [idx + 1, local - len]]) { const j = k % NS; wipe(c, dt, 0.42, th.acc[(j + 1) % 5]); wipe(c, dt, 0.28, th.acc[j % 5]); }
+  }
+});
+</script>

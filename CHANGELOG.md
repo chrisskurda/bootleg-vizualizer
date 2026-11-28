@@ -6,12 +6,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
-### Fixed
-- `bin/screenshots.mjs`: the synthetic `A.section` now has `start`, `end` and `count`, as real hosts give it. Without them `K.scenes` worked out a scene index of `NaN` and `business-funk` and the three packs above came out blank (seen 2026-11-28).
-
 ### Added
+- Three multi-scene packs in the Business Funk family, each with the `palette`, `gain`, `cycle`, `sceneBeats`, `scenes` and `showMeta` params of `business-funk` (an older single `scene` value still holds that scene): `bfunk2` (Business Funk II: Overtime, ten 80s corporate charts with a scrolling tape), `bfunk3` (Business Funk III: Black Monday, a glitching market-crash terminal whose index falls across the song) and `onhold` (On Hold, a call-center hold line with queue, keypad menu, hold timer and survey).
 - `bin/sync-consumers.mjs` (`npm run sync:consumers`): reports whether each app that vendors this repository carries exactly this version and pack library, compared file by file against the release tag, and with `--apply` updates the ones that differ through their own vendoring scripts (VENDORING.md).
 - `bin/release-build.sh` (`npm run release:build`): runs the tests and the pack check, then writes `release/bootleg-vizualizer-<version>.tar.gz` with a manifest (version, commit, sha256).
+
+### Fixed
+- `bin/screenshots.mjs`: the synthetic `A.section` now has `start`, `end` and `count`, as real hosts give it. Without them `K.scenes` worked out a scene index of `NaN` and `business-funk` and the three packs above came out blank (seen 2026-11-28).
 
 ## [0.10.0] - 2026-11-27
 
