@@ -6,6 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.10.1] - 2026-11-28
+
 ### Added
 - Three multi-scene packs in the Business Funk family, each with the `palette`, `gain`, `cycle`, `sceneBeats`, `scenes` and `showMeta` params of `business-funk` (an older single `scene` value still holds that scene): `bfunk2` (Business Funk II: Overtime, ten 80s corporate charts with a scrolling tape), `bfunk3` (Business Funk III: Black Monday, a glitching market-crash terminal whose index falls across the song) and `onhold` (On Hold, a call-center hold line with queue, keypad menu, hold timer and survey).
 - `bin/sync-consumers.mjs` (`npm run sync:consumers`): reports whether each app that vendors this repository carries exactly this version and pack library, compared file by file against the release tag, and with `--apply` updates the ones that differ through their own vendoring scripts (VENDORING.md).
@@ -52,7 +54,9 @@ Initial release: the pack format, runtime, FX and 41 packs.
 - Multi-scene packs can play a chosen subset of scenes (`multi` param, `K.scenes({only})`).
 - Reference live host, acceptance checker (`bin/check.mjs`), analysis and stem tools, and a library of packs.
 
-[Unreleased]: https://github.com/chrisskurda/bootleg-vizualizer/compare/v0.9.4...HEAD
+[Unreleased]: https://github.com/chrisskurda/bootleg-vizualizer/compare/v0.10.1...HEAD
+[0.10.1]: https://github.com/chrisskurda/bootleg-vizualizer/releases/tag/v0.10.1
+[0.10.0]: https://github.com/chrisskurda/bootleg-vizualizer/releases/tag/v0.10.0
 [0.9.4]: https://github.com/chrisskurda/bootleg-vizualizer/releases/tag/v0.9.4
 [0.9.3]: https://github.com/chrisskurda/bootleg-vizualizer/releases/tag/v0.9.3
 [0.9.2]: https://github.com/chrisskurda/bootleg-vizualizer/releases/tag/v0.9.2
