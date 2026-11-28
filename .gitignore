@@ -3,3 +3,4 @@ cache/
 tests/fx-reference/target/
 samples/
 .DS_Store
+release/

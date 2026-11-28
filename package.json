@@ -13,7 +13,9 @@
     "test": "node bin/check-version.mjs && node tests/fx.test.mjs && node tests/fx-gl.test.mjs && node tests/stems.test.mjs && node tests/scenes.test.mjs && node tests/kit.test.mjs",
     "check": "node bin/check.mjs",
     "goldens": "cd tests/fx-reference && cargo run --release",
-    "check:version": "node bin/check-version.mjs"
+    "check:version": "node bin/check-version.mjs",
+    "sync:consumers": "node bin/sync-consumers.mjs",
+    "release:build": "bash bin/release-build.sh"
   },
   "dependencies": {
     "playwright-core": "^1.50.0"
